@@ -1,0 +1,12 @@
+.subckt memristor pl mn PARAMS: Ron=1K Roff=10K Rinit=5K beta=1E13 Vtp=4.6 Vtm=4.6 nu1=0.0001 nu2=0.1
+
+Gx 0 x value={f1(V(pl)-V(mn))*(f2(f1(V(pl)-V(mn)))*f3(Roff-V(x))+f2(-f1(V(pl)-V(mn)))*f3(V(x)-Ron))}
+Raux x 0 1E12
+Cx x 0 1 IC={Rinit}
+Gpm pl mn value={(V(pl)-V(mn))/V(x)}
+
+.func f1(y)={beta*(y-Vtp)/(exp(-(y-Vtp)/nu1)+1)+beta*(y+Vtm)/(exp(-(-y-Vtm)/nu1)+1)}
+.func f2(y1)={1/(exp(-y1/nu1)+1)}
+.func f3(y)={1/(exp(-y/nu2)+1)}
+
+.ends

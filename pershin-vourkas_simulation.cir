@@ -1,8 +1,6 @@
 Single memristor device simulation
 
-.include models/pershin.sub
-*.include models/pershin-vourkas.sub
-*.include models/biolek.sub
+.include models/pershin-vourkas.sub
 
 V1 vin gnd sin 0 5 1
 xmem0 vin gnd l0 memristor
@@ -12,7 +10,7 @@ xmem0 vin gnd l0 memristor
 run
 set wr_vecnames
 set wr_singlescale 
-wrdata ./simulation_results/pershin_simulation.csv vin i(v1) l0
+wrdata ./simulation_results/pershin-vourkas_simulation.csv vin i(v1) l0
 .endc
 
 .end

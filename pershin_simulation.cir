@@ -1,0 +1,16 @@
+Single memristor device simulation
+
+.include models/pershin.sub
+
+V1 vin gnd sin 0 5 1
+xmem0 vin gnd l0 memristor
+
+.tran 2m 2 1e-9 uic
+.control
+run
+set wr_vecnames
+set wr_singlescale 
+wrdata ./simulation_results/pershin_simulations/Vt/08_pershin_simulation.csv vin i(v1) l0
+.endc
+
+.end

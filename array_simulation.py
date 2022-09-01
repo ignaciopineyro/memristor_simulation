@@ -43,16 +43,14 @@ for variable_param in list(pershin_params):
     csv_files_in_directory.sort()
     csv_files_path_in_directory.sort()
 
-    subplot_index = 1
-
-    for filepath in csv_files_path_in_directory:
+    for file_count, filepath in enumerate(csv_files_path_in_directory, 1):
         df = pd.DataFrame(
             np.concatenate([pd.read_csv(filepath, sep=r"\s+")[1:len(pd.read_csv(filepath, sep=r"\s+"))+1]]),
             columns=pd.read_csv(filepath, sep=r"\s+").columns
         )
 
         plt.figure(0, figsize=(15, 10))
-        plt.plot(df['vin'], -df['i(v1)'], label=f'{variable_param} = {pershin_values[variable_param][subplot_index-1]}')
+        plt.plot(df['vin'], -df['i(v1)'], label=f'{variable_param} = {pershin_values[variable_param][file_count-1]}')
         plt.xlabel('Vin [V]')
         plt.ylabel('i(v1) [A]')
         plt.title(f'I-V {model} - {variable_param} = {pershin_values[variable_param]}', fontsize=18)
@@ -60,21 +58,40 @@ for variable_param in list(pershin_params):
         plt.savefig(f'{path}/{simulations_path}/{variable_param}_comparison.jpg')
 
         plt.figure(1, figsize=(20, 16))
-        plt.subplot(3, 3, subplot_index)
+        plt.subplot(3, 3, file_count)
         plt.plot(df['vin'], -df['i(v1)'])
         plt.xlabel('Vin [V]')
         plt.ylabel('i(v1) [A]')
-        plt.title(f'{variable_param} = {pershin_values[variable_param][subplot_index - 1]}', fontsize=18)
+        plt.title(f'{variable_param} = {pershin_values[variable_param][file_count - 1]}', fontsize=18)
         plt.suptitle(f'I-V {model} {pershin_params}', fontsize=25)
-        plt.savefig(f'{path}/{simulations_path}/subplot.jpg')
+        plt.savefig(f'{path}/{simulations_path}/iv_subplot.jpg')
 
-        plt.figure(subplot_index + 1, figsize=(15, 10))
+        plt.figure(2 * file_count, figsize=(15, 10))
         plt.plot(df['vin'], -df['i(v1)'])
         plt.xlabel('Vin [V]')
         plt.ylabel('i(v1) [A]')
-        plt.title(f'I-V {model} - {variable_param} = {pershin_values[variable_param][subplot_index - 1]}', fontsize=18)
-        plt.savefig(f'{path}/{simulations_path}/{csv_files_in_directory[subplot_index - 1]}.jpg')
+        plt.title(f'I-V {model} - {variable_param} = {pershin_values[variable_param][file_count - 1]}', fontsize=16)
+        plt.savefig(f'{path}/{simulations_path}/{csv_files_in_directory[file_count - 1]}.jpg')
 
-        subplot_index += 1
+        plt.figure(2 * file_count + 1, figsize=(15, 10))
+        plt.subplot(2, 1, 1)
+        plt.plot(df['time'], df['vin'])
+        plt.hlines(0, 0, max(df['time']), color='black', linewidth=0.5)
+        plt.xlabel('Time [s]')
+        plt.ylabel('Vin [V]')
+        plt.title(f'{variable_param} = {pershin_values[variable_param][file_count - 1]}', fontsize=14)
+        plt.subplot(2, 1, 2)
+        plt.plot(df['time'], df['l0'])
+        # TODO: La hline me saca los valores del eje Y
+        plt.hlines(
+            pershin_params['Rinit'], 0, max(df['time']), color='black', linestyle='dashed', linewidth=0.5,
+            label='Rinit = {}'.format(pershin_params['Rinit'])
+        )
+        plt.xlabel('Time [s]')
+        plt.ylabel('l0 [ohm]')
+        plt.title(f'{variable_param} = {pershin_values[variable_param][file_count - 1]}', fontsize=14)
+        plt.suptitle(f'Input voltage and State vs Time {model} {pershin_params}', fontsize=16)
+        plt.legend()
+        plt.savefig(f'{path}/{simulations_path}/{csv_files_in_directory[file_count - 1]}_states.jpg')
 
     plt.close('all')

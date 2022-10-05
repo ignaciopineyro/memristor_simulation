@@ -9,10 +9,10 @@ path = os.path.dirname(__file__)
 dataframes = []
 
 models = ['pershin_simulations', 'pershin-vourkas_simulations']
-pershin_params = {'Alpha': '0', 'Beta': '1E13', 'Rinit': '5K', 'Roff': '10K', 'Ron': '1K', 'Vt': '4.6'}
-pershin_vourkas_params = {'Alpha': '0', 'Beta': '1E13', 'Rinit': '5K', 'Roff': '10K', 'Ron': '1K', 'Vt': '4.6'}
+pershin_params = {'Alpha': '0', 'Beta': '1E5', 'Rinit': '5K', 'Roff': '10K', 'Ron': '1K', 'Vt': '4.6'}
+pershin_vourkas_params = {'Alpha': '0', 'Beta': '1E5', 'Rinit': '5K', 'Roff': '10K', 'Ron': '1K', 'Vt': '4.6'}
 pershin_values = {
-    'Alpha': [0, 1, 10, 100, 1e3, 1e5, 1e7, 1e10],
+    'Alpha': [0, 1, 10, 100, 1e3, 1e5, 1e7, 1e9],
     'Beta': [0, 1, 1e3, 1e5, 1e10, 1e13, 1e20, 1e30],
     'Rinit': [value * 1e3 for value in [0.2, 0.5, 1, 2.5, 5, 10, 100, 1000]],
     'Roff': [value * 1e3 for value in [0.2, 0.5, 1, 2.5, 5, 10, 100, 1000]],
@@ -20,7 +20,7 @@ pershin_values = {
     'Vt': [0, 1.5, 3, 3.8, 4.2, 4.6, 5, 6]
 }
 pershin_vourkas_values = {
-    'Alpha': [0, 1, 10, 100, 1e3, 1e5, 1e7, 1e10],
+    'Alpha': [0, 1, 10, 100, 1e3, 1e5, 1e7, 1e9],
     'Beta': [0, 1, 1e3, 1e5, 1e10, 1e13, 1e20, 1e30],
     'Rinit': [value * 1e3 for value in [0.2, 0.5, 1, 2.5, 5, 10, 100, 1000]],
     'Roff': [value * 1e3 for value in [0.2, 0.5, 1, 2.5, 5, 10, 100, 1000]],

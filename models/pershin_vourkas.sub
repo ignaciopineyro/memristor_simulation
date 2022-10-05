@@ -1,4 +1,4 @@
-.subckt memristor pl mn x PARAMS: Ron=1K Roff=10K Rinit=5K alpha=1E10 beta=1E13 Vt=4.6
+.subckt memristor pl mn x PARAMS: Ron=1K Roff=10K Rinit=5K alpha=0 beta=1E5 Vt=4.6
 .model D d
 
 Bx 0 x I='(f1(V(pl,mn))>0) && (V(x)<Roff) ? {f1(V(pl,mn))}: (f1(V(pl,mn))<0) && (V(x)>Ron) ? {f1(V(pl,mn))}: {0}'

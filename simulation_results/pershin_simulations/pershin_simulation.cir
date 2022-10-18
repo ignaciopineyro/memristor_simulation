@@ -1,2 +1,20 @@
-MEMRISTOR SIMULATION - MODEL MemristorModels.PERSHIN
-.include /home/ignaciopineyro/memristor_simulation/models//MemristorModels.PERSHIN
+MEMRISTOR SIMULATION - MODEL pershin.sub
+
+* DEPENDENCIES:
+.include ../../models/pershin.sub
+
+* COMPONENTS:
+V1 vin gnd sin 0 5 1   
+xmem0 vin gnd l0 memristor
+
+* ANALYSIS COMMANDS:
+.tran 0.002 2 1e-09  uic
+
+* CONTROL COMMANDS:
+.control
+run
+set wr_vecnames
+set wr_singlescale
+wrdata ./TestFolderName/TestFileName.csv vin i(v1) l0
+.endc
+.end

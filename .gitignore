@@ -1,2 +1,4 @@
 *.log
 *.Identifier
+__pycache__/*
+*.pyc

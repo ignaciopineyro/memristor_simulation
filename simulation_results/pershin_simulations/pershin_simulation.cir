@@ -1,4 +1,4 @@
-MEMRISTOR SIMULATION - MODEL pershin.sub
+MEMRISTOR CIRCUIT - MODEL pershin.sub
 
 * DEPENDENCIES:
 .include ../../models/pershin.sub

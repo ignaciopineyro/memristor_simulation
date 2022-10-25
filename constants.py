@@ -31,3 +31,11 @@ class WaveForms(Enum):
 
 class AnalysisType(Enum):
     TRAN = '.tran'
+
+
+class SpiceDevices(Enum):
+    DIODE = 'D'
+
+
+class SpiceModel(Enum):
+    DIODE = 'd'

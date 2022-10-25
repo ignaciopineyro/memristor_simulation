@@ -2,7 +2,7 @@ import os
 from dataclasses import dataclass
 from typing import List
 
-from constants import WaveForms, AnalysisType, SIMULATIONS_DIR, ModelsSimulationFolders
+from constants import WaveForms, AnalysisType, SIMULATIONS_DIR, ModelsSimulationFolders, SpiceDevices, SpiceModel
 
 
 @dataclass()
@@ -89,3 +89,39 @@ class ExportParameters:
         return(
             f"wrdata ./{params.folder_name}/{params.file_name}.csv {magnitudes}"
         )
+
+
+@dataclass()
+class Subcircuit:
+    name: str
+    nodes: List[str]
+    parameters: dict
+
+    @classmethod
+    def get_subcircuit_nodes(cls, subcircuit) -> str:
+        return ' '.join(subcircuit.nodes)
+
+    @classmethod
+    def get_subcircuit_parameters(cls, subcircuit) -> str:
+        params = ''
+        for key, value in subcircuit.parameters.keys():
+            params = params.join(f'{key}={value}')
+
+        return params
+
+
+@dataclass()
+class ModelDependence:
+    name: SpiceDevices
+    model: SpiceModel
+
+
+@dataclass()
+class Source:
+    name: str
+    nodes: List[str]
+    behaviour_function: str
+
+    @classmethod
+    def get_source_nodes(cls, source) -> str:
+        return ' '.join(source.nodes)

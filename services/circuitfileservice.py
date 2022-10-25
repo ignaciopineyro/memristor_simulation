@@ -4,7 +4,7 @@ from constants import MemristorModels, SIMULATIONS_DIR, WaveForms, AnalysisType,
 from representations import InputParameters, ModelParameters, SimulationParameters, DeviceParameters, ExportParameters
 
 
-class NetlistSimulation:
+class CircuitFileService:
     def __init__(self, model: MemristorModels, input_parameters: InputParameters, model_parameters: ModelParameters,
                  device_parameters: DeviceParameters, simulation_parameters: SimulationParameters,
                  export_parameters: ExportParameters):
@@ -56,27 +56,13 @@ class NetlistSimulation:
         """
         simulation_file_path = f'{SIMULATIONS_DIR}/{self._get_simulation_file_name(self.model)}'
         with open(simulation_file_path, "w+") as f:
-            f.write(f'MEMRISTOR SIMULATION - MODEL {self.model.value}')
+            f.write(f'MEMRISTOR CIRCUIT - MODEL {self.model.value}')
             self._write_dependencies(f)
             self._write_components(f)
             self._write_analysis_commands(f)
             self._write_control_commands(f)
             f.write('\n.endc\n')
             f.write('.end\n')
-
-    def write_model_subcircuit(self):
-        """
-        Writes the .sub subcircuit file to include on circuit's file. The file is saved in models/
-        :return: None
-        """
-
-        raise NotImplemented()
-
-    def write_single_device_simulation(self):
-        raise NotImplemented()
-
-    def export_data(self):
-        raise NotImplemented()
 
 
 class InvalidMemristorModel(Exception):
@@ -90,7 +76,7 @@ simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=T
 export_params = ExportParameters(
     ModelsSimulationFolders.PERSHIN_SIMULATIONS, 'TestFolderName', 'TestFileName', ['vin', 'i(v1)', 'l0']
 )
-netlist_simulation = NetlistSimulation(
+netlist_simulation = CircuitFileService(
     MemristorModels.PERSHIN, input_params, model_params, device_params, simulation_params, export_params
 )
 

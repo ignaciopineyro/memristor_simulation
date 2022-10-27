@@ -2,4 +2,6 @@
 *.Identifier
 __pycache__/*
 *.pyc
-*.idea
+.idea
+NGSpice
+models_backup

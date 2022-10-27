@@ -2,3 +2,4 @@
 *.Identifier
 __pycache__/*
 *.pyc
+*.idea

@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 from constants import WaveForms, AnalysisType, SIMULATIONS_DIR, ModelsSimulationFolders, SpiceDevices, SpiceModel
 
@@ -119,9 +119,20 @@ class ModelDependence:
 @dataclass()
 class Source:
     name: str
-    nodes: List[str]
+    n_plus: str
+    n_minus: str
     behaviour_function: str
 
     @classmethod
     def get_source_nodes(cls, source) -> str:
         return ' '.join(source.nodes)
+
+
+@dataclass()
+class Component:
+    name: str
+    n_plus: str
+    n_minus: str
+    value: float = None
+    extra_data: str = None
+    model: str = None

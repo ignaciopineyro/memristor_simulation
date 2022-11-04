@@ -76,6 +76,7 @@ simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=T
 export_params = ExportParameters(
     ModelsSimulationFolders.PERSHIN_SIMULATIONS, 'TestFolderName', 'TestFileName', ['vin', 'i(v1)', 'l0']
 )
+
 netlist_simulation = CircuitFileService(
     MemristorModels.PERSHIN, input_params, model_params, device_params, simulation_params, export_params
 )

@@ -1,25 +1,28 @@
 from typing import TextIO, List
 
 from constants import MODELS_DIR, MemristorModels
-from representations import Subcircuit, ModelDependence, Source
+from representations import Subcircuit, ModelDependence, Source, Component
 
 
 class SubcircuitFileService:
     def __init__(
             self, model: MemristorModels, subcircuits: List[Subcircuit], sources: List[Source],
-            model_dependencies: List[ModelDependence] = None
+            model_dependencies: List[ModelDependence] = None, components: List[Component] = None,
+            control_commands: List[str] = None
     ):
         self.model = model
         self.subcircuits = subcircuits
         self.model_dependencies = model_dependencies
         self.sources = sources
+        self.components = components
+        self.control_commands = control_commands
 
     def _write_subcircuit_parameters(self, file: TextIO):
         for subcircuit in self.subcircuits:
             file.write('\n\n* SUBCIRCUITS:\n')
             file.write(
                 f'.subckt {subcircuit.name} {subcircuit.get_subcircuit_nodes(subcircuit)} PARAMS: '
-                f'{subcircuit.get_subcircuit_parameters}')
+                f'{subcircuit.get_subcircuit_parameters}\n')
 
     def _write_model_dependencies(self, file: TextIO):
         file.write('\n\n* SPICE DEPENDENCIES:\n')
@@ -29,22 +32,26 @@ class SubcircuitFileService:
     def _write_sources(self, file: TextIO):
         file.write('\n\n* SOURCES:\n')
         for source in self.sources:
-            file.write(f'{source.name} {source.get_source_nodes(source)} {source.behaviour_function}')
+            file.write(f'{source.name} {source.n_plus} {source.n_minus} {source.behaviour_function}\n')
 
     def _write_components(self, file: TextIO):
         file.write("\n\n* COMPONENTS:\n")
-        # TODO
+        for component in self.components:
+            file.write(
+                f'{component.name} {component.n_plus} {component.n_minus} {component.value} {component.extra_data}'
+                f' {component.model}\n')
 
     def _write_control_commands(self, file: TextIO):
         file.write("\n\n* CONTROL COMMANDS:\n")
-        # TODO
+        for control_command in self.control_commands:
+            file.write(f'{control_command}\n')
 
     def write_model_subcircuit(self):
         """
         Writes the .sub subcircuit file to include on circuit's file. The file is saved in models/
         :return: None
         """
-        model_file_path = f'{MODELS_DIR}/{self.model.value}.sub'
+        model_file_path = f'{MODELS_DIR}/{self.model.value}'
         with open(model_file_path, "w+") as f:
             f.write(f'MEMRISTOR SUBCIRCUIT - MODEL {self.model.value}')
             self._write_subcircuit_parameters(f)
@@ -53,6 +60,23 @@ class SubcircuitFileService:
             self._write_sources(f)
             self._write_components(f)
             self._write_control_commands(f)
-            f.write('.ends')
+            f.write('\n.ends')
 
-# TODO: Testear clase
+
+pershin_params = {'Ron': 1e3, 'Roff': 10e3, 'Rinit':5e3, 'alpha': 0, 'beta': 1E5, 'Vt': 4.6}
+pershin_subckt = Subcircuit('memristor', ['pl, mn, x'], pershin_params)
+source = Source(
+    name='Bx', n_plus='0', n_minus='x', behaviour_function='I=\'(f1(V(pl,mn))>0) && (V(x)<Roff) ? {f1(V(pl,mn))}: '
+                                                           '(f1(V(pl,mn))<0) && (V(x)>Ron) ? {f1(V(pl,mn))}: {0}\''
+)
+capacitor = Component(name='Cx', n_plus='x', n_minus='0', extra_data='IC={Rinit}')
+resistor = Component(name='R0', n_plus='pl', n_minus='mn', value=1e12)
+rmem = Component(name='Rmem', n_plus='pl', n_minus='mn', extra_data='r={V(x)}')
+control_command = '.func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}'
+
+subcircuit = SubcircuitFileService(
+    model=MemristorModels.PERSHIN, subcircuits=[pershin_subckt], sources=[source],
+    components=[capacitor, resistor, rmem], control_commands=[control_command]
+)
+
+subcircuit.write_model_subcircuit()

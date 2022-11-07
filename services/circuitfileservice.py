@@ -77,8 +77,8 @@ export_params = ExportParameters(
     ModelsSimulationFolders.PERSHIN_SIMULATIONS, 'TestFolderName', 'TestFileName', ['vin', 'i(v1)', 'l0']
 )
 
-netlist_simulation = CircuitFileService(
+circuit_file_service = CircuitFileService(
     MemristorModels.PERSHIN, input_params, model_params, device_params, simulation_params, export_params
 )
 
-netlist_simulation.write_circuit_file()
+circuit_file_service.write_circuit_file()

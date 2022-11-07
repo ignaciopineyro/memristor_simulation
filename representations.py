@@ -1,6 +1,7 @@
+from dataclasses import dataclass, fields
 import os
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
 from constants import WaveForms, AnalysisType, SIMULATIONS_DIR, ModelsSimulationFolders, SpiceDevices, SpiceModel
 
@@ -99,13 +100,17 @@ class Subcircuit:
 
     @classmethod
     def get_subcircuit_nodes(cls, subcircuit) -> str:
-        return ' '.join(subcircuit.nodes)
+        nodes = ''
+        for node in subcircuit.nodes:
+            nodes += f'{node} '
+
+        return nodes
 
     @classmethod
     def get_subcircuit_parameters(cls, subcircuit) -> str:
         params = ''
-        for key, value in subcircuit.parameters.keys():
-            params = params.join(f'{key}={value}')
+        for key, value in subcircuit.parameters.items():
+            params += f'{key}={value} '
 
         return params
 
@@ -136,3 +141,11 @@ class Component:
     value: float = None
     extra_data: str = None
     model: str = None
+
+    def get_attributes_as_string(self):
+        attr_str = ''
+        for field in fields(self):
+            if getattr(self, field.name) is not None:
+                attr_str += f'{getattr(self, field.name) } '
+
+        return attr_str

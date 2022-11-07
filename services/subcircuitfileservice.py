@@ -21,8 +21,8 @@ class SubcircuitFileService:
         for subcircuit in self.subcircuits:
             file.write('\n\n* SUBCIRCUITS:\n')
             file.write(
-                f'.subckt {subcircuit.name} {subcircuit.get_subcircuit_nodes(subcircuit)} PARAMS: '
-                f'{subcircuit.get_subcircuit_parameters}\n')
+                f'.subckt {subcircuit.name} {subcircuit.get_subcircuit_nodes(subcircuit)}PARAMS: '
+                f'{subcircuit.get_subcircuit_parameters(subcircuit)}\n')
 
     def _write_model_dependencies(self, file: TextIO):
         file.write('\n\n* SPICE DEPENDENCIES:\n')
@@ -37,9 +37,7 @@ class SubcircuitFileService:
     def _write_components(self, file: TextIO):
         file.write("\n\n* COMPONENTS:\n")
         for component in self.components:
-            file.write(
-                f'{component.name} {component.n_plus} {component.n_minus} {component.value} {component.extra_data}'
-                f' {component.model}\n')
+            file.write(f'{component.get_attributes_as_string()}\n')
 
     def _write_control_commands(self, file: TextIO):
         file.write("\n\n* CONTROL COMMANDS:\n")
@@ -63,20 +61,20 @@ class SubcircuitFileService:
             f.write('\n.ends')
 
 
-pershin_params = {'Ron': 1e3, 'Roff': 10e3, 'Rinit':5e3, 'alpha': 0, 'beta': 1E5, 'Vt': 4.6}
-pershin_subckt = Subcircuit('memristor', ['pl, mn, x'], pershin_params)
-source = Source(
+pershin_params = {'Ron': 1e3, 'Roff': 10e3, 'Rinit': 5e3, 'alpha': 0, 'beta': 1E5, 'Vt': 4.6}
+pershin_subckt = Subcircuit('memristor', ['pl', 'mn', 'x'], pershin_params)
+source_Bx = Source(
     name='Bx', n_plus='0', n_minus='x', behaviour_function='I=\'(f1(V(pl,mn))>0) && (V(x)<Roff) ? {f1(V(pl,mn))}: '
                                                            '(f1(V(pl,mn))<0) && (V(x)>Ron) ? {f1(V(pl,mn))}: {0}\''
 )
-capacitor = Component(name='Cx', n_plus='x', n_minus='0', extra_data='IC={Rinit}')
+capacitor = Component(name='Cx', n_plus='x', n_minus='0', value=1, extra_data='IC={Rinit}')
 resistor = Component(name='R0', n_plus='pl', n_minus='mn', value=1e12)
 rmem = Component(name='Rmem', n_plus='pl', n_minus='mn', extra_data='r={V(x)}')
-control_command = '.func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}'
+control_cmd = '.func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}'
 
-subcircuit = SubcircuitFileService(
-    model=MemristorModels.PERSHIN, subcircuits=[pershin_subckt], sources=[source],
-    components=[capacitor, resistor, rmem], control_commands=[control_command]
+subcircuit_service = SubcircuitFileService(
+    model=MemristorModels.PERSHIN, subcircuits=[pershin_subckt], sources=[source_Bx],
+    components=[capacitor, resistor, rmem], control_commands=[control_cmd]
 )
 
-subcircuit.write_model_subcircuit()
+subcircuit_service.write_model_subcircuit()

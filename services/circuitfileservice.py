@@ -9,6 +9,7 @@ class CircuitFileService:
                  device_parameters: DeviceParameters, simulation_parameters: SimulationParameters,
                  export_parameters: ExportParameters):
         self.model = model
+        self.simulation_file_path = f'{SIMULATIONS_DIR}/{self.get_simulation_file_name(self.model)}'
         self.model_dir = f'../../models/{model.value}'
         self.input_parameters = input_parameters
         self.model_parameters = model_parameters
@@ -17,7 +18,7 @@ class CircuitFileService:
         self.export_parameters = export_parameters
 
     @staticmethod
-    def _get_simulation_file_name(model: MemristorModels) -> str:
+    def get_simulation_file_name(model: MemristorModels) -> str:
         if model == MemristorModels.PERSHIN:
             return f'{ModelsSimulationFolders.PERSHIN_SIMULATIONS.value}/pershin_simulation.cir'
         elif model == MemristorModels.PERSHIN_VOURKAS:
@@ -54,8 +55,7 @@ class CircuitFileService:
         Writes the .cir circuit file to execute in Spice. The file is saved in simulation_results/model-name_simulations
         :return: None
         """
-        simulation_file_path = f'{SIMULATIONS_DIR}/{self._get_simulation_file_name(self.model)}'
-        with open(simulation_file_path, "w+") as f:
+        with open(self.simulation_file_path, "w+") as f:
             f.write(f'MEMRISTOR CIRCUIT - MODEL {self.model.value}')
             self._write_dependencies(f)
             self._write_components(f)

@@ -11,6 +11,7 @@ class SubcircuitFileService:
             control_commands: List[str] = None
     ):
         self.model = model
+        self.model_file_path = f'{MODELS_DIR}/{self.model.value}'
         self.subcircuits = subcircuits
         self.model_dependencies = model_dependencies
         self.sources = sources
@@ -49,8 +50,7 @@ class SubcircuitFileService:
         Writes the .sub subcircuit file to include on circuit's file. The file is saved in models/
         :return: None
         """
-        model_file_path = f'{MODELS_DIR}/{self.model.value}'
-        with open(model_file_path, "w+") as f:
+        with open(self.model_file_path, "w+") as f:
             f.write(f'MEMRISTOR SUBCIRCUIT - MODEL {self.model.value}')
             self._write_subcircuit_parameters(f)
             if self.model_dependencies:

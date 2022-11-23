@@ -21,7 +21,7 @@ class TimeMeasure:
     @staticmethod
     def measure_linux_execution_time():
         print('\n\nMEASURING TIME IN LINUX\n\n')
-        os.system(f'time \\')
+        # os.system(f'time ')
 
     @staticmethod
     def init_python_execution_time_measure():
@@ -42,6 +42,6 @@ class NGSpiceService:
         )
 
     def run_simulation(self):
-        with TimeMeasure:
+        with TimeMeasure():
             os.system(f'ngspice {self.circuit_file_path}')
-
+            # os.system('}')

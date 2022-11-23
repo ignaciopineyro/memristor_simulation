@@ -10,7 +10,7 @@ class CircuitFileService:
                  export_parameters: ExportParameters):
         self.model = model
         self.simulation_file_path = f'{SIMULATIONS_DIR}/{self.get_simulation_file_name(self.model)}'
-        self.model_dir = f'../../models/{model.value}'
+        self.model_dir = f'./../../models/{model.value}'
         self.input_parameters = input_parameters
         self.model_parameters = model_parameters
         self.device_parameters = device_parameters
@@ -67,18 +67,3 @@ class CircuitFileService:
 
 class InvalidMemristorModel(Exception):
     pass
-
-
-input_params = InputParameters(1, 'vin', 'gnd', WaveForms.SIN, 0, 5, 1)
-model_params = ModelParameters(1e3, 10e3, 5e3, 0, 1e5, 4.6)
-device_params = DeviceParameters('xmem', 0, ['vin', 'gnd', 'l0'], 'memristor')
-simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
-export_params = ExportParameters(
-    ModelsSimulationFolders.PERSHIN_SIMULATIONS, 'TestFolderName', 'TestFileName', ['vin', 'i(v1)', 'l0']
-)
-
-circuit_file_service = CircuitFileService(
-    MemristorModels.PERSHIN, input_params, model_params, device_params, simulation_params, export_params
-)
-
-circuit_file_service.write_circuit_file()

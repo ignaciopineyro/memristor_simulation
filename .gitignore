@@ -4,4 +4,4 @@ __pycache__/*
 *.pyc
 .idea
 NGSpice
-models_backup
+backup

@@ -10,7 +10,7 @@ class CircuitFileService:
                  export_parameters: ExportParameters):
         self.model = model
         self.simulation_file_path = f'{SIMULATIONS_DIR}/{self.get_simulation_file_name(self.model)}'
-        self.model_dir = f'./../../models/{model.value}'
+        self.model_dir = f'../../models/{model.value}'
         self.input_parameters = input_parameters
         self.model_parameters = model_parameters
         self.device_parameters = device_parameters
@@ -56,7 +56,7 @@ class CircuitFileService:
         :return: None
         """
         with open(self.simulation_file_path, "w+") as f:
-            f.write(f'MEMRISTOR CIRCUIT - MODEL {self.model.value}')
+            f.write(f'* MEMRISTOR CIRCUIT - MODEL {self.model.value}')
             self._write_dependencies(f)
             self._write_components(f)
             self._write_analysis_commands(f)

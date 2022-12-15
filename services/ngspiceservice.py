@@ -7,21 +7,35 @@ from services.circuitfileservice import CircuitFileService
 
 
 class TimeMeasure:
-    def __init__(self):
+    def __init__(self, circuit_file_path):
         self.start_time = None
+        self.command_line = None
+        self.circuit_file_path = circuit_file_path
 
-    def __enter__(self):
+    def execute_with_time_measure(self):
         self.start_time = self.init_python_execution_time_measure()
-        if platform.system() == 'Linux':
-            self.measure_linux_execution_time()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        return self.end_python_execution_time_measure(self.start_time)
+        if platform.system() == 'Linux':
+            self.command_line = self.start_measure_linux_execution_time()
+
+        self.command_line = self.command_line + f'ngspice {self.circuit_file_path}'
+
+        if platform.system() == 'Linux':
+            self.command_line = self.command_line + self.end_measure_linux_execution_time()
+
+        print(f'{self.command_line=}')
+        os.system(self.command_line)
+
+        print(f'PYTHON TIME = {self.end_python_execution_time_measure(self.start_time)}')
 
     @staticmethod
-    def measure_linux_execution_time():
+    def start_measure_linux_execution_time():
         print('\n\nMEASURING TIME IN LINUX\n\n')
-        # os.system(f'time ')
+        return 'time ('
+
+    @staticmethod
+    def end_measure_linux_execution_time():
+        return ' | exit)'
 
     @staticmethod
     def init_python_execution_time_measure():
@@ -41,7 +55,7 @@ class NGSpiceService:
             f'{SIMULATIONS_DIR}/{self.circuit_file_service.get_simulation_file_name(self.model)}'
         )
 
+        self.time_measure = TimeMeasure(self.circuit_file_path)
+
     def run_simulation(self):
-        with TimeMeasure():
-            os.system(f'ngspice {self.circuit_file_path}')
-            # os.system('}')
+        self.time_measure.execute_with_time_measure()

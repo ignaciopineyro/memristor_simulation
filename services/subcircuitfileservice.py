@@ -51,7 +51,7 @@ class SubcircuitFileService:
         :return: None
         """
         with open(self.model_file_path, "w+") as f:
-            f.write(f'MEMRISTOR SUBCIRCUIT - MODEL {self.model.value}')
+            f.write(f'* MEMRISTOR SUBCIRCUIT - MODEL {self.model.value}')
             self._write_subcircuit_parameters(f)
             if self.model_dependencies:
                 self._write_model_dependencies(f)

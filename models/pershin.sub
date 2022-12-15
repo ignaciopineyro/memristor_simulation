@@ -1,0 +1,20 @@
+* MEMRISTOR SUBCIRCUIT - MODEL pershin.sub
+
+* SUBCIRCUITS:
+.subckt memristor pl mn x PARAMS: Ron=1000.0 Roff=10000.0 Rinit=5000.0 alpha=0 beta=100000.0 Vt=4.6 
+
+
+* SOURCES:
+Bx 0 x I='(f1(V(pl,mn))>0) && (V(x)<Roff) ? {f1(V(pl,mn))}: (f1(V(pl,mn))<0) && (V(x)>Ron) ? {f1(V(pl,mn))}: {0}'
+
+
+* COMPONENTS:
+Cx x 0 1 IC={Rinit} 
+R0 pl mn 1000000000000.0 
+Rmem pl mn r={V(x)} 
+
+
+* CONTROL COMMANDS:
+.func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}
+
+.ends

@@ -88,7 +88,8 @@ class ExportParameters:
         magnitudes = ' '.join(params.magnitudes)
         cls.create_folder_if_not_exist(params.model_simulation_folder_name, params.folder_name)
         return(
-            f"wrdata ./{params.folder_name}/{params.file_name}.csv {magnitudes}"
+            f"wrdata ./simulation_results/{params.model_simulation_folder_name.value}/{params.folder_name}/"
+            f"{params.file_name}.csv {magnitudes}"
         )
 
 

@@ -1,9 +1,0 @@
-ERROR: (external)  no graphics interface;
- please check if X-server is running,
- or ngspice is compiled properly (see INSTALL)
-exit: No such file or directory
-Warning: v1: no DC value, transient time 0 value used
-
-real	0m4.130s
-user	0m0.015s
-sys	0m0.000s

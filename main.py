@@ -1,3 +1,5 @@
+import os
+
 from constants import MemristorModels, WaveForms, AnalysisType, ModelsSimulationFolders
 from representations import Subcircuit, Source, Component, SimulationParameters, InputParameters, ModelParameters, \
     DeviceParameters, ExportParameters
@@ -12,7 +14,7 @@ def create_circuits():
     device_params = DeviceParameters('xmem', 0, ['vin', 'gnd', 'l0'], 'memristor')
     simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
     export_folder_name = 'Alpha'
-    export_file_name = 'firstTest'
+    export_file_name = 'secondTest'
     export_params = ExportParameters(
         ModelsSimulationFolders.PERSHIN_SIMULATIONS, export_folder_name, export_file_name, ['vin', 'i(v1)', 'l0']
     )

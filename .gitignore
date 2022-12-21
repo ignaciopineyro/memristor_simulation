@@ -1,4 +1,7 @@
 *.log
+*.csv
+*.cir
+*.txt
 *.Identifier
 __pycache__/*
 *.pyc

@@ -15,6 +15,6 @@ xmem0 vin gnd l0 memristor
 run
 set wr_vecnames
 set wr_singlescale
-wrdata ./Alpha/firstTest.csv vin i(v1) l0
+wrdata ./simulation_results/pershin_simulations/Alpha/secondTest.csv vin i(v1) l0
 .endc
 .end

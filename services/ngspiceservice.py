@@ -15,31 +15,38 @@ class TimeMeasure:
     def execute_with_time_measure(self):
         self.start_time = self.init_python_execution_time_measure()
 
+        # TODO: Linux time measure unresolved issue
+        """
         if platform.system() == 'Linux':
             self.command_line = self.start_measure_linux_execution_time()
+        """
 
-        self.command_line = self.command_line + f'ngspice {self.circuit_file_path}'
-
-        if platform.system() == 'Linux':
-            self.command_line = self.command_line + self.end_measure_linux_execution_time()
-
+        self.command_line = f'ngspice {self.circuit_file_path}'
         print(f'{self.command_line=}')
-        os.system(self.command_line)
 
-        print(f'PYTHON TIME = {self.end_python_execution_time_measure(self.start_time)}')
+        # TODO: Linux time measure unresolved issue
+        """
+        self.command_line = self.command_line + f'ngspice {self.circuit_file_path}'
+        
+        if platform.system() == 'Linux':
+            self.command_line = self.command_line #+ self.end_measure_linux_execution_time()
+        """
+
+        os.system(self.command_line)
+        #os.system('exit')
+
+        print(f'PYTHON TIME = {(self.end_python_execution_time_measure(self.start_time)) * 1000} ms')
 
     @staticmethod
     def start_measure_linux_execution_time():
-        print('\n\nMEASURING TIME IN LINUX\n\n')
-        return 'time ('
+        return 'time -o simulation.log '
 
     @staticmethod
     def end_measure_linux_execution_time():
-        return ' | exit)'
+        return ' | exit'
 
     @staticmethod
     def init_python_execution_time_measure():
-        print('\n\nMEASURING TIME IN PYTHON\n\n')
         return time.time()
 
     @staticmethod

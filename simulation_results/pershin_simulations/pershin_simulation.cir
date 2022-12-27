@@ -16,5 +16,7 @@ run
 set wr_vecnames
 set wr_singlescale
 wrdata ./simulation_results/pershin_simulations/Alpha/secondTest.csv vin i(v1) l0
+quit
+
 .endc
 .end

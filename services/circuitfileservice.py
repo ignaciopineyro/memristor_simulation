@@ -48,7 +48,7 @@ class CircuitFileService:
         file.write('set wr_vecnames\n')
         file.write('set wr_singlescale\n')
         file.write(self.export_parameters.get_export_parameters(self.export_parameters))
-        # TODO: AGREGAR TIEMPO DE SIMULACION EN SPICE
+        # TODO: ADD NGSPICE SIMULATION TIME COMMAND IF EXISTS
 
     def write_circuit_file(self) -> None:
         """
@@ -61,6 +61,7 @@ class CircuitFileService:
             self._write_components(f)
             self._write_analysis_commands(f)
             self._write_control_commands(f)
+            f.write('\nquit\n')
             f.write('\n.endc\n')
             f.write('.end\n')
 

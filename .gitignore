@@ -3,6 +3,7 @@
 *.cir
 *.txt
 *.Identifier
+./simulation_results/*
 __pycache__/*
 *.pyc
 .idea

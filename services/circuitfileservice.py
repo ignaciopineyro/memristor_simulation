@@ -34,12 +34,12 @@ class CircuitFileService:
 
     def _write_components(self, file: TextIO):
         file.write("\n\n* COMPONENTS:\n")
-        file.write(self.input_parameters.get_voltage_source(self.input_parameters))
-        file.write(self.device_parameters.get_device(self.device_parameters))
+        file.write(self.input_parameters.get_voltage_source())
+        file.write(self.device_parameters.get_device())
 
     def _write_analysis_commands(self, file: TextIO):
         file.write("\n\n* ANALYSIS COMMANDS:\n")
-        file.write(self.simulation_parameters.get_analysis(self.simulation_parameters))
+        file.write(self.simulation_parameters.get_analysis())
 
     def _write_control_commands(self, file: TextIO):
         file.write("\n\n* CONTROL COMMANDS:\n")

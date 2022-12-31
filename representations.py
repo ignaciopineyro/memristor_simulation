@@ -19,12 +19,11 @@ class InputParameters:
     theta: float = None
     phase: float = None
 
-    @classmethod
-    def get_voltage_source(cls, params) -> str:
+    def get_voltage_source(self) -> str:
         return(
-            f"V{params.source_number} {params.n_plus} {params.n_minus} {params.wave_form.value} {params.vo}"
-            f" {params.amplitude} {params.frequency} {params.td if params.td else ''}"
-            f" {params.theta if params.theta else ''} {params.phase if params.phase else ''}\n"
+            f"V{self.source_number} {self.n_plus} {self.n_minus} {self.wave_form.value} {self.vo}"
+            f" {self.amplitude} {self.frequency} {self.td if self.td else ''}"
+            f" {self.theta if self.theta else ''} {self.phase if self.phase else ''}\n"
         )
 
 
@@ -35,11 +34,9 @@ class DeviceParameters:
     nodes: List[str]
     subcircuit: str
 
-    @classmethod
-    def get_device(cls, params) -> str:
-        nodes = ' '.join(params.nodes)
+    def get_device(self) -> str:
         return(
-            f"{params.device_name}{params.device_number} {nodes} {params.subcircuit}"
+            f"{self.device_name}{self.device_number} {' '.join(self.nodes)} {self.subcircuit}"
         )
 
 
@@ -62,11 +59,10 @@ class SimulationParameters:
     tmax: float = None
     uic: bool = None
 
-    @classmethod
-    def get_analysis(cls, params) -> str:
+    def get_analysis(self) -> str:
         return(
-            f"{params.analysis_type.value} {params.tstep} {params.tstop} {params.tstart if params.tstart else ''}"
-            f" {params.tmax if params.tmax else ''} {'uic' if params.uic else ''}"
+            f"{self.analysis_type.value} {self.tstep} {self.tstop} {self.tstart if self.tstart else ''}"
+            f" {self.tmax if self.tmax else ''} {'uic' if self.uic else ''}"
         )
 
 
@@ -100,18 +96,12 @@ class Subcircuit:
     nodes: List[str]
     parameters: dict
 
-    @classmethod
-    def get_subcircuit_nodes(cls, subcircuit) -> str:
-        nodes = ''
-        for node in subcircuit.nodes:
-            nodes += f'{node} '
+    def get_subcircuit_nodes(self) -> str:
+        return ' '.join(self.nodes)
 
-        return nodes
-
-    @classmethod
-    def get_subcircuit_parameters(cls, subcircuit) -> str:
+    def get_subcircuit_parameters(self) -> str:
         params = ''
-        for key, value in subcircuit.parameters.items():
+        for key, value in self.parameters.items():
             params += f'{key}={value} '
 
         return params
@@ -130,8 +120,8 @@ class Source:
     n_minus: str
     behaviour_function: str
 
-    @classmethod
-    def get_source_nodes(cls, source) -> str:
+    @staticmethod
+    def get_source_nodes(source) -> str:
         return ' '.join(source.nodes)
 
 

@@ -77,20 +77,21 @@ class ExportParameters:
     file_name: str
     magnitudes: List[str]
 
-    @classmethod
-    def create_folder_if_not_exist(cls, model_simulation_folder_name: ModelsSimulationFolders, folder_name: str):
+    @staticmethod
+    def create_folder_if_not_exist(model_simulation_folder_name: ModelsSimulationFolders, folder_name: str) -> None:
         folder_directory = f'{SIMULATIONS_DIR}/{model_simulation_folder_name.value}/{folder_name}'
         if not os.path.exists(folder_directory):
             os.makedirs(folder_directory)
 
-    @classmethod
-    def get_export_parameters(cls, params) -> str:
-        magnitudes = ' '.join(params.magnitudes)
-        cls.create_folder_if_not_exist(params.model_simulation_folder_name, params.folder_name)
-        return(
-            f"wrdata ./simulation_results/{params.model_simulation_folder_name.value}/{params.folder_name}/"
-            f"{params.file_name}.csv {magnitudes}"
+    def get_export_simulation_file_path(self) -> str:
+        self.create_folder_if_not_exist(self.model_simulation_folder_name, self.folder_name)
+        return (
+            f"./simulation_results/{self.model_simulation_folder_name.value}/{self.folder_name}/"
+            f"{self.file_name}.csv"
         )
+
+    def get_export_magnitudes(self) -> str:
+        return ' '.join(self.magnitudes)
 
 
 @dataclass()

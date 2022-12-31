@@ -1,6 +1,6 @@
 from typing import TextIO
 
-from constants import MemristorModels, SIMULATIONS_DIR, WaveForms, AnalysisType, ModelsSimulationFolders
+from constants import MemristorModels, SIMULATIONS_DIR, ModelsSimulationFolders
 from representations import InputParameters, ModelParameters, SimulationParameters, DeviceParameters, ExportParameters
 
 
@@ -47,7 +47,10 @@ class CircuitFileService:
         file.write('run\n')
         file.write('set wr_vecnames\n')
         file.write('set wr_singlescale\n')
-        file.write(self.export_parameters.get_export_parameters(self.export_parameters))
+        file.write(
+            f'wrdata {self.export_parameters.get_export_simulation_file_path()}'
+            f' {self.export_parameters.get_export_magnitudes()}'
+        )
         # TODO: ADD NGSPICE SIMULATION TIME COMMAND IF EXISTS
 
     def write_circuit_file(self) -> None:

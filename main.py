@@ -1,5 +1,3 @@
-import os
-
 from constants import MemristorModels, WaveForms, AnalysisType, ModelsSimulationFolders
 from representations import Subcircuit, Source, Component, SimulationParameters, InputParameters, ModelParameters, \
     DeviceParameters, ExportParameters

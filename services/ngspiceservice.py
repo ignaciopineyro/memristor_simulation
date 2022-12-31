@@ -44,16 +44,21 @@ class TimeMeasure:
         return time.time() - start_time
 
     def write_python_time_measure_into_csv(self):
-        with open(self.simulation_file_path, "w+") as f:
+        with open(self.simulation_result_file_path, "a") as f:
+            f.write(f'\n# PYTHON EXECUTION TIME = {(self.end_python_execution_time_measure(self.start_time)) * 1000} ms')
 
-        print(f'PYTHON TIME = {(self.end_python_execution_time_measure(self.start_time)) * 1000} ms')
+        print(f'\n# PYTHON EXECUTION TIME = {(self.end_python_execution_time_measure(self.start_time)) * 1000} ms')
 
     def write_linux_time_measure_into_csv(self, linux_time_output):
         decoded_linux_time_output = linux_time_output.decode().split('\n')
         real_time = decoded_linux_time_output[1]
         user_time = decoded_linux_time_output[2]
         sys_time = decoded_linux_time_output[3]
-        print(f'LINUX TIME = {real_time} {user_time} {sys_time}')
+
+        with open(self.simulation_result_file_path, "a") as f:
+            f.write(f'\n# LINUX EXECUTION TIME = {real_time}; {user_time}; {sys_time};')
+
+        print(f'\n# LINUX EXECUTION TIME = {real_time}; {user_time}; {sys_time};')
 
 
 class NGSpiceService:
@@ -64,7 +69,9 @@ class NGSpiceService:
             f'{SIMULATIONS_DIR}/{self.circuit_file_service.get_simulation_file_name(self.model)}'
         )
 
-        self.time_measure = TimeMeasure(self.circuit_file_path, self.circuit_file_service.)
+        self.time_measure = TimeMeasure(
+            self.circuit_file_path, self.circuit_file_service.export_parameters.get_export_simulation_file_path()
+        )
 
     def run_simulation(self):
         self.time_measure.execute_with_time_measure()

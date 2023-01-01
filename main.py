@@ -6,7 +6,7 @@ from services.ngspiceservice import NGSpiceService
 from services.subcircuitfileservice import SubcircuitFileService
 
 
-def create_circuits():
+def create_circuit_file_service():
     input_params = InputParameters(1, 'vin', 'gnd', WaveForms.SIN, 0, 5, 1)
     model_params = ModelParameters(1e3, 10e3, 5e3, 0, 1e5, 4.6)
     device_params = DeviceParameters('xmem', 0, ['vin', 'gnd', 'l0'], 'memristor')
@@ -24,7 +24,7 @@ def create_circuits():
     return circuit_file_service
 
 
-def create_subcircuits():
+def create_subcircuit_file_service():
     pershin_params = {'Ron': 1e3, 'Roff': 10e3, 'Rinit': 5e3, 'alpha': 0, 'beta': 1E5, 'Vt': 4.6}
     pershin_subckt = Subcircuit('memristor', ['pl', 'mn', 'x'], pershin_params)
     source_bx = Source(
@@ -36,22 +36,22 @@ def create_subcircuits():
     rmem = Component(name='Rmem', n_plus='pl', n_minus='mn', extra_data='r={V(x)}')
     control_cmd = '.func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}'
 
-    subcircuit_service = SubcircuitFileService(
+    subcircuit_file_service = SubcircuitFileService(
         model=MemristorModels.PERSHIN, subcircuits=[pershin_subckt], sources=[source_bx],
         components=[capacitor, resistor, rmem], control_commands=[control_cmd]
     )
 
-    return subcircuit_service
+    return subcircuit_file_service
 
 
 def main():
-    subcircuit = create_subcircuits()
-    circuit = create_circuits()
+    subcircuit_file_service = create_subcircuit_file_service()
+    circuit_file_service = create_circuit_file_service()
 
-    subcircuit.write_model_subcircuit()
-    circuit.write_circuit_file()
+    subcircuit_file_service.write_subcircuit_file()
+    circuit_file_service.write_circuit_file()
 
-    ngspice_service = NGSpiceService(circuit)
+    ngspice_service = NGSpiceService(circuit_file_service)
     ngspice_service.run_single_simulation()
 
 

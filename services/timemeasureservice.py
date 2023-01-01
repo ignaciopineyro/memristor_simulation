@@ -2,18 +2,18 @@ import subprocess
 import sys
 import time
 
-from services.filemanagementservice import FileManagementService
+from services.directoriesmanagementservice import DirectoriesManagementService
 
 
 class TimeMeasureService:
     def __init__(self, circuit_file_service=None):
-        self.file_management_service = FileManagementService(circuit_file_service=circuit_file_service)
+        self.directories_management_service = DirectoriesManagementService(circuit_file_service=circuit_file_service)
 
         self.start_time = None
         self.command_line = None
-        self.circuit_file_path = self.file_management_service.get_circuit_file_path()
-        self.simulation_result_file_path = self.file_management_service.get_export_simulation_file_path()
-        self.simulation_log_path = self.file_management_service.get_simulation_log_file_path()
+        self.circuit_file_path = self.directories_management_service.get_circuit_file_path()
+        self.simulation_result_file_path = self.directories_management_service.get_export_simulation_file_path()
+        self.simulation_log_path = self.directories_management_service.get_simulation_log_file_path()
         self.execute_command = ''
 
     @staticmethod

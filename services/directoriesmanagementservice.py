@@ -3,7 +3,7 @@ import os
 from constants import SIMULATIONS_DIR, MODELS_DIR, ModelsSimulationFolders, MemristorModels
 
 
-class FileManagementService:
+class DirectoriesManagementService:
     def __init__(self, model: MemristorModels = None, circuit_file_service=None):
         self.model = model
 

@@ -2,7 +2,7 @@ from typing import TextIO
 
 from constants import MemristorModels
 from representations import InputParameters, ModelParameters, SimulationParameters, DeviceParameters, ExportParameters
-from services.filemanagementservice import FileManagementService
+from services.directoriesmanagementservice import DirectoriesManagementService
 
 
 class CircuitFileService:
@@ -17,10 +17,10 @@ class CircuitFileService:
         self.simulation_parameters = simulation_parameters
         self.export_parameters = export_parameters
 
-        self.file_management_service = FileManagementService(circuit_file_service=self)
-        self.circuit_file_path = self.file_management_service.get_circuit_file_path()
-        self.model_dir = self.file_management_service.get_model_dir()
-        self.export_simulation_file_path = self.file_management_service.get_export_simulation_file_path()
+        self.directories_management_service = DirectoriesManagementService(circuit_file_service=self)
+        self.circuit_file_path = self.directories_management_service.get_circuit_file_path()
+        self.model_dir = self.directories_management_service.get_model_dir()
+        self.export_simulation_file_path = self.directories_management_service.get_export_simulation_file_path()
 
     def _write_dependencies(self, f: TextIO) -> None:
         f.write("\n\n* DEPENDENCIES:\n")

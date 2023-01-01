@@ -2,7 +2,7 @@ from typing import TextIO, List
 
 from constants import MemristorModels
 from representations import Subcircuit, ModelDependence, Source, Component
-from services.filemanagementservice import FileManagementService
+from services.directoriesmanagementservice import DirectoriesManagementService
 
 
 class SubcircuitFileService:
@@ -18,15 +18,16 @@ class SubcircuitFileService:
         self.components = components
         self.control_commands = control_commands
 
-        self.file_management_service = FileManagementService(model=self.model)
-        self.model_file_path = self.file_management_service.get_model_dir()
+        self.directories_management_service = DirectoriesManagementService(model=self.model)
+        self.model_file_path = self.directories_management_service.get_model_dir()
 
     def _write_subcircuit_parameters(self, file: TextIO) -> None:
         for subcircuit in self.subcircuits:
             file.write('\n\n* SUBCIRCUITS:\n')
             file.write(
                 f'.subckt {subcircuit.name} {subcircuit.get_subcircuit_nodes()}PARAMS: '
-                f'{subcircuit.get_subcircuit_parameters()}\n')
+                f'{subcircuit.get_subcircuit_parameters()}\n'
+            )
 
     def _write_model_dependencies(self, file: TextIO) -> None:
         file.write('\n\n* SPICE DEPENDENCIES:\n')
@@ -48,7 +49,7 @@ class SubcircuitFileService:
         for control_command in self.control_commands:
             file.write(f'{control_command}\n')
 
-    def write_model_subcircuit(self) -> None:
+    def write_subcircuit_file(self) -> None:
         """
         Writes the .sub subcircuit file to include on circuit's file. The file is saved in models/
         :return: None

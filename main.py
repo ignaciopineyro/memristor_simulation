@@ -51,8 +51,8 @@ def main():
     subcircuit.write_model_subcircuit()
     circuit.write_circuit_file()
 
-    ngspice_service = NGSpiceService(circuit, MemristorModels.PERSHIN)
-    ngspice_service.run_simulation()
+    ngspice_service = NGSpiceService(circuit)
+    ngspice_service.run_single_simulation()
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 * MEMRISTOR CIRCUIT - MODEL pershin.sub
 
 * DEPENDENCIES:
-.include ../../models/pershin.sub
+.include /home/ignaciopineyro/memristor_simulation/models/pershin.sub
 
 * COMPONENTS:
 V1 vin gnd sin 0 5 1   

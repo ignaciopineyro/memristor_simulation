@@ -1,7 +1,8 @@
 from typing import TextIO, List
 
-from constants import MODELS_DIR, MemristorModels
+from constants import MemristorModels
 from representations import Subcircuit, ModelDependence, Source, Component
+from services.filemanagementservice import FileManagementService
 
 
 class SubcircuitFileService:
@@ -11,41 +12,43 @@ class SubcircuitFileService:
             control_commands: List[str] = None
     ):
         self.model = model
-        self.model_file_path = f'{MODELS_DIR}/{self.model.value}'
         self.subcircuits = subcircuits
         self.model_dependencies = model_dependencies
         self.sources = sources
         self.components = components
         self.control_commands = control_commands
 
-    def _write_subcircuit_parameters(self, file: TextIO):
+        self.file_management_service = FileManagementService(model=self.model)
+        self.model_file_path = self.file_management_service.get_model_file_path()
+
+    def _write_subcircuit_parameters(self, file: TextIO) -> None:
         for subcircuit in self.subcircuits:
             file.write('\n\n* SUBCIRCUITS:\n')
             file.write(
                 f'.subckt {subcircuit.name} {subcircuit.get_subcircuit_nodes()}PARAMS: '
                 f'{subcircuit.get_subcircuit_parameters()}\n')
 
-    def _write_model_dependencies(self, file: TextIO):
+    def _write_model_dependencies(self, file: TextIO) -> None:
         file.write('\n\n* SPICE DEPENDENCIES:\n')
         for model_dependence in self.model_dependencies:
             file.write(f'.model {model_dependence.name} {model_dependence.model}')
 
-    def _write_sources(self, file: TextIO):
+    def _write_sources(self, file: TextIO) -> None:
         file.write('\n\n* SOURCES:\n')
         for source in self.sources:
             file.write(f'{source.name} {source.n_plus} {source.n_minus} {source.behaviour_function}\n')
 
-    def _write_components(self, file: TextIO):
+    def _write_components(self, file: TextIO) -> None:
         file.write("\n\n* COMPONENTS:\n")
         for component in self.components:
             file.write(f'{component.get_attributes_as_string()}\n')
 
-    def _write_control_commands(self, file: TextIO):
+    def _write_control_commands(self, file: TextIO) -> None:
         file.write("\n\n* CONTROL COMMANDS:\n")
         for control_command in self.control_commands:
             file.write(f'{control_command}\n')
 
-    def write_model_subcircuit(self):
+    def write_model_subcircuit(self) -> None:
         """
         Writes the .sub subcircuit file to include on circuit's file. The file is saved in models/
         :return: None

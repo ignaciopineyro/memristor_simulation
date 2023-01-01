@@ -1,9 +1,8 @@
 from dataclasses import fields
-import os
 from dataclasses import dataclass
 from typing import List
 
-from constants import WaveForms, AnalysisType, SIMULATIONS_DIR, ModelsSimulationFolders, SpiceDevices, SpiceModel
+from constants import WaveForms, AnalysisType, ModelsSimulationFolders, SpiceDevices, SpiceModel
 
 
 @dataclass()
@@ -72,19 +71,6 @@ class ExportParameters:
     folder_name: str
     file_name: str
     magnitudes: List[str]
-
-    @staticmethod
-    def create_folder_if_not_exist(model_simulation_folder_name: ModelsSimulationFolders, folder_name: str) -> None:
-        folder_directory = f'{SIMULATIONS_DIR}/{model_simulation_folder_name.value}/{folder_name}'
-        if not os.path.exists(folder_directory):
-            os.makedirs(folder_directory)
-
-    def get_export_simulation_file_path(self) -> str:
-        self.create_folder_if_not_exist(self.model_simulation_folder_name, self.folder_name)
-        return (
-            f"./simulation_results/{self.model_simulation_folder_name.value}/{self.folder_name}/"
-            f"{self.file_name}.csv"
-        )
 
     def get_export_magnitudes(self) -> str:
         return ' '.join(self.magnitudes)

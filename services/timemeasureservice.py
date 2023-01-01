@@ -13,7 +13,7 @@ class TimeMeasureService:
         self.command_line = None
         self.circuit_file_path = self.file_management_service.get_circuit_file_path()
         self.simulation_result_file_path = self.file_management_service.get_export_simulation_file_path()
-        self.simulation_log_path = self.file_management_service.get_simulation_log_path()
+        self.simulation_log_path = self.file_management_service.get_simulation_log_file_path()
         self.execute_command = ''
 
     @staticmethod

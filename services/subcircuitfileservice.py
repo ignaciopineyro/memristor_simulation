@@ -19,7 +19,7 @@ class SubcircuitFileService:
         self.control_commands = control_commands
 
         self.file_management_service = FileManagementService(model=self.model)
-        self.model_file_path = self.file_management_service.get_model_file_path()
+        self.model_file_path = self.file_management_service.get_model_dir()
 
     def _write_subcircuit_parameters(self, file: TextIO) -> None:
         for subcircuit in self.subcircuits:

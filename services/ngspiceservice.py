@@ -7,9 +7,9 @@ class NGSpiceService:
         self.circuit_file_service = circuit_file_service
         self.time_measure_service = TimeMeasureService(self.circuit_file_service)
 
-    def run_single_simulation(self) -> None:
+    def run_single_simulation(self, amount_iterations: int = None) -> None:
         # TODO: Agregar argumento para correr reiterativamente la simulacion para obtener valor medio de tiempos de sim
-        self.time_measure_service.execute_with_time_measure()
+        self.time_measure_service.execute_with_time_measure(amount_iterations)
 
     def run_batch_simulations(self) -> None:
         # TODO: Correr simulaciones con listas de argumentos

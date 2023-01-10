@@ -130,11 +130,17 @@ class Component:
 
 @dataclass()
 class TimeMeasure:
+    start_time: float = None
     python_execution_time: float = None
     linux_real_execution_time: float = None
     linux_user_execution_time: float = None
     linux_sys_execution_time: float = None
-    python_average_execution_time: float = None
-    linux_average_real_execution_time: float = None
-    linux_average_user_execution_time: float = None
-    linux_average_sys_execution_time: float = None
+
+
+@dataclass()
+class AverageTimeMeasure:
+    amount_iterations: int = None
+    average_python_execution_time: float = None
+    average_linux_real_execution_time: float = None
+    average_linux_user_execution_time: float = None
+    average_linux_sys_execution_time: float = None

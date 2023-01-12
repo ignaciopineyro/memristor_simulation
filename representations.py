@@ -1,5 +1,4 @@
-from dataclasses import fields
-from dataclasses import dataclass
+from dataclasses import fields, dataclass
 from typing import List
 
 from constants import WaveForms, AnalysisType, ModelsSimulationFolders, SpiceDevices, SpiceModel
@@ -127,3 +126,21 @@ class Component:
                 attr_str += f'{getattr(self, field.name) } '
 
         return attr_str
+
+
+@dataclass()
+class TimeMeasure:
+    start_time: float = None
+    python_execution_time: float = None
+    linux_real_execution_time: float = None
+    linux_user_execution_time: float = None
+    linux_sys_execution_time: float = None
+
+
+@dataclass()
+class AverageTimeMeasure:
+    amount_iterations: int = None
+    average_python_execution_time: float = None
+    average_linux_real_execution_time: float = None
+    average_linux_user_execution_time: float = None
+    average_linux_sys_execution_time: float = None

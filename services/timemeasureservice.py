@@ -19,7 +19,7 @@ class TimeMeasureService:
         self.simulation_log_path = self.directories_management_service.get_simulation_log_file_path()
         self.execute_command = ''
 
-    def execute_with_time_measure(self) -> TimeMeasure:
+    def execute_with_time_measure(self, enable_print_time_measure: bool = True) -> TimeMeasure:
         time_measure = TimeMeasure(start_time=self.init_python_execution_time_measure())
 
         if self._is_os_linux():
@@ -41,7 +41,9 @@ class TimeMeasureService:
             time_measure = self.write_python_time_measure_into_csv(time_measure=time_measure)
 
         self.write_simulation_log(simulation_log=simulation_log.decode(), time_measure=time_measure)
-        self.print_time_measure(time_measure)
+
+        if enable_print_time_measure:
+            self.print_time_measure(time_measure)
 
         return time_measure
 
@@ -125,10 +127,19 @@ class TimeMeasureService:
 
     @staticmethod
     def print_time_measure(time_measure: TimeMeasure):
-        # TODO: Si amount_iterations > 1 que printee el Average
         print(f'\n{"#" * 30}')
         for k, v in asdict(time_measure).items():
             if k != 'start_time' and v is not None:
+                print(f'# {k} = {str(v)} ms')
+        print(f'\n')
+
+    @staticmethod
+    def print_average_time_measure(average_time_measure: AverageTimeMeasure):
+        print(f'\n{"#" * 30}')
+        for k, v in asdict(average_time_measure).items():
+            if k == 'amount_iterations':
+                print(f'# {k} = {str(v)}')
+            elif k != 'amount_iterations' and v is not None:
                 print(f'# {k} = {str(v)} ms')
         print(f'\n')
 

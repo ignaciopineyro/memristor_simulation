@@ -52,7 +52,7 @@ def main():
     circuit_file_service.write_circuit_file()
 
     ngspice_service = NGSpiceService(circuit_file_service)
-    ngspice_service.run_single_simulation(100)
+    ngspice_service.run_single_circuit_simulation()
 
 
 if __name__ == "__main__":

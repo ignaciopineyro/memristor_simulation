@@ -7,7 +7,7 @@ class NGSpiceService:
         self.circuit_file_service = circuit_file_service
         self.time_measure_service = TimeMeasureService(self.circuit_file_service)
 
-    def run_single_simulation(self, amount_iterations: int = 1) -> None:
+    def run_single_circuit_simulation(self, amount_iterations: int = 1) -> None:
         enable_print_time_measure = True if amount_iterations == 1 else False
         time_measures = []
 

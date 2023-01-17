@@ -1,7 +1,7 @@
 * MEMRISTOR SUBCIRCUIT - MODEL pershin.sub
 
 * SUBCIRCUITS:
-.subckt memristor pl mn xPARAMS: Ron=1000.0 Roff=10000.0 Rinit=5000.0 alpha=0 beta=100000.0 Vt=4.6 
+.subckt memristor pl mn xPARAMS: alpha=0 beta=500000.0 Rinit=5000.0 Roff=10000.0 Ron=1000.0 Vt=4.6 
 
 
 * SOURCES:

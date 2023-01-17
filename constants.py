@@ -7,16 +7,30 @@ MODELS_DIR = f'{PATH}/models'
 SIMULATIONS_DIR = f'{PATH}/simulation_results'
 
 
+class MemristorModels(Enum):
+    PERSHIN = 'pershin.sub'
+    PERSHIN_VOURKAS = 'pershin_vourkas.sub'
+    BIOLEK = 'biolek.sub'
+
+
 class ModelsSimulationFolders(Enum):
     PERSHIN_SIMULATIONS = 'pershin_simulations'
     PERSHIN_VOURKAS_SIMULATIONS = 'pershin_vourkas_simulations'
     BIOLEK_SIMULATIONS = 'biolek_simulations'
 
+    @classmethod
+    def get_simulation_folder_by_model(cls, model: MemristorModels):
+        if model == MemristorModels.PERSHIN:
+            return cls.PERSHIN_SIMULATIONS
 
-class MemristorModels(Enum):
-    PERSHIN = 'pershin.sub'
-    PERSHIN_VOURKAS = 'pershin_vourkas.sub'
-    BIOLEK = 'biolek.sub'
+        elif model == MemristorModels.PERSHIN_VOURKAS:
+            return cls.PERSHIN_VOURKAS_SIMULATIONS
+
+        elif model == MemristorModels.BIOLEK:
+            return cls.BIOLEK_SIMULATIONS
+
+        else:
+            raise InvalidMemristorModel()
 
 
 class SimulationFileNames(Enum):
@@ -50,3 +64,7 @@ class TimeMeasures(Enum):
     LINUX_AVERAGE_REAL_EXECUTION_TIME = 'LINUX_AVERAGE_REAL_EXECUTION_TIME'
     LINUX_AVERAGE_USER_EXECUTION_TIME = 'LINUX_AVERAGE_USER_EXECUTION_TIME'
     LINUX_AVERAGE_SYS_EXECUTION_TIME = 'LINUX_AVERAGE_SYS_EXECUTION_TIME'
+
+
+class InvalidMemristorModel(Exception):
+    pass

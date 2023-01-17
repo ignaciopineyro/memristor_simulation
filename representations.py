@@ -1,4 +1,4 @@
-from dataclasses import fields, dataclass
+from dataclasses import fields, dataclass, asdict
 from typing import List
 
 from constants import WaveForms, AnalysisType, ModelsSimulationFolders, SpiceDevices, SpiceModel
@@ -42,10 +42,17 @@ class DeviceParameters:
 class ModelParameters:
     alpha: float
     beta: float
-    rinit: float
-    roff: float
-    ron: float
-    vt: float
+    Rinit: float
+    Roff: float
+    Ron: float
+    Vt: float
+
+    def get_parameters_as_string(self):
+        params = ''
+        for k, v in asdict(self).items():
+            params += f'{k}={v} '
+
+        return params
 
 
 @dataclass()
@@ -79,17 +86,10 @@ class ExportParameters:
 class Subcircuit:
     name: str
     nodes: List[str]
-    parameters: dict
+    parameters: ModelParameters
 
-    def get_subcircuit_nodes(self) -> str:
+    def get_nodes_as_string(self) -> str:
         return ' '.join(self.nodes)
-
-    def get_subcircuit_parameters(self) -> str:
-        params = ''
-        for key, value in self.parameters.items():
-            params += f'{key}={value} '
-
-        return params
 
 
 @dataclass()
@@ -117,7 +117,7 @@ class Component:
     n_minus: str
     value: float = None
     extra_data: str = None
-    model: str = None
+    model: SpiceDevices = None
 
     def get_attributes_as_string(self):
         attr_str = ''

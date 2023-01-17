@@ -25,8 +25,8 @@ class SubcircuitFileService:
         for subcircuit in self.subcircuits:
             file.write('\n\n* SUBCIRCUITS:\n')
             file.write(
-                f'.subckt {subcircuit.name} {subcircuit.get_subcircuit_nodes()}PARAMS: '
-                f'{subcircuit.get_subcircuit_parameters()}\n'
+                f'.subckt {subcircuit.name} {subcircuit.get_nodes_as_string()}PARAMS: '
+                f'{subcircuit.parameters.get_parameters_as_string()}\n'
             )
 
     def _write_model_dependencies(self, file: TextIO) -> None:

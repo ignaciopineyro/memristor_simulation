@@ -1,6 +1,7 @@
 *.log
 *.csv
 *.cir
+*.sub
 *.txt
 *.Identifier
 ./simulation_results/*

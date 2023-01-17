@@ -1,18 +1,16 @@
 from typing import TextIO
 
 from constants import MemristorModels
-from representations import InputParameters, ModelParameters, SimulationParameters, DeviceParameters, ExportParameters
+from representations import InputParameters, SimulationParameters, DeviceParameters, ExportParameters
 from services.directoriesmanagementservice import DirectoriesManagementService
 
 
 class CircuitFileService:
-    def __init__(self, model: MemristorModels, input_parameters: InputParameters, model_parameters: ModelParameters,
-                 device_parameters: DeviceParameters, simulation_parameters: SimulationParameters,
-                 export_parameters: ExportParameters):
+    def __init__(self, model: MemristorModels, input_parameters: InputParameters, device_parameters: DeviceParameters,
+                 simulation_parameters: SimulationParameters, export_parameters: ExportParameters):
 
         self.model = model
         self.input_parameters = input_parameters
-        self.model_parameters = model_parameters
         self.device_parameters = device_parameters
         self.simulation_parameters = simulation_parameters
         self.export_parameters = export_parameters

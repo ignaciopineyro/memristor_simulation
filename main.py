@@ -1,31 +1,101 @@
-from constants import MemristorModels, WaveForms, AnalysisType, ModelsSimulationFolders
+from typing import List
+
+from constants import MemristorModels, WaveForms, AnalysisType, ModelsSimulationFolders, SpiceDevices, SpiceModel
 from representations import Subcircuit, Source, Component, SimulationParameters, InputParameters, ModelParameters, \
-    DeviceParameters, ExportParameters
+    DeviceParameters, ExportParameters, ModelDependence
 from services.circuitfileservice import CircuitFileService
 from services.ngspiceservice import NGSpiceService
 from services.subcircuitfileservice import SubcircuitFileService
 
 
-def create_circuit_file_service():
+def _create_pershin_default_components() -> List[Component]:
+    capacitor = Component(name='Cx', n_plus='x', n_minus='0', value=1, extra_data='IC={Rinit}')
+    resistor = Component(name='R0', n_plus='pl', n_minus='mn', value=1e12)
+    rmem = Component(name='Rmem', n_plus='pl', n_minus='mn', extra_data='r={V(x)}')
+
+    return [capacitor, resistor, rmem]
+
+
+def _create_pershin_vourkas_default_components() -> List[Component]:
+    capacitor = Component(name='Cx', n_plus='x', n_minus='0', value=1, extra_data='IC={Rinit}')
+    rmem = Component(name='Rmem', n_plus='pl', n_minus='mn', extra_data='r={V(x)}')
+    diode_1 = Component(name='d1', n_plus='aux1', n_minus='x', model=SpiceDevices.DIODE)
+    diode_2 = Component(name='d2', n_plus='x', n_minus='aux2', model=SpiceDevices.DIODE)
+    v_1 = Component(name='v1', n_plus='aux1', n_minus='0', extra_data='{Ron}')
+    v_2 = Component(name='v2', n_plus='aux2', n_minus='0', extra_data='{Roff}')
+    raux = Component(name='Raux', n_plus='pl', n_minus='mn', value=1e12)
+
+    return [capacitor, rmem, diode_1, diode_2, v_1, v_2, raux]
+
+
+def create_di_francesco_variable_amplitude_circuit_file_service(model: MemristorModels) -> List[CircuitFileService]:
+    circuit_file_service = []
+    for amplitude in [0.7, 1, 2, 4]:
+        input_params = InputParameters(1, 'vin', 'gnd', WaveForms.SIN, 0, amplitude, 1)
+        device_params = DeviceParameters('xmem', 0, ['vin', 'gnd', 'l0'], 'memristor')
+        simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
+        export_folder_name = 'di_francesco_vin_amplitude'
+        export_file_name = f'vin_{amplitude}'
+        export_params = ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(model), export_folder_name, export_file_name,
+            ['vin', 'i(v1)', 'l0']
+        )
+
+        circuit_file_service.append(
+            CircuitFileService(model, input_params, device_params, simulation_params, export_params)
+        )
+
+    return circuit_file_service
+
+
+def create_di_francesco_variable_amplitude_subcircuit_file_service(model: MemristorModels) -> SubcircuitFileService:
+    # TODO: Cambiar alpha
+    model_params = ModelParameters(1, 5e5, 200e3, 200e3, 2e3, 0.6)
+    pershin_subckt = Subcircuit('memristor', ['pl', 'mn', 'x'], model_params)
+    source_bx = Source(
+        name='Bx', n_plus='0', n_minus='x', behaviour_function="I=\'(f1(V(pl,mn))>0) && (V(x)<Roff) ? {f1(V(pl,mn))}: "
+                                                               "(f1(V(pl,mn))<0) && (V(x)>Ron) ? {f1(V(pl,mn))}: {0}\'"
+    )
+
+    model_dependencies = None
+    default_components = None
+
+    if model == MemristorModels.PERSHIN:
+        default_components = _create_pershin_default_components()
+
+    elif model == MemristorModels.PERSHIN_VOURKAS:
+        default_components = _create_pershin_vourkas_default_components()
+        model_dependencies = ModelDependence(name=SpiceDevices.DIODE, model=SpiceModel.DIODE)
+
+    control_cmd = '.func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}'
+
+    subcircuit_file_service = SubcircuitFileService(
+        model=MemristorModels.PERSHIN, subcircuits=[pershin_subckt], sources=[source_bx],
+        model_dependencies=[model_dependencies], components=default_components, control_commands=[control_cmd],
+    )
+
+    return subcircuit_file_service
+
+
+def create_test_pershin_circuit_file_service() -> CircuitFileService:
     input_params = InputParameters(1, 'vin', 'gnd', WaveForms.SIN, 0, 5, 1)
-    model_params = ModelParameters(1e3, 10e3, 5e3, 0, 1e5, 4.6)
     device_params = DeviceParameters('xmem', 0, ['vin', 'gnd', 'l0'], 'memristor')
     simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
-    export_folder_name = 'Alpha'
-    export_file_name = 'secondTest'
+    export_folder_name = 'test_parameter'
+    export_file_name = 'testSimulation'
     export_params = ExportParameters(
         ModelsSimulationFolders.PERSHIN_SIMULATIONS, export_folder_name, export_file_name, ['vin', 'i(v1)', 'l0']
     )
 
     circuit_file_service = CircuitFileService(
-        MemristorModels.PERSHIN, input_params, model_params, device_params, simulation_params, export_params
+        MemristorModels.PERSHIN, input_params, device_params, simulation_params, export_params
     )
 
     return circuit_file_service
 
 
-def create_subcircuit_file_service():
-    pershin_params = {'Ron': 1e3, 'Roff': 10e3, 'Rinit': 5e3, 'alpha': 0, 'beta': 1E5, 'Vt': 4.6}
+def create_test_pershin_subcircuit_file_service() -> SubcircuitFileService:
+    pershin_params = ModelParameters(0, 5e5, 5e3, 10e3, 1e3, 4.6)
     pershin_subckt = Subcircuit('memristor', ['pl', 'mn', 'x'], pershin_params)
     source_bx = Source(
         name='Bx', n_plus='0', n_minus='x', behaviour_function='I=\'(f1(V(pl,mn))>0) && (V(x)<Roff) ? {f1(V(pl,mn))}: '
@@ -45,11 +115,18 @@ def create_subcircuit_file_service():
 
 
 def main():
-    subcircuit_file_service = create_subcircuit_file_service()
-    circuit_file_service = create_circuit_file_service()
+    # subcircuit_file_service = [create_test_pershin_subcircuit_file_service()]
+    # circuit_file_service = [create_test_pershin_circuit_file_service()]
+    subcircuit_file_service = [create_di_francesco_variable_amplitude_subcircuit_file_service(MemristorModels.PERSHIN)]
+    circuit_file_service = create_di_francesco_variable_amplitude_circuit_file_service(MemristorModels.PERSHIN)
 
-    subcircuit_file_service.write_subcircuit_file()
-    circuit_file_service.write_circuit_file()
+    for sfs in subcircuit_file_service:
+        sfs.write_subcircuit_file()
+
+    for cfs in circuit_file_service:
+        cfs.write_circuit_file()
+
+    # TODO: Simular varios cir con un sub
 
     ngspice_service = NGSpiceService(circuit_file_service)
     ngspice_service.run_single_circuit_simulation()

@@ -1,6 +1,7 @@
 from typing import List
 
-from constants import MemristorModels, WaveForms, AnalysisType, ModelsSimulationFolders, SpiceDevices, SpiceModel
+from constants import MemristorModels, WaveForms, AnalysisType, ModelsSimulationFolders, SpiceDevices, SpiceModel, \
+    SimulationTemplate, InvalidSimulationTemplate
 from representations import Subcircuit, Source, Component, SimulationParameters, InputParameters, ModelParameters, \
     DeviceParameters, ExportParameters, ModelDependence
 from services.circuitfileservice import CircuitFileService
@@ -48,10 +49,10 @@ def create_di_francesco_variable_amplitude_circuit_file_service(model: Memristor
     return circuit_file_service
 
 
-def create_di_francesco_variable_amplitude_subcircuit_file_service(model: MemristorModels) -> SubcircuitFileService:
-    # TODO: Cambiar alpha
-    model_params = ModelParameters(1, 5e5, 200e3, 200e3, 2e3, 0.6)
-    pershin_subckt = Subcircuit('memristor', ['pl', 'mn', 'x'], model_params)
+def create_di_francesco_subcircuit_file_service(
+        model: MemristorModels, model_parameters: ModelParameters
+) -> List[SubcircuitFileService]:
+    pershin_subckt = Subcircuit('memristor', ['pl', 'mn', 'x'], model_parameters)
     source_bx = Source(
         name='Bx', n_plus='0', n_minus='x', behaviour_function="I=\'(f1(V(pl,mn))>0) && (V(x)<Roff) ? {f1(V(pl,mn))}: "
                                                                "(f1(V(pl,mn))<0) && (V(x)>Ron) ? {f1(V(pl,mn))}: {0}\'"
@@ -65,19 +66,19 @@ def create_di_francesco_variable_amplitude_subcircuit_file_service(model: Memris
 
     elif model == MemristorModels.PERSHIN_VOURKAS:
         default_components = _create_pershin_vourkas_default_components()
-        model_dependencies = ModelDependence(name=SpiceDevices.DIODE, model=SpiceModel.DIODE)
+        model_dependencies = [ModelDependence(name=SpiceDevices.DIODE, model=SpiceModel.DIODE)]
 
     control_cmd = '.func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}'
 
-    subcircuit_file_service = SubcircuitFileService(
-        model=MemristorModels.PERSHIN, subcircuits=[pershin_subckt], sources=[source_bx],
-        model_dependencies=[model_dependencies], components=default_components, control_commands=[control_cmd],
-    )
+    return [
+        SubcircuitFileService(
+            model=MemristorModels.PERSHIN, subcircuits=[pershin_subckt], sources=[source_bx],
+            model_dependencies=model_dependencies, components=default_components, control_commands=[control_cmd],
+        )
+    ]
 
-    return subcircuit_file_service
 
-
-def create_test_pershin_circuit_file_service() -> CircuitFileService:
+def create_test_pershin_circuit_file_service() -> List[CircuitFileService]:
     input_params = InputParameters(1, 'vin', 'gnd', WaveForms.SIN, 0, 5, 1)
     device_params = DeviceParameters('xmem', 0, ['vin', 'gnd', 'l0'], 'memristor')
     simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
@@ -87,14 +88,12 @@ def create_test_pershin_circuit_file_service() -> CircuitFileService:
         ModelsSimulationFolders.PERSHIN_SIMULATIONS, export_folder_name, export_file_name, ['vin', 'i(v1)', 'l0']
     )
 
-    circuit_file_service = CircuitFileService(
-        MemristorModels.PERSHIN, input_params, device_params, simulation_params, export_params
-    )
-
-    return circuit_file_service
+    return [
+        CircuitFileService(MemristorModels.PERSHIN, input_params, device_params, simulation_params, export_params)
+    ]
 
 
-def create_test_pershin_subcircuit_file_service() -> SubcircuitFileService:
+def create_test_pershin_subcircuit_file_service() -> List[SubcircuitFileService]:
     pershin_params = ModelParameters(0, 5e5, 5e3, 10e3, 1e3, 4.6)
     pershin_subckt = Subcircuit('memristor', ['pl', 'mn', 'x'], pershin_params)
     source_bx = Source(
@@ -106,31 +105,38 @@ def create_test_pershin_subcircuit_file_service() -> SubcircuitFileService:
     rmem = Component(name='Rmem', n_plus='pl', n_minus='mn', extra_data='r={V(x)}')
     control_cmd = '.func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}'
 
-    subcircuit_file_service = SubcircuitFileService(
-        model=MemristorModels.PERSHIN, subcircuits=[pershin_subckt], sources=[source_bx],
-        components=[capacitor, resistor, rmem], control_commands=[control_cmd]
-    )
+    return [
+        SubcircuitFileService(
+            model=MemristorModels.PERSHIN, subcircuits=[pershin_subckt], sources=[source_bx],
+            components=[capacitor, resistor, rmem], control_commands=[control_cmd]
+        )
+    ]
 
-    return subcircuit_file_service
 
+def main(simulation_template: SimulationTemplate = SimulationTemplate.DEFAULT):
+    if simulation_template == SimulationTemplate.DEFAULT:
+        subcircuit_file_service = create_test_pershin_subcircuit_file_service()
+        circuit_file_service = create_test_pershin_circuit_file_service()
 
-def main():
-    # subcircuit_file_service = [create_test_pershin_subcircuit_file_service()]
-    # circuit_file_service = [create_test_pershin_circuit_file_service()]
-    subcircuit_file_service = [create_di_francesco_variable_amplitude_subcircuit_file_service(MemristorModels.PERSHIN)]
-    circuit_file_service = create_di_francesco_variable_amplitude_circuit_file_service(MemristorModels.PERSHIN)
+    elif simulation_template == SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE:
+        model_parameters = ModelParameters(0, 5e5, 200e3, 200e3, 2e3, 0.6)
+        subcircuit_file_service = create_di_francesco_subcircuit_file_service(MemristorModels.PERSHIN, model_parameters)
+        circuit_file_service = create_di_francesco_variable_amplitude_circuit_file_service(MemristorModels.PERSHIN)
+
+    elif simulation_template == SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA:
+        pass
+
+    else:
+        raise InvalidSimulationTemplate()
 
     for sfs in subcircuit_file_service:
-        sfs.write_subcircuit_file()
+        for cfs in circuit_file_service:
+            sfs.write_subcircuit_file()
+            cfs.write_circuit_file()
 
-    for cfs in circuit_file_service:
-        cfs.write_circuit_file()
-
-    # TODO: Simular varios cir con un sub
-
-    ngspice_service = NGSpiceService(circuit_file_service)
-    ngspice_service.run_single_circuit_simulation()
+            ngspice_service = NGSpiceService(cfs)
+            ngspice_service.run_single_circuit_simulation()
 
 
 if __name__ == "__main__":
-    main()
+    main(SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE)

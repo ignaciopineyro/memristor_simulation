@@ -66,5 +66,15 @@ class TimeMeasures(Enum):
     LINUX_AVERAGE_SYS_EXECUTION_TIME = 'LINUX_AVERAGE_SYS_EXECUTION_TIME'
 
 
+class SimulationTemplate(Enum):
+    DEFAULT = 'DEFAULT'
+    DI_FRANCESCO_VARIABLE_AMPLITUDE = 'DI_FRANCESCO_VARIABLE_AMPLITUDE'
+    DI_FRANCESCO_VARIABLE_BETA = 'DI_FRANCESCO_VARIABLE_BETA'
+
+
 class InvalidMemristorModel(Exception):
+    pass
+
+
+class InvalidSimulationTemplate(Exception):
     pass

@@ -1,6 +1,8 @@
 from dataclasses import fields, dataclass, asdict
 from typing import List
 
+import pandas as pd
+
 from constants import WaveForms, AnalysisType, ModelsSimulationFolders, SpiceDevices, SpiceModel
 
 
@@ -144,3 +146,11 @@ class AverageTimeMeasure:
     average_linux_real_execution_time: float = None
     average_linux_user_execution_time: float = None
     average_linux_sys_execution_time: float = None
+
+
+@dataclass()
+class DataLoader:
+    csv_files_names: List[str]
+    csv_files_names_no_extension: List[str]
+    csv_files_path: List[str]
+    dataframes: List[pd.DataFrame]

@@ -1,11 +1,12 @@
 from typing import List
 
 from constants import MemristorModels, WaveForms, AnalysisType, ModelsSimulationFolders, SpiceDevices, SpiceModel, \
-    SimulationTemplate, InvalidSimulationTemplate
+    SimulationTemplate, InvalidSimulationTemplate, SIMULATIONS_DIR, PlotType
 from representations import Subcircuit, Source, Component, SimulationParameters, InputParameters, ModelParameters, \
     DeviceParameters, ExportParameters, ModelDependence
 from services.circuitfileservice import CircuitFileService
 from services.ngspiceservice import NGSpiceService
+from services.plotterservice import PlotterService
 from services.subcircuitfileservice import SubcircuitFileService
 
 
@@ -113,7 +114,7 @@ def create_test_pershin_subcircuit_file_service() -> List[SubcircuitFileService]
     ]
 
 
-def main(simulation_template: SimulationTemplate = SimulationTemplate.DEFAULT):
+def simulate(simulation_template: SimulationTemplate = SimulationTemplate.DEFAULT, plot_types: List[PlotType] = None):
     if simulation_template == SimulationTemplate.DEFAULT:
         subcircuit_file_service = create_test_pershin_subcircuit_file_service()
         circuit_file_service = create_test_pershin_circuit_file_service()
@@ -129,14 +130,37 @@ def main(simulation_template: SimulationTemplate = SimulationTemplate.DEFAULT):
     else:
         raise InvalidSimulationTemplate()
 
-    for sfs in subcircuit_file_service:
-        for cfs in circuit_file_service:
+    for cfs in circuit_file_service:
+        for sfs in subcircuit_file_service:
             sfs.write_subcircuit_file()
             cfs.write_circuit_file()
 
             ngspice_service = NGSpiceService(cfs)
             ngspice_service.run_single_circuit_simulation()
 
+            for subcircuit in sfs.subcircuits:
+                plot(
+                    export_parameters=cfs.export_parameters, subcircuit_parameters=subcircuit.parameters,
+                    input_parameters=cfs.input_parameters, plot_types=plot_types
+                )
+
+
+def plot(
+        export_parameters: ExportParameters, subcircuit_parameters: ModelParameters = None,
+        input_parameters: InputParameters = None, plot_types: List[PlotType] = None
+):
+    plotter_service = PlotterService(
+        simulation_results_directory_path=SIMULATIONS_DIR, export_parameters=export_parameters,
+        model_parameters=subcircuit_parameters, input_parameters=input_parameters
+    )
+    data_loader = plotter_service.load_data()
+
+    for df, csv_file_name_no_extension in zip(data_loader.dataframes, data_loader.csv_files_names_no_extension):
+        plotter_service.plot_iv(df, csv_file_name_no_extension, 'titulo') if PlotType.IV in plot_types else None
+
 
 if __name__ == "__main__":
-    main(SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE)
+    simulate(simulation_template=SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE, plot_types=[PlotType.IV])
+
+if __name__ == "__main__":
+    plot()

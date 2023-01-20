@@ -72,6 +72,13 @@ class SimulationTemplate(Enum):
     DI_FRANCESCO_VARIABLE_BETA = 'DI_FRANCESCO_VARIABLE_BETA'
 
 
+class PlotType(Enum):
+    IV = 'IV'
+    IV_ANIMATED = 'IV_ANIMATED'
+    MEMRISTIVE_STATES = 'MEMRISTIVE_STATES'
+    HEAVISIDE_TERMS = 'HEAVISIDE_TERMS'
+
+
 class InvalidMemristorModel(Exception):
     pass
 

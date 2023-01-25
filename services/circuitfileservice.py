@@ -26,7 +26,7 @@ class CircuitFileService:
 
     def _write_components(self, file: TextIO) -> None:
         file.write("\n\n* COMPONENTS:\n")
-        file.write(self.input_parameters.get_voltage_source())
+        file.write(self.input_parameters.get_voltage_source_as_string())
         file.write(self.device_parameters.get_device())
 
     def _write_analysis_commands(self, file: TextIO) -> None:

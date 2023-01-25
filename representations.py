@@ -19,12 +19,23 @@ class InputParameters:
     theta: float = None
     phase: float = None
 
-    def get_voltage_source(self) -> str:
+    def get_voltage_source_as_string(self) -> str:
         return(
             f"V{self.source_number} {self.n_plus} {self.n_minus} {self.wave_form.value} {self.vo}"
             f" {self.amplitude} {self.frequency} {self.td if self.td else ''}"
             f" {self.theta if self.theta else ''} {self.phase if self.phase else ''}\n"
         )
+
+    def get_input_parameters_for_plot_as_string(self):
+        input_params = ''
+        for k, v in asdict(self).items():
+            if k not in ['source_number', 'n_plus', 'n_minus'] and v is not None:
+                input_params += f'{k}={v} '
+
+        return input_params
+
+    def get_input_parameters_for_plot_legend(self):
+        return f'{self.wave_form} {self.amplitude} {self.frequency} {self.td} {self.theta} {self.phase} {self.vo}'
 
 
 @dataclass()

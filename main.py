@@ -125,7 +125,8 @@ def simulate(simulation_template: SimulationTemplate = SimulationTemplate.DEFAUL
         circuit_file_service = create_di_francesco_variable_amplitude_circuit_file_service(MemristorModels.PERSHIN)
 
     elif simulation_template == SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA:
-        pass
+        subcircuit_file_service = None
+        circuit_file_service = None
 
     else:
         raise InvalidSimulationTemplate()
@@ -142,27 +143,30 @@ def simulate(simulation_template: SimulationTemplate = SimulationTemplate.DEFAUL
         for sfs in subcircuit_file_service:
             for subcircuit in sfs.subcircuits:
                 plot(
-                    export_parameters=cfs.export_parameters, subcircuit_parameters=subcircuit.parameters,
+                    export_parameters=cfs.export_parameters, model_parameters=subcircuit.parameters,
                     input_parameters=cfs.input_parameters, plot_types=plot_types
                 )
 
 
 def plot(
-        export_parameters: ExportParameters, subcircuit_parameters: ModelParameters = None,
+        export_parameters: ExportParameters, model_parameters: ModelParameters = None,
         input_parameters: InputParameters = None, plot_types: List[PlotType] = None
 ):
     plotter_service = PlotterService(
         simulation_results_directory_path=SIMULATIONS_DIR, export_parameters=export_parameters,
-        model_parameters=subcircuit_parameters, input_parameters=input_parameters
+        model_parameters=model_parameters, input_parameters=input_parameters
     )
     data_loader = plotter_service.load_data()
 
     for df, csv_file_name_no_extension in zip(data_loader.dataframes, data_loader.csv_files_names_no_extension):
-        plotter_service.plot_iv(df, csv_file_name_no_extension, 'titulo') if PlotType.IV in plot_types else None
+        plotter_service.plot_iv(df, csv_file_name_no_extension) if PlotType.IV in plot_types else None
+        plotter_service.plot_states(
+            df, csv_file_name_no_extension
+        ) if PlotType.MEMRISTIVE_STATES in plot_types else None
 
 
 if __name__ == "__main__":
-    simulate(simulation_template=SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE, plot_types=[PlotType.IV])
-
-# if __name__ == "__main__":
-#     plot()
+    simulate(
+        simulation_template=SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE,
+        plot_types=[PlotType.IV, PlotType.MEMRISTIVE_STATES]
+    )

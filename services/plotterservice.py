@@ -1,5 +1,3 @@
-from typing import Union
-
 import numpy as np
 import pandas as pd
 import os
@@ -29,17 +27,6 @@ class PlotterService:
         self.model_parameters = model_parameters
         self.input_parameters = input_parameters
 
-    """
-    # Parameters
-    parameters = [
-        {'Alpha': 0, 'Beta': np.float64(1e13), 'Rinit': np.float64(5e3), 'Roff': np.float64(10e3), 'Ron': np.float64(1e3), 'Vt': 4.6},
-        {'Alpha': 0, 'Beta': np.float64(1e13), 'Rinit': np.float64(5e3), 'Roff': np.float64(10e3), 'Ron': np.float64(1e3), 'Vt': 4.6},
-        {'Alpha': 0, 'Beta': np.float64(1e5), 'Rinit': np.float64(5e3), 'Roff': np.float64(10e3), 'Ron': np.float64(1e3), 'Vt': 4.6},
-        {'Alpha': np.float64(10e3), 'Beta': np.float64(1e5), 'Rinit': np.float64(5e3), 'Roff': np.float64(10e3), 'Ron': np.float64(1e3), 'Vt': 4.6},
-        {'Alpha': np.float64(10e3), 'Beta': np.float64(1e5), 'Rinit': np.float64(5e3), 'Roff': np.float64(10e3), 'Ron': np.float64(1e3), 'Vt': 4.6},
-    ]
-    """
-
     def load_data(self) -> DataLoader:
         files_in_model_simulations_directory = os.listdir(self.simulations_directory_path)
         csv_files_names, csv_files_names_no_extension, csv_files_path = [], [], []
@@ -51,56 +38,72 @@ class PlotterService:
                     os.path.join(self.simulations_directory_path, file_in_simulations_directory)
                 )
 
-        # TODO: Saltea la primer linea de datos al leer
+        # Depracted way to read csv
+        # dataframes = [
+        #     pd.DataFrame(
+        #         np.concatenate(
+        #             [
+        #                 pd.read_csv(
+        #                     csv_file_path, sep=r"\s+", engine='python', skipfooter=4
+        #                 )[1:len(pd.read_csv(csv_file_path, sep=r"\s+", engine='python', skipfooter=4)) + 1]
+        #             ]
+        #         ), columns=pd.read_csv(csv_file_path, sep=r"\s+", engine='python', skipfooter=4).columns
+        #     ) for csv_file_path in csv_files_path
+        # ]
 
         dataframes = [
             pd.DataFrame(
-                np.concatenate(
-                    [
-                        pd.read_csv(
-                            csv_file_path, sep=r"\s+", engine='python', skipfooter=4
-                        )[1:len(pd.read_csv(csv_file_path, sep=r"\s+", engine='python', skipfooter=4)) + 1]
-                    ]
-                ), columns=pd.read_csv(csv_file_path, sep=r"\s+", engine='python', skipfooter=4).columns
+                pd.read_csv(csv_file_path, sep=r"\s+", engine='python', skipfooter=4)
             ) for csv_file_path in csv_files_path
         ]
 
-        for index, dataframe in enumerate(dataframes):
-            dataframe.to_csv(f'{self.simulations_directory_path}/csvs/{index}.csv')
-
         return DataLoader(csv_files_names, csv_files_names_no_extension, csv_files_path, dataframes)
 
-    # TODO: Plotea siempre el mismo dataframe?
-
     def plot_iv(
-            self, df: pd.DataFrame, csv_file_name: str, title: Union[dict, ModelParameters, InputParameters],
-            fig_number: int = 1
+            self, df: pd.DataFrame, csv_file_name: str, title: str = None
     ) -> None:
-        plt.figure(fig_number, figsize=(10, 6))
-        plt.plot(df['vin'], -df['i(v1)'])
+        plt.figure(figsize=(12, 8))
+        plt.plot(
+            df['vin'], -df['i(v1)'],
+            label=(
+                f'{self.model_parameters.get_parameters_as_string()}'
+                f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
+            )
+        )
         plt.xlabel('Vin [V]')
         plt.ylabel('i(v1) [A]')
-        plt.title(f'I-V {csv_file_name} - {title}', fontsize=16)
-        plt.savefig(f'{self.model_simulations_directory_path}/{csv_file_name}.jpg')
+        plt.title(f'I-V {csv_file_name} {title if title is not None else ""}', fontsize=22)
+        plt.autoscale()
+        plt.legend(loc='lower right', fontsize=12)
+        plt.savefig(f'{self.simulations_directory_path}/{csv_file_name}.jpg')
+        plt.close()
 
-    def plot_states(self, fig_number: int, df: pd.DataFrame, csv_file_name: str, title: dict) -> None:
-        plt.figure(fig_number, figsize=(10, 6))
+    def plot_states(self, df: pd.DataFrame, csv_file_name: str, title: dict = None) -> None:
+        plt.figure(figsize=(12, 8))
         plt.subplot(2, 1, 1)
         plt.plot(df['time'], df['vin'])
-        plt.hlines(0, 0, max(df['time']), color='black', linewidth=0.5)
-        plt.xlabel('Time [s]')
+        plt.xticks([])
         plt.ylabel('Vin [V]')
         plt.subplot(2, 1, 2)
-        plt.plot(df['time'], df['l0'])
+        plt.plot(
+            df['time'], df['l0'],
+            label=(
+                f'{self.model_parameters.get_parameters_as_string()}'
+                f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
+            )
+        )
         plt.xlabel('Time [s]')
-        plt.ylabel('l0 [ohm]')
-        plt.suptitle(f'Input voltage and State vs Time - {csv_file_name} - {title}', fontsize=16)
+        plt.ylabel(f'l0 [ohm]')
+        plt.suptitle(
+            f'Input voltage and State vs Time - {csv_file_name} {title if title is not None else ""}', fontsize=22
+        )
+        plt.legend(loc='center', bbox_to_anchor=(0.5, 1.1))
         plt.savefig(f'{self.simulations_directory_path}/{csv_file_name}_states.jpg')
 
     def plot_iv_animated(
-            self, fig_number: int, df: pd.DataFrame, csv_file_name: str, title: dict
+            self, df: pd.DataFrame, csv_file_name: str, title: dict = None
     ) -> None:
-        fig = plt.figure(fig_number, figsize=(12, 8))
+        fig = plt.figure(figsize=(12, 8))
         l, = plt.plot([], [], 'k-')
         p1, = plt.plot([], [], 'ko')
         plt.xlabel('Vin [V]')

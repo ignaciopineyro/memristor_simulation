@@ -51,17 +51,26 @@ class PlotterService:
                     os.path.join(self.simulations_directory_path, file_in_simulations_directory)
                 )
 
-        # TODO: Ignorar los time measure del CSV al leerlo
+        # TODO: Saltea la primer linea de datos al leer
 
         dataframes = [
             pd.DataFrame(
                 np.concatenate(
-                    [pd.read_csv(csv_file_path, sep=r"\s+")[1:len(pd.read_csv(csv_file_path, sep=r"\s+")) + 1]]),
-                columns=pd.read_csv(csv_file_path, sep=r"\s+").columns
+                    [
+                        pd.read_csv(
+                            csv_file_path, sep=r"\s+", engine='python', skipfooter=4
+                        )[1:len(pd.read_csv(csv_file_path, sep=r"\s+", engine='python', skipfooter=4)) + 1]
+                    ]
+                ), columns=pd.read_csv(csv_file_path, sep=r"\s+", engine='python', skipfooter=4).columns
             ) for csv_file_path in csv_files_path
         ]
 
+        for index, dataframe in enumerate(dataframes):
+            dataframe.to_csv(f'{self.simulations_directory_path}/csvs/{index}.csv')
+
         return DataLoader(csv_files_names, csv_files_names_no_extension, csv_files_path, dataframes)
+
+    # TODO: Plotea siempre el mismo dataframe?
 
     def plot_iv(
             self, df: pd.DataFrame, csv_file_name: str, title: Union[dict, ModelParameters, InputParameters],
@@ -72,7 +81,7 @@ class PlotterService:
         plt.xlabel('Vin [V]')
         plt.ylabel('i(v1) [A]')
         plt.title(f'I-V {csv_file_name} - {title}', fontsize=16)
-        plt.savefig(f'{self.simulation_results_directory_path}/{csv_file_name}.jpg')
+        plt.savefig(f'{self.model_simulations_directory_path}/{csv_file_name}.jpg')
 
     def plot_states(self, fig_number: int, df: pd.DataFrame, csv_file_name: str, title: dict) -> None:
         plt.figure(fig_number, figsize=(10, 6))
@@ -86,7 +95,7 @@ class PlotterService:
         plt.xlabel('Time [s]')
         plt.ylabel('l0 [ohm]')
         plt.suptitle(f'Input voltage and State vs Time - {csv_file_name} - {title}', fontsize=16)
-        plt.savefig(f'{self.simulation_results_directory_path}/{csv_file_name}_states.jpg')
+        plt.savefig(f'{self.simulations_directory_path}/{csv_file_name}_states.jpg')
 
     def plot_iv_animated(
             self, fig_number: int, df: pd.DataFrame, csv_file_name: str, title: dict
@@ -107,7 +116,7 @@ class PlotterService:
         xlist = []
         ylist = []
 
-        with writer.saving(fig, f"{self.simulation_results_directory_path}/{csv_file_name}_animation.gif", 100):
+        with writer.saving(fig, f"{self.simulations_directory_path}/{csv_file_name}_animation.gif", 100):
             for xval, yval in zip(df['vin'], -df['i(v1)']):
                 xlist.append(xval)
                 ylist.append(yval)

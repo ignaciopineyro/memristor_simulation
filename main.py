@@ -138,6 +138,8 @@ def simulate(simulation_template: SimulationTemplate = SimulationTemplate.DEFAUL
             ngspice_service = NGSpiceService(cfs)
             ngspice_service.run_single_circuit_simulation()
 
+    for cfs in circuit_file_service:
+        for sfs in subcircuit_file_service:
             for subcircuit in sfs.subcircuits:
                 plot(
                     export_parameters=cfs.export_parameters, subcircuit_parameters=subcircuit.parameters,
@@ -162,5 +164,5 @@ def plot(
 if __name__ == "__main__":
     simulate(simulation_template=SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE, plot_types=[PlotType.IV])
 
-if __name__ == "__main__":
-    plot()
+# if __name__ == "__main__":
+#     plot()

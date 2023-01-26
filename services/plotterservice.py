@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 from matplotlib import animation as anime
 
 from representations import DataLoader, ModelParameters, InputParameters, ExportParameters
+from services.directoriesmanagementservice import DirectoriesManagementService
 
 
 class PlotterService:
@@ -14,6 +15,7 @@ class PlotterService:
             simulation_path: str = None, model_parameters: ModelParameters = None,
             input_parameters: InputParameters = None
     ):
+        self.directories_management_service = DirectoriesManagementService()
         self.simulation_results_directory_path = simulation_results_directory_path
         self.export_parameters = export_parameters
         self.model_simulations_directory_path = (
@@ -22,6 +24,8 @@ class PlotterService:
         self.simulations_directory_path = (
             f'{self.model_simulations_directory_path}/{self.export_parameters.folder_name}'
         )
+        self.figures_directory_path = f'{self.simulations_directory_path}/figures'
+        self.directories_management_service.create_figures_directory(self.figures_directory_path)
 
         self.simulation_path = simulation_path  # TODO: Agregar posibilidad de simular 1 solo file
         self.model_parameters = model_parameters
@@ -59,9 +63,7 @@ class PlotterService:
 
         return DataLoader(csv_files_names, csv_files_names_no_extension, csv_files_path, dataframes)
 
-    def plot_iv(
-            self, df: pd.DataFrame, csv_file_name: str, title: str = None
-    ) -> None:
+    def plot_iv(self, df: pd.DataFrame, csv_file_name: str, title: str = None) -> None:
         plt.figure(figsize=(12, 8))
         plt.plot(
             df['vin'], -df['i(v1)'],
@@ -75,8 +77,47 @@ class PlotterService:
         plt.title(f'I-V {csv_file_name} {title if title is not None else ""}', fontsize=22)
         plt.autoscale()
         plt.legend(loc='lower right', fontsize=12)
-        plt.savefig(f'{self.simulations_directory_path}/{csv_file_name}.jpg')
+        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_iv.jpg')
         plt.close()
+
+    # TODO: Solo grafica el ultimo plot
+    def plot_iv_overlapped(self, df: pd.DataFrame, csv_file_name: str, title: str = None) -> None:
+        plt.figure(0, figsize=(12, 8))
+        plt.plot(
+            df['vin'], -df['i(v1)'],
+            label=(
+                f'{self.model_parameters.get_parameters_as_string()}'
+                f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
+            )
+        )
+        plt.xlabel('Vin [V]')
+        plt.ylabel('i(v1) [A]')
+        plt.title(f'I-V {title if title is not None else ""}', fontsize=22)
+        plt.autoscale()
+        plt.legend(loc='lower right', fontsize=12)
+        plt.savefig(f'{self.figures_directory_path}/iv_overlapped.jpg')
+        plt.close()
+
+    def plot_iv_log(self, df: pd.DataFrame, csv_file_name: str, title: str = None) -> None:
+        plt.figure(figsize=(12, 8))
+        plt.plot(
+            df['vin'], -df['i(v1)'],
+            label=(
+                f'{self.model_parameters.get_parameters_as_string()}'
+                f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
+            )
+        )
+        plt.yscale(value='log')
+        plt.xlabel('Vin [V]')
+        plt.ylabel('log(i(v1)) [A]')
+        plt.title(f'log(I)-V {csv_file_name} {title if title is not None else ""}', fontsize=22)
+        plt.autoscale()
+        plt.legend(loc='lower right', fontsize=12)
+        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_iv_log.jpg')
+        plt.close()
+
+    def plot_iv_log_overlapped(self, df: pd.DataFrame, csv_file_name: str, title: str = None):
+        pass
 
     def plot_states(self, df: pd.DataFrame, csv_file_name: str, title: dict = None) -> None:
         plt.figure(figsize=(12, 8))
@@ -98,7 +139,10 @@ class PlotterService:
             f'Input voltage and State vs Time - {csv_file_name} {title if title is not None else ""}', fontsize=22
         )
         plt.legend(loc='center', bbox_to_anchor=(0.5, 1.1))
-        plt.savefig(f'{self.simulations_directory_path}/{csv_file_name}_states.jpg')
+        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_states.jpg')
+
+    def plot_states_overlapped(self, df: pd.DataFrame, csv_file_name: str, title: dict = None) -> None:
+        pass
 
     def plot_iv_animated(
             self, df: pd.DataFrame, csv_file_name: str, title: dict = None
@@ -119,7 +163,7 @@ class PlotterService:
         xlist = []
         ylist = []
 
-        with writer.saving(fig, f"{self.simulations_directory_path}/{csv_file_name}_animation.gif", 100):
+        with writer.saving(fig, f"{self.figures_directory_path}/{csv_file_name}_animation.gif", 100):
             for xval, yval in zip(df['vin'], -df['i(v1)']):
                 xlist.append(xval)
                 ylist.append(yval)

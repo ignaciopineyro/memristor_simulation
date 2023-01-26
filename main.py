@@ -30,6 +30,58 @@ def _create_pershin_vourkas_default_components() -> List[Component]:
     return [capacitor, rmem, diode_1, diode_2, v_1, v_2, raux]
 
 
+def create_di_francesco_variable_beta_circuit_file_service(model: MemristorModels) -> List[CircuitFileService]:
+    circuit_file_service = []
+    input_params = InputParameters(1, 'vin', 'gnd', WaveForms.SIN, 0, 2, 1)
+    device_params = DeviceParameters('xmem', 0, ['vin', 'gnd', 'l0'], 'memristor')
+    simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
+    export_folder_name = 'di_francesco_beta'
+
+    for beta in [500e3, 50e6]:
+        export_file_name = f'beta_{beta}'
+        export_params = ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(model), export_folder_name, export_file_name,
+            ['vin', 'i(v1)', 'l0']
+        )
+
+        circuit_file_service.append(
+            CircuitFileService(model, input_params, device_params, simulation_params, export_params)
+        )
+
+    return circuit_file_service
+
+
+def create_di_francesco_variable_beta_subcircuit_file_service(
+        model: MemristorModels, model_parameters: List[ModelParameters]
+) -> List[SubcircuitFileService]:
+    pershin_subckt = [
+        Subcircuit('memristor', ['pl', 'mn', 'x'], model_parameter) for model_parameter in model_parameters
+    ]
+    source_bx = Source(
+        name='Bx', n_plus='0', n_minus='x', behaviour_function="I=\'(f1(V(pl,mn))>0) && (V(x)<Roff) ? {f1(V(pl,mn))}: "
+                                                               "(f1(V(pl,mn))<0) && (V(x)>Ron) ? {f1(V(pl,mn))}: {0}\'"
+    )
+
+    model_dependencies = None
+    default_components = None
+
+    if model == MemristorModels.PERSHIN:
+        default_components = _create_pershin_default_components()
+
+    elif model == MemristorModels.PERSHIN_VOURKAS:
+        default_components = _create_pershin_vourkas_default_components()
+        model_dependencies = [ModelDependence(name=SpiceDevices.DIODE, model=SpiceModel.DIODE)]
+
+    control_cmd = '.func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}'
+
+    return [
+        SubcircuitFileService(
+            model=MemristorModels.PERSHIN, subcircuits=pershin_subckt, sources=[source_bx],
+            model_dependencies=model_dependencies, components=default_components, control_commands=[control_cmd],
+        )
+    ]
+
+
 def create_di_francesco_variable_amplitude_circuit_file_service(model: MemristorModels) -> List[CircuitFileService]:
     circuit_file_service = []
     for amplitude in [0.7, 1, 2, 4]:
@@ -50,7 +102,7 @@ def create_di_francesco_variable_amplitude_circuit_file_service(model: Memristor
     return circuit_file_service
 
 
-def create_di_francesco_subcircuit_file_service(
+def create_di_francesco_variable_amplitude_subcircuit_file_service(
         model: MemristorModels, model_parameters: ModelParameters
 ) -> List[SubcircuitFileService]:
     pershin_subckt = Subcircuit('memristor', ['pl', 'mn', 'x'], model_parameters)
@@ -121,12 +173,20 @@ def simulate(simulation_template: SimulationTemplate = SimulationTemplate.DEFAUL
 
     elif simulation_template == SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE:
         model_parameters = ModelParameters(0, 5e5, 200e3, 200e3, 2e3, 0.6)
-        subcircuit_file_service = create_di_francesco_subcircuit_file_service(MemristorModels.PERSHIN, model_parameters)
+        subcircuit_file_service = create_di_francesco_variable_amplitude_subcircuit_file_service(
+            MemristorModels.PERSHIN, model_parameters
+        )
         circuit_file_service = create_di_francesco_variable_amplitude_circuit_file_service(MemristorModels.PERSHIN)
 
     elif simulation_template == SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA:
-        subcircuit_file_service = None
-        circuit_file_service = None
+        model_parameters = [
+            ModelParameters(0, 500e3, 200e3, 200e3, 2e3, 0.6),
+            ModelParameters(0, 50e6, 200e3, 200e3, 2e3, 0.6),
+        ]
+        subcircuit_file_service = create_di_francesco_variable_beta_subcircuit_file_service(
+            MemristorModels.PERSHIN, model_parameters
+        )
+        circuit_file_service = create_di_francesco_variable_beta_circuit_file_service(MemristorModels.PERSHIN)
 
     else:
         raise InvalidSimulationTemplate()
@@ -160,13 +220,26 @@ def plot(
 
     for df, csv_file_name_no_extension in zip(data_loader.dataframes, data_loader.csv_files_names_no_extension):
         plotter_service.plot_iv(df, csv_file_name_no_extension) if PlotType.IV in plot_types else None
+        plotter_service.plot_iv_overlapped(
+            df, csv_file_name_no_extension
+        ) if PlotType.IV_OVERLAPPED in plot_types else None
+        plotter_service.plot_iv_log(df, csv_file_name_no_extension) if PlotType.IV_LOG in plot_types else None
+        plotter_service.plot_iv_log_overlapped(
+            df, csv_file_name_no_extension
+        ) if PlotType.IV_LOG_OVERLAPPED in plot_types else None
         plotter_service.plot_states(
             df, csv_file_name_no_extension
         ) if PlotType.MEMRISTIVE_STATES in plot_types else None
+        plotter_service.plot_states_overlapped(
+            df, csv_file_name_no_extension
+        ) if PlotType.MEMRISTIVE_STATES_OVERLAPPED in plot_types else None
 
 
 if __name__ == "__main__":
     simulate(
-        simulation_template=SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE,
-        plot_types=[PlotType.IV, PlotType.MEMRISTIVE_STATES]
+        simulation_template=SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA,
+        plot_types=[
+            PlotType.IV, PlotType.IV_OVERLAPPED, PlotType.IV_LOG, PlotType.IV_LOG_OVERLAPPED,
+            PlotType.MEMRISTIVE_STATES, PlotType.MEMRISTIVE_STATES_OVERLAPPED
+        ]
     )

@@ -4,6 +4,10 @@
 .subckt memristor pl mn xPARAMS: alpha=0 beta=500000.0 Rinit=200000.0 Roff=200000.0 Ron=2000.0 Vt=0.6 
 
 
+* SUBCIRCUITS:
+.subckt memristor pl mn xPARAMS: alpha=0 beta=50000000.0 Rinit=200000.0 Roff=200000.0 Ron=2000.0 Vt=0.6 
+
+
 * SOURCES:
 Bx 0 x I='(f1(V(pl,mn))>0) && (V(x)<Roff) ? {f1(V(pl,mn))}: (f1(V(pl,mn))<0) && (V(x)>Ron) ? {f1(V(pl,mn))}: {0}'
 

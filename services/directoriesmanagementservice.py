@@ -22,6 +22,11 @@ class DirectoriesManagementService:
         if not os.path.exists(f'{folder_directory}/logs'):
             os.makedirs(f'{folder_directory}/logs')
 
+    @staticmethod
+    def create_figures_directory( figures_directory_path):
+        if not os.path.exists(figures_directory_path):
+            os.makedirs(figures_directory_path)
+
     def get_circuit_file_path(self) -> str:
         return f'{SIMULATIONS_DIR}/{self.get_circuit_dir_and_file_name()}'
 

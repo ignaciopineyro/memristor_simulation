@@ -161,7 +161,7 @@ class AverageTimeMeasure:
 
 @dataclass()
 class DataLoader:
-    csv_files_names: List[str]
-    csv_files_names_no_extension: List[str]
-    csv_files_path: List[str]
-    dataframes: List[pd.DataFrame]
+    csv_file_name: str
+    csv_file_name_no_extension: str
+    csv_file_path: str
+    dataframe: pd.DataFrame

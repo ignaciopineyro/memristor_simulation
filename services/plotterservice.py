@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import os
 
@@ -16,6 +15,7 @@ class PlotterService:
             input_parameters: InputParameters = None
     ):
         self.directories_management_service = DirectoriesManagementService()
+
         self.simulation_results_directory_path = simulation_results_directory_path
         self.export_parameters = export_parameters
         self.model_simulations_directory_path = (
@@ -25,43 +25,25 @@ class PlotterService:
             f'{self.model_simulations_directory_path}/{self.export_parameters.folder_name}'
         )
         self.figures_directory_path = f'{self.simulations_directory_path}/figures'
-        self.directories_management_service.create_figures_directory(self.figures_directory_path)
-
         self.simulation_path = simulation_path  # TODO: Agregar posibilidad de simular 1 solo file
+        self.directories_management_service.create_figures_directory(self.simulations_directory_path)
+
         self.model_parameters = model_parameters
         self.input_parameters = input_parameters
 
     def load_data(self) -> DataLoader:
         files_in_model_simulations_directory = os.listdir(self.simulations_directory_path)
-        csv_files_names, csv_files_names_no_extension, csv_files_path = [], [], []
         for file_in_simulations_directory in sorted(files_in_model_simulations_directory):
-            if len(file_in_simulations_directory.split('.csv')) > 1:
-                csv_files_names.append(file_in_simulations_directory)
-                csv_files_names_no_extension.append(file_in_simulations_directory.replace('.csv', ''))
-                csv_files_path.append(
-                    os.path.join(self.simulations_directory_path, file_in_simulations_directory)
-                )
+            if file_in_simulations_directory.split('.csv')[0] == self.export_parameters.file_name:
+                csv_files_name = file_in_simulations_directory
+                csv_file_name_no_extension = file_in_simulations_directory.replace('.csv', '')
+                csv_file_path = os.path.join(self.simulations_directory_path, file_in_simulations_directory)
 
-        # Depracted way to read csv
-        # dataframes = [
-        #     pd.DataFrame(
-        #         np.concatenate(
-        #             [
-        #                 pd.read_csv(
-        #                     csv_file_path, sep=r"\s+", engine='python', skipfooter=4
-        #                 )[1:len(pd.read_csv(csv_file_path, sep=r"\s+", engine='python', skipfooter=4)) + 1]
-        #             ]
-        #         ), columns=pd.read_csv(csv_file_path, sep=r"\s+", engine='python', skipfooter=4).columns
-        #     ) for csv_file_path in csv_files_path
-        # ]
+                dataframe = pd.DataFrame(
+                        pd.read_csv(csv_file_path, sep=r"\s+", engine='python', skipfooter=4)
+                    )
 
-        dataframes = [
-            pd.DataFrame(
-                pd.read_csv(csv_file_path, sep=r"\s+", engine='python', skipfooter=4)
-            ) for csv_file_path in csv_files_path
-        ]
-
-        return DataLoader(csv_files_names, csv_files_names_no_extension, csv_files_path, dataframes)
+                return DataLoader(csv_files_name, csv_file_name_no_extension, csv_file_path, dataframe)
 
     def plot_iv(self, df: pd.DataFrame, csv_file_name: str, title: str = None) -> None:
         plt.figure(figsize=(12, 8))
@@ -80,12 +62,12 @@ class PlotterService:
         plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_iv.jpg')
         plt.close()
 
-    # TODO: Solo grafica el ultimo plot
-    def plot_iv_overlapped(self, df: pd.DataFrame, csv_file_name: str, title: str = None) -> None:
+    # TODO: Pasar parametro variable para construir label
+    def plot_iv_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None) -> None:
         plt.figure(0, figsize=(12, 8))
         plt.plot(
             df['vin'], -df['i(v1)'],
-            label=(
+            label=label if label is not None else (
                 f'{self.model_parameters.get_parameters_as_string()}'
                 f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
             )
@@ -96,7 +78,6 @@ class PlotterService:
         plt.autoscale()
         plt.legend(loc='lower right', fontsize=12)
         plt.savefig(f'{self.figures_directory_path}/iv_overlapped.jpg')
-        plt.close()
 
     def plot_iv_log(self, df: pd.DataFrame, csv_file_name: str, title: str = None) -> None:
         plt.figure(figsize=(12, 8))
@@ -116,8 +97,23 @@ class PlotterService:
         plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_iv_log.jpg')
         plt.close()
 
-    def plot_iv_log_overlapped(self, df: pd.DataFrame, csv_file_name: str, title: str = None):
-        pass
+    # TODO: Pasar parametro variable para construir label
+    def plot_iv_log_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None):
+        plt.figure(1, figsize=(12, 8))
+        plt.plot(
+            df['vin'], -df['i(v1)'],
+            label=label if label is not None else (
+                f'{self.model_parameters.get_parameters_as_string()}'
+                f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
+            )
+        )
+        plt.yscale(value='log')
+        plt.xlabel('Vin [V]')
+        plt.ylabel('log(i(v1)) [A]')
+        plt.title(f'log(I)-V {title if title is not None else ""}', fontsize=22)
+        plt.autoscale()
+        plt.legend(loc='lower right', fontsize=12)
+        plt.savefig(f'{self.figures_directory_path}/iv_log_overlapped.jpg')
 
     def plot_states(self, df: pd.DataFrame, csv_file_name: str, title: dict = None) -> None:
         plt.figure(figsize=(12, 8))
@@ -140,9 +136,6 @@ class PlotterService:
         )
         plt.legend(loc='center', bbox_to_anchor=(0.5, 1.1))
         plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_states.jpg')
-
-    def plot_states_overlapped(self, df: pd.DataFrame, csv_file_name: str, title: dict = None) -> None:
-        pass
 
     def plot_iv_animated(
             self, df: pd.DataFrame, csv_file_name: str, title: dict = None

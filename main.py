@@ -184,7 +184,7 @@ def create_default_test_subcircuit_file_service(model: MemristorModels) -> List[
 
 def simulate(
         simulation_template: SimulationTemplate = SimulationTemplate.DEFAULT_TEST, plot_types: List[PlotType] = None,
-        model: MemristorModels = None
+        model: MemristorModels = None, amount_iterations: int = 1
 ):
     if simulation_template == SimulationTemplate.DEFAULT_TEST:
         subcircuit_file_service = create_default_test_subcircuit_file_service(model)
@@ -215,7 +215,7 @@ def simulate(
         cfs.write_circuit_file()
 
         ngspice_service = NGSpiceService(cfs)
-        ngspice_service.run_single_circuit_simulation()
+        ngspice_service.run_single_circuit_simulation(amount_iterations)
 
     print('PLOT SERVICE STARTED\n')
     for cfs in circuit_file_service:
@@ -236,21 +236,28 @@ def plot(
     )
     data_loader = plotter_service.load_data()
 
-    plotter_service.plot_iv(data_loader.dataframe, data_loader.csv_file_name_no_extension) if PlotType.IV in plot_types else None
+    plotter_service.plot_iv(
+        data_loader.dataframe, data_loader.csv_file_name_no_extension
+    ) if PlotType.IV in plot_types else None
     plotter_service.plot_iv_overlapped(data_loader.dataframe) if PlotType.IV_OVERLAPPED in plot_types else None
-    plotter_service.plot_iv_log(data_loader.dataframe, data_loader.csv_file_name_no_extension) if PlotType.IV_LOG in plot_types else None
+    plotter_service.plot_iv_log(
+        data_loader.dataframe, data_loader.csv_file_name_no_extension
+    ) if PlotType.IV_LOG in plot_types else None
     plotter_service.plot_iv_log_overlapped(data_loader.dataframe) if PlotType.IV_LOG_OVERLAPPED in plot_types else None
     plotter_service.plot_states(
         data_loader.dataframe, data_loader.csv_file_name_no_extension
     ) if PlotType.MEMRISTIVE_STATES in plot_types else None
+    plotter_service.plot_states_overlapped(
+        data_loader.dataframe
+    ) if PlotType.MEMRISTIVE_STATES_OVERLAPPED in plot_types else None
 
 
 if __name__ == "__main__":
     simulate(
-        simulation_template=SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA,
+        simulation_template=SimulationTemplate.DEFAULT_TEST,
         plot_types=[
             PlotType.IV, PlotType.IV_OVERLAPPED, PlotType.IV_LOG, PlotType.IV_LOG_OVERLAPPED,
-            PlotType.MEMRISTIVE_STATES
+            PlotType.MEMRISTIVE_STATES, PlotType.MEMRISTIVE_STATES_OVERLAPPED
         ],
-        model=MemristorModels.PERSHIN_VOURKAS
+        model=MemristorModels.PERSHIN, amount_iterations=100
     )

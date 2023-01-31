@@ -136,6 +136,23 @@ class PlotterService:
         )
         plt.legend(loc='center', bbox_to_anchor=(0.5, 1.1))
         plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_states.jpg')
+        plt.close()
+
+    def plot_states_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None) -> None:
+        plt.figure(2, figsize=(12, 8))
+        plt.plot(
+            df['vin'], df['l0'],
+            label=label if label is not None else (
+                f'{self.model_parameters.get_parameters_as_string()}'
+                f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
+            )
+        )
+        plt.xlabel('Vin [V]')
+        plt.ylabel('l0 [ohm]')
+        plt.title(f'Memristive states vs Input Voltage {title if title is not None else ""}', fontsize=22)
+        plt.autoscale()
+        plt.legend(loc='center')
+        plt.savefig(f'{self.figures_directory_path}/states_overlapped.jpg')
 
     def plot_iv_animated(
             self, df: pd.DataFrame, csv_file_name: str, title: dict = None

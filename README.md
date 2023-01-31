@@ -6,6 +6,18 @@ consume them on demand by an interface.
 
 ---
 
+## TODO list:
+* Generate .cir and .sub files in simulation_results dir instead of a unique file
+* Generate examples dir with default .sub and .cir files
+* Implement Heaviside terms plot method
+* Implement animated I-V plot method
+* Create TimeMeasure tables from log files
+* Improve plots (curves visibility, labels, etc)
+* Add more models (Biolek, between others)
+* Create UI - Frontend
+
+---
+
 ## Project structure:
 - **/models:** subcircuit (.sub) files with memristor models (Pershin, Pershin-Vourkas, Biolek, etc). These files have 
 the dynamic parameters of the memristor.

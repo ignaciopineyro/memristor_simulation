@@ -151,7 +151,7 @@ class TimeMeasureService:
 
             if time_measure:
                 for k, v in asdict(time_measure).items():
-                    if v is not None:
+                    if k != 'start_time' and v is not None:
                         f.write(f'# {k} = {str(v)} ms\n')
                 f.write('\n\n')
 

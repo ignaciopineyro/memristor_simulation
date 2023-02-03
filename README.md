@@ -66,10 +66,24 @@ between all the simulations in a folder and a sub-plot figure for all simulation
     - Windows: http://ngspice.sourceforge.net/download.html
     - Linux: `sudo apt-get install ngspice`
 * Install the required dependencies (using a virtual environment is recommended) - `pip install -r requirements.txt`
-* At the end of the `main.py` file, you can modify the `simulate` function to use one of the template simulations for a given model and generate the desired plots. Supported templates, models and plots are still limited but the plan is to add more.:
-    - Simulation templates: `DEFAULT_TEST`, `DI_FRANCESCO_VARIABLE_AMPLITUDE`, `DI_FRANCESCO_VARIABLE_BETA`
-    - Plot Types: `IV`, `IV_OVERLAPPED`, `IV_LOG`, `IV_LOG_OVERLAPPED`, `MEMRISTIVE_STATES`, `MEMRISTIVE_STATES_OVERLAPPED`
-    - Models: `PERSHIN` and `PERSHIN_VOURKAS`
+* At the end of the `main.py` file, you can modify the `simulate` function to use one of the template simulations for a given model and generate the desired plots. Supported templates, models and plots are still limited but the plan is to add more.
+  - **_Simulation templates:_** `DEFAULT_TEST`, `DI_FRANCESCO_VARIABLE_AMPLITUDE`, `DI_FRANCESCO_VARIABLE_BETA`
+  - **_Plot Types:_** `IV`, `IV_OVERLAPPED`, `IV_LOG`, `IV_LOG_OVERLAPPED`, `MEMRISTIVE_STATES`, `MEMRISTIVE_STATES_OVERLAPPED`
+  - **_Models:_** `PERSHIN` and `PERSHIN_VOURKAS`
+  - **_Amount Iterations:_** Any integer. Amount of times the template will be simulated. Used to compute average time measure of simulations.
+
+```
+if __name__ == "__main__":
+    simulate(
+        simulation_template=SimulationTemplate.DEFAULT_TEST,
+        plot_types=[
+            PlotType.IV, PlotType.IV_OVERLAPPED, PlotType.IV_LOG, PlotType.IV_LOG_OVERLAPPED,
+            PlotType.MEMRISTIVE_STATES, PlotType.MEMRISTIVE_STATES_OVERLAPPED
+        ],
+        model=MemristorModels.PERSHIN, amount_iterations=100
+    )
+```
+
 * Execute `main.py` with `python3 main.py`
 
 ---

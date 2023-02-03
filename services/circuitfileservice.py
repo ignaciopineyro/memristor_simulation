@@ -1,34 +1,31 @@
 from typing import TextIO
 
-from constants import MemristorModels
-from representations import InputParameters, ModelParameters, SimulationParameters, DeviceParameters, ExportParameters
+from representations import InputParameters, SimulationParameters, DeviceParameters, ExportParameters
 from services.directoriesmanagementservice import DirectoriesManagementService
+from services.subcircuitfileservice import SubcircuitFileService
 
 
 class CircuitFileService:
-    def __init__(self, model: MemristorModels, input_parameters: InputParameters, model_parameters: ModelParameters,
-                 device_parameters: DeviceParameters, simulation_parameters: SimulationParameters,
-                 export_parameters: ExportParameters):
-
-        self.model = model
+    def __init__(
+            self, subcircuit_file_service: SubcircuitFileService, input_parameters: InputParameters,
+            device_parameters: DeviceParameters, simulation_parameters: SimulationParameters,
+            export_parameters: ExportParameters,
+    ):
         self.input_parameters = input_parameters
-        self.model_parameters = model_parameters
         self.device_parameters = device_parameters
         self.simulation_parameters = simulation_parameters
         self.export_parameters = export_parameters
 
+        self.subcircuit_file_service = subcircuit_file_service
         self.directories_management_service = DirectoriesManagementService(circuit_file_service=self)
-        self.circuit_file_path = self.directories_management_service.get_circuit_file_path()
-        self.model_dir = self.directories_management_service.get_model_dir()
-        self.export_simulation_file_path = self.directories_management_service.get_export_simulation_file_path()
 
     def _write_dependencies(self, f: TextIO) -> None:
         f.write("\n\n* DEPENDENCIES:\n")
-        f.write(f".include {self.model_dir}")
+        f.write(f".include {self.directories_management_service.get_model_dir()}")
 
     def _write_components(self, file: TextIO) -> None:
         file.write("\n\n* COMPONENTS:\n")
-        file.write(self.input_parameters.get_voltage_source())
+        file.write(self.input_parameters.get_voltage_source_as_string())
         file.write(self.device_parameters.get_device())
 
     def _write_analysis_commands(self, file: TextIO) -> None:
@@ -42,7 +39,8 @@ class CircuitFileService:
         file.write('set wr_vecnames\n')
         file.write('set wr_singlescale\n')
         file.write(
-            f'wrdata {self.export_simulation_file_path} {self.export_parameters.get_export_magnitudes()}'
+            f'wrdata {self.directories_management_service.get_export_simulation_file_path()} '
+            f'{self.export_parameters.get_export_magnitudes()}'
         )
         # TODO: ADD NGSPICE SIMULATION TIME COMMAND IF EXISTS
 
@@ -51,8 +49,11 @@ class CircuitFileService:
         Writes the .cir circuit file to execute in Spice. The file is saved in simulation_results/model-name_simulations
         :return: None
         """
-        with open(self.circuit_file_path, "w+") as f:
-            f.write(f'* MEMRISTOR CIRCUIT - MODEL {self.model.value}')
+        self.directories_management_service.create_simulation_model_folder_if_not_exists(
+            self.subcircuit_file_service.model
+        )
+        with open(self.directories_management_service.get_circuit_file_path(), "w+") as f:
+            f.write(f'* MEMRISTOR CIRCUIT - MODEL {self.subcircuit_file_service.model.value}')
             self._write_dependencies(f)
             self._write_components(f)
             self._write_analysis_commands(f)

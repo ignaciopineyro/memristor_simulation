@@ -10,7 +10,14 @@ class DirectoriesManagementService:
         if circuit_file_service:
             self.circuit_file_service = circuit_file_service
             self.export_parameters = self.circuit_file_service.export_parameters
-            self.model = circuit_file_service.model
+            self.model = circuit_file_service.subcircuit_file_service.model
+
+    @staticmethod
+    def create_simulation_model_folder_if_not_exists(model: MemristorModels):
+        if not os.path.exists(
+                f'{SIMULATIONS_DIR}/{ModelsSimulationFolders.get_simulation_folder_by_model(model).value}'
+        ):
+            os.makedirs(f'{SIMULATIONS_DIR}/{ModelsSimulationFolders.get_simulation_folder_by_model(model).value}')
 
     @staticmethod
     def create_simulation_parameter_folder_if_not_exist(
@@ -21,6 +28,11 @@ class DirectoriesManagementService:
             os.makedirs(folder_directory)
         if not os.path.exists(f'{folder_directory}/logs'):
             os.makedirs(f'{folder_directory}/logs')
+
+    @staticmethod
+    def create_figures_directory(simulations_directory_path):
+        if not os.path.exists(f'{simulations_directory_path}/figures'):
+            os.makedirs(f'{simulations_directory_path}/figures')
 
     def get_circuit_file_path(self) -> str:
         return f'{SIMULATIONS_DIR}/{self.get_circuit_dir_and_file_name()}'

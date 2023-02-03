@@ -1,97 +1,188 @@
-import numpy as np
 import pandas as pd
 import os
 
 from matplotlib import pyplot as plt
+from matplotlib import animation as anime
 
-path = os.path.dirname(__file__)
+from representations import DataLoader, ModelParameters, InputParameters, ExportParameters
+from services.directoriesmanagementservice import DirectoriesManagementService
 
-dataframes = []
 
-models = ['pershin_simulations', 'pershin-vourkas_simulations']
-pershin_params = {'Alpha': '0', 'Beta': '1E5', 'Rinit': '5K', 'Roff': '10K', 'Ron': '1K', 'Vt': '4.6'}
-pershin_vourkas_params = {'Alpha': '0', 'Beta': '1E5', 'Rinit': '5K', 'Roff': '10K', 'Ron': '1K', 'Vt': '4.6'}
-pershin_values = {
-    'Alpha': [0, 1, 10, 100, 1e3, 1e5, 1e7, 1e9],
-    'Beta': [0, 1, 1e3, 1e5, 1e10, 1e13, 1e20, 1e30],
-    'Rinit': [value * 1e3 for value in [0.2, 0.5, 1, 2.5, 5, 10, 100, 1000]],
-    'Roff': [value * 1e3 for value in [0.2, 0.5, 1, 2.5, 5, 10, 100, 1000]],
-    'Ron': [value * 1e3 for value in [0.2, 0.5, 1, 2.5, 5, 10, 100, 1000]],
-    'Vt': [0, 1.5, 3, 3.8, 4.2, 4.6, 5, 6]
-}
-pershin_vourkas_values = {
-    'Alpha': [0, 1, 10, 100, 1e3, 1e5, 1e7, 1e9],
-    'Beta': [0, 1, 1e3, 1e5, 1e10, 1e13, 1e20, 1e30],
-    'Rinit': [value * 1e3 for value in [0.2, 0.5, 1, 2.5, 5, 10, 100, 1000]],
-    'Roff': [value * 1e3 for value in [0.2, 0.5, 1, 2.5, 5, 10, 100, 1000]],
-    'Ron': [value * 1e3 for value in [0.2, 0.5, 1, 2.5, 5, 10, 100, 1000]],
-    'Vt': [0, 1.5, 3, 3.8, 4.2, 4.6, 5, 6]
-}
+class PlotterService:
+    def __init__(
+            self, simulation_results_directory_path: str, export_parameters: ExportParameters,
+            simulation_path: str = None, model_parameters: ModelParameters = None,
+            input_parameters: InputParameters = None
+    ):
+        self.directories_management_service = DirectoriesManagementService()
 
-for variable_param in list(pershin_params):
-    csv_files_in_directory = []
-    csv_files_path_in_directory = []
-
-    model = models[0]
-    simulations_path = f'simulation_results/{models[0]}/{variable_param}/'
-    files_in_directory = os.listdir(simulations_path)
-    for file_in_directory in files_in_directory:
-        if len(file_in_directory.split('.csv')) > 1:
-            csv_files_in_directory.append(file_in_directory.replace('.csv', ''))
-            csv_file_path = os.path.join(path, simulations_path+file_in_directory)
-            csv_files_path_in_directory.append(csv_file_path)
-    csv_files_in_directory.sort()
-    csv_files_path_in_directory.sort()
-
-    for file_count, filepath in enumerate(csv_files_path_in_directory, 1):
-        df = pd.DataFrame(
-            np.concatenate([pd.read_csv(filepath, sep=r"\s+")[1:len(pd.read_csv(filepath, sep=r"\s+"))+1]]),
-            columns=pd.read_csv(filepath, sep=r"\s+").columns
+        self.simulation_results_directory_path = simulation_results_directory_path
+        self.export_parameters = export_parameters
+        self.model_simulations_directory_path = (
+            f'{self.simulation_results_directory_path}/{self.export_parameters.model_simulation_folder_name.value}'
         )
+        self.simulations_directory_path = (
+            f'{self.model_simulations_directory_path}/{self.export_parameters.folder_name}'
+        )
+        self.figures_directory_path = f'{self.simulations_directory_path}/figures'
+        self.simulation_path = simulation_path  # TODO: Agregar posibilidad de simular 1 solo file
+        self.directories_management_service.create_figures_directory(self.simulations_directory_path)
 
-        plt.figure(0, figsize=(15, 10))
-        plt.plot(df['vin'], -df['i(v1)'], label=f'{variable_param} = {pershin_values[variable_param][file_count-1]}')
+        self.model_parameters = model_parameters
+        self.input_parameters = input_parameters
+
+    def load_data(self) -> DataLoader:
+        files_in_model_simulations_directory = os.listdir(self.simulations_directory_path)
+        for file_in_simulations_directory in sorted(files_in_model_simulations_directory):
+            if file_in_simulations_directory.split('.csv')[0] == self.export_parameters.file_name:
+                csv_files_name = file_in_simulations_directory
+                csv_file_name_no_extension = file_in_simulations_directory.replace('.csv', '')
+                csv_file_path = os.path.join(self.simulations_directory_path, file_in_simulations_directory)
+
+                dataframe = pd.DataFrame(
+                        pd.read_csv(csv_file_path, sep=r"\s+", engine='python', skipfooter=4)
+                    )
+
+                return DataLoader(csv_files_name, csv_file_name_no_extension, csv_file_path, dataframe)
+
+    def plot_iv(self, df: pd.DataFrame, csv_file_name: str, title: str = None) -> None:
+        plt.figure(figsize=(12, 8))
+        plt.plot(
+            df['vin'], -df['i(v1)'],
+            label=(
+                f'{self.model_parameters.get_parameters_as_string()}'
+                f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
+            )
+        )
         plt.xlabel('Vin [V]')
         plt.ylabel('i(v1) [A]')
-        plt.title(f'I-V {model} - {variable_param} = {pershin_values[variable_param]}', fontsize=18)
-        plt.legend()
-        plt.savefig(f'{path}/{simulations_path}/{variable_param}_comparison.jpg')
+        plt.title(f'I-V {csv_file_name} {title if title is not None else ""}', fontsize=22)
+        plt.autoscale()
+        plt.legend(loc='lower right', fontsize=12)
+        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_iv.jpg')
+        plt.close()
 
-        plt.figure(1, figsize=(20, 16))
-        plt.subplot(3, 3, file_count)
-        plt.plot(df['vin'], -df['i(v1)'])
+    # TODO: Pasar parametro variable para construir label
+    def plot_iv_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None) -> None:
+        plt.figure(0, figsize=(12, 8))
+        plt.plot(
+            df['vin'], -df['i(v1)'],
+            label=label if label is not None else (
+                f'{self.model_parameters.get_parameters_as_string()}'
+                f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
+            )
+        )
         plt.xlabel('Vin [V]')
         plt.ylabel('i(v1) [A]')
-        plt.title(f'{variable_param} = {pershin_values[variable_param][file_count - 1]}', fontsize=18)
-        plt.suptitle(f'I-V {model} {pershin_params}', fontsize=25)
-        plt.savefig(f'{path}/{simulations_path}/iv_subplot.jpg')
+        plt.title(f'I-V {title if title is not None else ""}', fontsize=22)
+        plt.autoscale()
+        plt.legend(loc='lower right', fontsize=12)
+        plt.savefig(f'{self.figures_directory_path}/iv_overlapped.jpg')
 
-        plt.figure(2 * file_count, figsize=(15, 10))
-        plt.plot(df['vin'], -df['i(v1)'])
+    def plot_iv_log(self, df: pd.DataFrame, csv_file_name: str, title: str = None) -> None:
+        plt.figure(figsize=(12, 8))
+        plt.plot(
+            df['vin'], -df['i(v1)'],
+            label=(
+                f'{self.model_parameters.get_parameters_as_string()}'
+                f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
+            )
+        )
+        plt.yscale(value='log')
         plt.xlabel('Vin [V]')
-        plt.ylabel('i(v1) [A]')
-        plt.title(f'I-V {model} - {variable_param} = {pershin_values[variable_param][file_count - 1]}', fontsize=16)
-        plt.savefig(f'{path}/{simulations_path}/{csv_files_in_directory[file_count - 1]}.jpg')
+        plt.ylabel('log(i(v1)) [A]')
+        plt.title(f'log(I)-V {csv_file_name} {title if title is not None else ""}', fontsize=22)
+        plt.autoscale()
+        plt.legend(loc='lower right', fontsize=12)
+        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_iv_log.jpg')
+        plt.close()
 
-        plt.figure(2 * file_count + 1, figsize=(15, 10))
+    # TODO: Pasar parametro variable para construir label
+    def plot_iv_log_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None):
+        plt.figure(1, figsize=(12, 8))
+        plt.plot(
+            df['vin'], -df['i(v1)'],
+            label=label if label is not None else (
+                f'{self.model_parameters.get_parameters_as_string()}'
+                f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
+            )
+        )
+        plt.yscale(value='log')
+        plt.xlabel('Vin [V]')
+        plt.ylabel('log(i(v1)) [A]')
+        plt.title(f'log(I)-V {title if title is not None else ""}', fontsize=22)
+        plt.autoscale()
+        plt.legend(loc='lower right', fontsize=12)
+        plt.savefig(f'{self.figures_directory_path}/iv_log_overlapped.jpg')
+
+    def plot_states(self, df: pd.DataFrame, csv_file_name: str, title: dict = None) -> None:
+        plt.figure(figsize=(12, 8))
         plt.subplot(2, 1, 1)
         plt.plot(df['time'], df['vin'])
-        plt.hlines(0, 0, max(df['time']), color='black', linewidth=0.5)
-        plt.xlabel('Time [s]')
+        plt.xticks([])
         plt.ylabel('Vin [V]')
-        plt.title(f'{variable_param} = {pershin_values[variable_param][file_count - 1]}', fontsize=14)
         plt.subplot(2, 1, 2)
-        plt.plot(df['time'], df['l0'])
-        # TODO: La hline me saca los valores del eje Y
-        plt.hlines(
-            pershin_params['Rinit'], 0, max(df['time']), color='black', linestyle='dashed', linewidth=0.5,
-            label='Rinit = {}'.format(pershin_params['Rinit'])
+        plt.plot(
+            df['time'], df['l0'],
+            label=(
+                f'{self.model_parameters.get_parameters_as_string()}'
+                f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
+            )
         )
         plt.xlabel('Time [s]')
-        plt.ylabel('l0 [ohm]')
-        plt.title(f'{variable_param} = {pershin_values[variable_param][file_count - 1]}', fontsize=14)
-        plt.suptitle(f'Input voltage and State vs Time {model} {pershin_params}', fontsize=16)
-        plt.legend()
-        plt.savefig(f'{path}/{simulations_path}/{csv_files_in_directory[file_count - 1]}_states.jpg')
+        plt.ylabel(f'l0 [ohm]')
+        plt.suptitle(
+            f'Input voltage and State vs Time - {csv_file_name} {title if title is not None else ""}', fontsize=22
+        )
+        plt.legend(loc='center', bbox_to_anchor=(0.5, 1.1))
+        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_states.jpg')
+        plt.close()
 
-    plt.close('all')
+    def plot_states_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None) -> None:
+        plt.figure(2, figsize=(12, 8))
+        plt.plot(
+            df['vin'], df['l0'],
+            label=label if label is not None else (
+                f'{self.model_parameters.get_parameters_as_string()}'
+                f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
+            )
+        )
+        plt.xlabel('Vin [V]')
+        plt.ylabel('l0 [ohm]')
+        plt.title(f'Memristive states vs Input Voltage {title if title is not None else ""}', fontsize=22)
+        plt.autoscale()
+        plt.legend(loc='center')
+        plt.savefig(f'{self.figures_directory_path}/states_overlapped.jpg')
+
+    def plot_iv_animated(
+            self, df: pd.DataFrame, csv_file_name: str, title: dict = None
+    ) -> None:
+        fig = plt.figure(figsize=(12, 8))
+        l, = plt.plot([], [], 'k-')
+        p1, = plt.plot([], [], 'ko')
+        plt.xlabel('Vin [V]')
+        plt.ylabel('i(v1) [A]')
+        plt.title(f'I-V {csv_file_name} - {title}', fontsize=10)
+
+        plt.xlim(min(df['vin']) * 1.1, max(df['vin']) * 1.1)
+        plt.ylim(min(df['i(v1)']) * 1.1, max(df['i(v1)']) * 1.1)
+
+        metadata = dict(title="animation", artist="ignaciopineyro")
+        writer = anime.PillowWriter(fps=15, metadata=metadata)
+
+        xlist = []
+        ylist = []
+
+        with writer.saving(fig, f"{self.figures_directory_path}/{csv_file_name}_animation.gif", 100):
+            for xval, yval in zip(df['vin'], -df['i(v1)']):
+                xlist.append(xval)
+                ylist.append(yval)
+
+                l.set_data(xlist, ylist)
+                p1.set_data(xval, yval)
+                writer.grab_frame()
+
+        plt.close()
+
+    def plot_heaviside_terms(self):
+        raise NotImplementedError

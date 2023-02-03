@@ -1,7 +1,9 @@
 *.log
 *.csv
 *.cir
+*.sub
 *.txt
+*.jpg
 *.Identifier
 ./simulation_results/*
 __pycache__/*

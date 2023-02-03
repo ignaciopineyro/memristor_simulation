@@ -1,5 +1,7 @@
-from dataclasses import fields, dataclass
+from dataclasses import fields, dataclass, asdict
 from typing import List
+
+import pandas as pd
 
 from constants import WaveForms, AnalysisType, ModelsSimulationFolders, SpiceDevices, SpiceModel
 
@@ -17,12 +19,23 @@ class InputParameters:
     theta: float = None
     phase: float = None
 
-    def get_voltage_source(self) -> str:
+    def get_voltage_source_as_string(self) -> str:
         return(
             f"V{self.source_number} {self.n_plus} {self.n_minus} {self.wave_form.value} {self.vo}"
             f" {self.amplitude} {self.frequency} {self.td if self.td else ''}"
             f" {self.theta if self.theta else ''} {self.phase if self.phase else ''}\n"
         )
+
+    def get_input_parameters_for_plot_as_string(self):
+        input_params = ''
+        for k, v in asdict(self).items():
+            if k not in ['source_number', 'n_plus', 'n_minus'] and v is not None:
+                input_params += f'{k}={v} '
+
+        return input_params
+
+    def get_input_parameters_for_plot_legend(self):
+        return f'{self.wave_form} {self.amplitude} {self.frequency} {self.td} {self.theta} {self.phase} {self.vo}'
 
 
 @dataclass()
@@ -42,10 +55,17 @@ class DeviceParameters:
 class ModelParameters:
     alpha: float
     beta: float
-    rinit: float
-    roff: float
-    ron: float
-    vt: float
+    Rinit: float
+    Roff: float
+    Ron: float
+    Vt: float
+
+    def get_parameters_as_string(self):
+        params = ''
+        for k, v in asdict(self).items():
+            params += f'{k}={v} '
+
+        return params
 
 
 @dataclass()
@@ -79,17 +99,10 @@ class ExportParameters:
 class Subcircuit:
     name: str
     nodes: List[str]
-    parameters: dict
+    parameters: ModelParameters
 
-    def get_subcircuit_nodes(self) -> str:
+    def get_nodes_as_string(self) -> str:
         return ' '.join(self.nodes)
-
-    def get_subcircuit_parameters(self) -> str:
-        params = ''
-        for key, value in self.parameters.items():
-            params += f'{key}={value} '
-
-        return params
 
 
 @dataclass()
@@ -117,7 +130,7 @@ class Component:
     n_minus: str
     value: float = None
     extra_data: str = None
-    model: str = None
+    model: SpiceDevices = None
 
     def get_attributes_as_string(self):
         attr_str = ''
@@ -144,3 +157,11 @@ class AverageTimeMeasure:
     average_linux_real_execution_time: float = None
     average_linux_user_execution_time: float = None
     average_linux_sys_execution_time: float = None
+
+
+@dataclass()
+class DataLoader:
+    csv_file_name: str
+    csv_file_name_no_extension: str
+    csv_file_path: str
+    dataframe: pd.DataFrame

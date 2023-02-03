@@ -7,12 +7,12 @@ from services.directoriesmanagementservice import DirectoriesManagementService
 
 class SubcircuitFileService:
     def __init__(
-            self, model: MemristorModels, subcircuits: List[Subcircuit], sources: List[Source],
+            self, model: MemristorModels, subcircuit: Subcircuit, sources: List[Source],
             model_dependencies: List[ModelDependence] = None, components: List[Component] = None,
             control_commands: List[str] = None
     ):
         self.model = model
-        self.subcircuits = subcircuits
+        self.subcircuit = subcircuit
         self.model_dependencies = model_dependencies
         self.sources = sources
         self.components = components
@@ -22,17 +22,16 @@ class SubcircuitFileService:
         self.model_file_path = self.directories_management_service.get_model_dir()
 
     def _write_subcircuit_parameters(self, file: TextIO) -> None:
-        for subcircuit in self.subcircuits:
-            file.write('\n\n* SUBCIRCUITS:\n')
-            file.write(
-                f'.subckt {subcircuit.name} {subcircuit.get_subcircuit_nodes()}PARAMS: '
-                f'{subcircuit.get_subcircuit_parameters()}\n'
-            )
+        file.write('\n\n* SUBCIRCUITS:\n')
+        file.write(
+            f'.subckt {self.subcircuit.name} {self.subcircuit.get_nodes_as_string()}PARAMS: '
+            f'{self.subcircuit.parameters.get_parameters_as_string()}\n'
+        )
 
     def _write_model_dependencies(self, file: TextIO) -> None:
         file.write('\n\n* SPICE DEPENDENCIES:\n')
         for model_dependence in self.model_dependencies:
-            file.write(f'.model {model_dependence.name} {model_dependence.model}')
+            file.write(f'.model {model_dependence.name.value} {model_dependence.model.value}')
 
     def _write_sources(self, file: TextIO) -> None:
         file.write('\n\n* SOURCES:\n')

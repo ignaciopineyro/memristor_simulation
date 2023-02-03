@@ -8,7 +8,7 @@ consume them on demand by an interface.
 
 ## TODO list:
 * Implement networks simulations
-* Plot TimeMeasures vs # Simulation
+* Plot TimeMeasures vs # Simulation with error bars
 * Generate .cir and .sub files in simulation_results dir instead of a unique file
 * Generate examples dir with default .sub and .cir files
 * Purge a given number o simulations to avoid cache effect

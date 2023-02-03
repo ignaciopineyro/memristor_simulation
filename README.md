@@ -7,13 +7,16 @@ consume them on demand by an interface.
 ---
 
 ## TODO list:
+* Implement networks simulations
+* Plot TimeMeasures vs # Simulation
 * Generate .cir and .sub files in simulation_results dir instead of a unique file
 * Generate examples dir with default .sub and .cir files
+* Purge a given number o simulations to avoid cache effect
+* Create TimeMeasure tables from log files
 * Implement Heaviside terms plot method
 * Implement animated I-V plot method
-* Create TimeMeasure tables from log files
-* Improve plots (curves visibility, labels, etc)
 * Add more models (Biolek, between others)
+* Improve plots (curves visibility, labels, etc)
 * Create UI - Frontend
 
 ---
@@ -63,6 +66,10 @@ between all the simulations in a folder and a sub-plot figure for all simulation
     - Windows: http://ngspice.sourceforge.net/download.html
     - Linux: `sudo apt-get install ngspice`
 * Install the required dependencies (using a virtual environment is recommended) - `pip install -r requirements.txt`
+* At the end of the `main.py` file, you can modify the `simulate` function to use one of the template simulations for a given model and generate the desired plots. Supported templates, models and plots are still limited but the plan is to add more.:
+    - Simulation templates: `DEFAULT_TEST`, `DI_FRANCESCO_VARIABLE_AMPLITUDE`, `DI_FRANCESCO_VARIABLE_BETA`
+    - Plot Types: `IV`, `IV_OVERLAPPED`, `IV_LOG`, `IV_LOG_OVERLAPPED`, `MEMRISTIVE_STATES`, `MEMRISTIVE_STATES_OVERLAPPED`
+    - Models: `PERSHIN` and `PERSHIN_VOURKAS`
 * Execute `main.py` with `python3 main.py`
 
 ---

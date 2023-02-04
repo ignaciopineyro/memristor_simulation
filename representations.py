@@ -165,3 +165,9 @@ class DataLoader:
     csv_file_name_no_extension: str
     csv_file_path: str
     dataframe: pd.DataFrame
+
+
+@dataclass()
+class NetworkDimensions:
+    N: int
+    M: int

@@ -12,6 +12,7 @@ consume them on demand by an interface.
 * Generate .cir and .sub files in simulation_results dir instead of a unique file
 * Generate examples dir with default .sub and .cir files
 * Purge a given number o simulations to avoid cache effect
+* Save Networks in another .sub file in order to save the generation time
 * Create TimeMeasure tables from log files
 * Implement Heaviside terms plot method
 * Implement animated I-V plot method

@@ -259,5 +259,5 @@ if __name__ == "__main__":
             PlotType.IV, PlotType.IV_OVERLAPPED, PlotType.IV_LOG, PlotType.IV_LOG_OVERLAPPED,
             PlotType.MEMRISTIVE_STATES, PlotType.MEMRISTIVE_STATES_OVERLAPPED
         ],
-        model=MemristorModels.PERSHIN, amount_iterations=100
+        model=MemristorModels.PERSHIN, amount_iterations=1
     )

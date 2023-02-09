@@ -4,7 +4,7 @@
 .include /home/ignaciopineyro/memristor_simulation/models/pershin.sub
 
 * COMPONENTS:
-V1 vin gnd sin 0 5 1   
+V1 vin gnd sin 0 2 1   
 xmem0 vin gnd l0 memristor
 
 * ANALYSIS COMMANDS:
@@ -15,7 +15,7 @@ xmem0 vin gnd l0 memristor
 run
 set wr_vecnames
 set wr_singlescale
-wrdata /home/ignaciopineyro/memristor_simulation/simulation_results/pershin_simulations/default_test/default_test_simulation.csv vin i(v1) l0
+wrdata /home/ignaciopineyro/memristor_simulation/simulation_results/pershin_simulations/di_francesco_beta/beta_50000000.0.csv vin i(v1) l0
 quit
 
 .endc

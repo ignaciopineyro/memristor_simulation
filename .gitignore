@@ -11,5 +11,5 @@ __pycache__/*
 .idea
 NGSpice
 !backup/cir_files/*
-!backup/simulation_results/*
+!backup/simulation_results/**
 !backup/sub_files/*

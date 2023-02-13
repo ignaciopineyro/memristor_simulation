@@ -1,4 +1,4 @@
-from typing import TextIO
+from typing import TextIO, List
 
 from representations import InputParameters, SimulationParameters, DeviceParameters, ExportParameters
 from services.directoriesmanagementservice import DirectoriesManagementService
@@ -8,7 +8,7 @@ from services.subcircuitfileservice import SubcircuitFileService
 class CircuitFileService:
     def __init__(
             self, subcircuit_file_service: SubcircuitFileService, input_parameters: InputParameters,
-            device_parameters: DeviceParameters, simulation_parameters: SimulationParameters,
+            device_parameters: List[DeviceParameters], simulation_parameters: SimulationParameters,
             export_parameters: ExportParameters,
     ):
         self.input_parameters = input_parameters
@@ -26,7 +26,8 @@ class CircuitFileService:
     def _write_components(self, file: TextIO) -> None:
         file.write("\n\n* COMPONENTS:\n")
         file.write(self.input_parameters.get_voltage_source_as_string())
-        file.write(self.device_parameters.get_device())
+        for device_parameter in self.device_parameters:
+            file.write(f'{device_parameter.get_device()}\n')
 
     def _write_analysis_commands(self, file: TextIO) -> None:
         file.write("\n\n* ANALYSIS COMMANDS:\n")

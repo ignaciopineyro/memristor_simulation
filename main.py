@@ -3,7 +3,8 @@ from typing import List
 from constants import MemristorModels, WaveForms, AnalysisType, ModelsSimulationFolders, SpiceDevices, SpiceModel, \
     SimulationTemplate, InvalidSimulationTemplate, SIMULATIONS_DIR, PlotType
 from representations import Subcircuit, Source, Component, SimulationParameters, InputParameters, ModelParameters, \
-    DeviceParameters, ExportParameters, ModelDependence
+    DeviceParameters, ExportParameters, ModelDependence, NetworkDimensions
+from services.networkservice import NetworkService
 from services.circuitfileservice import CircuitFileService
 from services.ngspiceservice import NGSpiceService
 from services.plotterservice import PlotterService
@@ -35,7 +36,7 @@ def create_di_francesco_variable_beta_circuit_file_service(
 ) -> List[CircuitFileService]:
     circuit_file_service = []
     input_params = InputParameters(1, 'vin', 'gnd', WaveForms.SIN, 0, 2, 1)
-    device_params = DeviceParameters('xmem', 0, ['vin', 'gnd', 'l0'], 'memristor')
+    device_params = [DeviceParameters('xmem', 0, ['vin', 'gnd', 'l0'], 'memristor')]
     simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
     export_folder_name = 'di_francesco_beta'
 
@@ -91,7 +92,7 @@ def create_di_francesco_variable_amplitude_circuit_file_service(
     circuit_file_service = []
     for amplitude in [0.7, 1, 2, 4]:
         input_params = InputParameters(1, 'vin', 'gnd', WaveForms.SIN, 0, amplitude, 1)
-        device_params = DeviceParameters('xmem', 0, ['vin', 'gnd', 'l0'], 'memristor')
+        device_params = [DeviceParameters('xmem', 0, ['vin', 'gnd', 'l0'], 'memristor')]
         simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
         export_folder_name = 'di_francesco_vin_amplitude'
         export_file_name = f'vin_{amplitude}'
@@ -137,13 +138,21 @@ def create_di_francesco_variable_amplitude_subcircuit_file_service(
 
 
 def create_default_test_circuit_file_service(
-        subcircuit_file_service: SubcircuitFileService
+        subcircuit_file_service: SubcircuitFileService, network_service: NetworkService = None
 ) -> List[CircuitFileService]:
     input_params = InputParameters(1, 'vin', 'gnd', WaveForms.SIN, 0, 5, 1)
-    device_params = DeviceParameters('xmem', 0, ['vin', 'gnd', 'l0'], 'memristor')
+
+    if network_service:
+        device_params = network_service.generate_device_parameters('xmem', 'memristor')
+        export_folder_name = 'default_network'
+        export_file_name = 'default_network_simulation'
+
+    else:
+        device_params = [DeviceParameters('xmem', 0, ['vin', 'gnd', 'l0'], 'memristor')]
+        export_folder_name = 'default_test'
+        export_file_name = 'default_test_simulation'
+
     simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
-    export_folder_name = 'default_test'
-    export_file_name = 'default_test_simulation'
     export_params = ExportParameters(
         ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model), export_folder_name,
         export_file_name, ['vin', 'i(v1)', 'l0']
@@ -154,7 +163,7 @@ def create_default_test_circuit_file_service(
     ]
 
 
-def create_default_test_subcircuit_file_service(model: MemristorModels) -> List[SubcircuitFileService]:
+def create_default_test_subcircuit_file_service(model: MemristorModels,) -> List[SubcircuitFileService]:
     model_parameters = ModelParameters(0, 100e3, 5e3, 10e3, 1e3, 4.6)
     subcircuit = Subcircuit('memristor', ['pl', 'mn', 'x'], model_parameters)
     source_bx = Source(
@@ -189,6 +198,12 @@ def simulate(
     if simulation_template == SimulationTemplate.DEFAULT_TEST:
         subcircuit_file_service = create_default_test_subcircuit_file_service(model)
         circuit_file_service = create_default_test_circuit_file_service(subcircuit_file_service[0])
+
+    elif simulation_template == SimulationTemplate.DEFAULT_NETWORK:
+        network_dimensions = NetworkDimensions(N=16, M=16)
+        network_service = NetworkService(network_dimensions)
+        subcircuit_file_service = create_default_test_subcircuit_file_service(model)
+        circuit_file_service = create_default_test_circuit_file_service(subcircuit_file_service[0], network_service)
 
     elif simulation_template == SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE:
         model_parameters = ModelParameters(0, 5e5, 200e3, 200e3, 2e3, 0.6)
@@ -230,34 +245,35 @@ def plot(
         export_parameters: ExportParameters, model_parameters: ModelParameters = None,
         input_parameters: InputParameters = None, plot_types: List[PlotType] = None
 ):
-    plotter_service = PlotterService(
-        simulation_results_directory_path=SIMULATIONS_DIR, export_parameters=export_parameters,
-        model_parameters=model_parameters, input_parameters=input_parameters
-    )
-    data_loader = plotter_service.load_data()
+    if plot_types is not None:
+        plotter_service = PlotterService(
+            simulation_results_directory_path=SIMULATIONS_DIR, export_parameters=export_parameters,
+            model_parameters=model_parameters, input_parameters=input_parameters
+        )
+        data_loader = plotter_service.load_data()
 
-    plotter_service.plot_iv(
-        data_loader.dataframe, data_loader.csv_file_name_no_extension
-    ) if PlotType.IV in plot_types else None
-    plotter_service.plot_iv_overlapped(data_loader.dataframe) if PlotType.IV_OVERLAPPED in plot_types else None
-    plotter_service.plot_iv_log(
-        data_loader.dataframe, data_loader.csv_file_name_no_extension
-    ) if PlotType.IV_LOG in plot_types else None
-    plotter_service.plot_iv_log_overlapped(data_loader.dataframe) if PlotType.IV_LOG_OVERLAPPED in plot_types else None
-    plotter_service.plot_states(
-        data_loader.dataframe, data_loader.csv_file_name_no_extension
-    ) if PlotType.MEMRISTIVE_STATES in plot_types else None
-    plotter_service.plot_states_overlapped(
-        data_loader.dataframe
-    ) if PlotType.MEMRISTIVE_STATES_OVERLAPPED in plot_types else None
+        plotter_service.plot_iv(
+            data_loader.dataframe, data_loader.csv_file_name_no_extension
+        ) if PlotType.IV in plot_types else None
+        plotter_service.plot_iv_overlapped(data_loader.dataframe) if PlotType.IV_OVERLAPPED in plot_types else None
+        plotter_service.plot_iv_log(
+            data_loader.dataframe, data_loader.csv_file_name_no_extension
+        ) if PlotType.IV_LOG in plot_types else None
+        plotter_service.plot_iv_log_overlapped(data_loader.dataframe) if PlotType.IV_LOG_OVERLAPPED in plot_types else None
+        plotter_service.plot_states(
+            data_loader.dataframe, data_loader.csv_file_name_no_extension
+        ) if PlotType.MEMRISTIVE_STATES in plot_types else None
+        plotter_service.plot_states_overlapped(
+            data_loader.dataframe
+        ) if PlotType.MEMRISTIVE_STATES_OVERLAPPED in plot_types else None
 
 
 if __name__ == "__main__":
     simulate(
-        simulation_template=SimulationTemplate.DEFAULT_TEST,
-        plot_types=[
-            PlotType.IV, PlotType.IV_OVERLAPPED, PlotType.IV_LOG, PlotType.IV_LOG_OVERLAPPED,
-            PlotType.MEMRISTIVE_STATES, PlotType.MEMRISTIVE_STATES_OVERLAPPED
-        ],
+        simulation_template=SimulationTemplate.DEFAULT_NETWORK,
+        # plot_types=[
+        #     PlotType.IV, PlotType.IV_OVERLAPPED, PlotType.IV_LOG, PlotType.IV_LOG_OVERLAPPED,
+        #     PlotType.MEMRISTIVE_STATES, PlotType.MEMRISTIVE_STATES_OVERLAPPED
+        # ],
         model=MemristorModels.PERSHIN, amount_iterations=1
     )

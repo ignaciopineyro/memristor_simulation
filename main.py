@@ -42,10 +42,16 @@ def create_di_francesco_variable_beta_circuit_file_service(
 
     for subcircuit_file_service in subcircuit_file_services:
         export_file_name = f'beta_{subcircuit_file_service.subcircuit.parameters.beta}'
-        export_params = ExportParameters(
-            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model), export_folder_name,
-            export_file_name, ['vin', 'i(v1)', 'l0']
-        )
+        export_params = [
+            ExportParameters(
+                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+                export_folder_name, export_file_name, ['l0']
+            ),
+            ExportParameters(
+                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+                export_folder_name, export_file_name, ['l0']
+            )
+        ]
 
         circuit_file_service.append(
             CircuitFileService(subcircuit_file_service, input_params, device_params, simulation_params, export_params)
@@ -96,10 +102,16 @@ def create_di_francesco_variable_amplitude_circuit_file_service(
         simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
         export_folder_name = 'di_francesco_vin_amplitude'
         export_file_name = f'vin_{amplitude}'
-        export_params = ExportParameters(
-            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model), export_folder_name,
-            export_file_name, ['vin', 'i(v1)', 'l0']
-        )
+        export_params = [
+            ExportParameters(
+                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+                export_folder_name, export_file_name, ['vin', 'i(v1)']
+            ),
+            ExportParameters(
+                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+                export_folder_name, export_file_name, ['l0']
+            )
+        ]
 
         circuit_file_service.append(
             CircuitFileService(subcircuit_file_service, input_params, device_params, simulation_params, export_params)
@@ -140,23 +152,44 @@ def create_di_francesco_variable_amplitude_subcircuit_file_service(
 def create_default_test_circuit_file_service(
         subcircuit_file_service: SubcircuitFileService, network_service: NetworkService = None
 ) -> List[CircuitFileService]:
-    input_params = InputParameters(1, 'vin', 'gnd', WaveForms.SIN, 0, 5, 1)
+    input_params = InputParameters(1, 'vin', 'gnd', WaveForms.SIN, 0, 10, 1)
 
     if network_service:
         device_params = network_service.generate_device_parameters('xmem', 'memristor')
-        export_folder_name = 'default_network'
-        export_file_name = 'default_network_simulation'
+        export_folder_name = (
+            f'default_network_{network_service.network_dimensions.N}x{network_service.network_dimensions.M}'
+        )
+        export_file_name = (
+            f'default_network_simulation_{network_service.network_dimensions.N}x{network_service.network_dimensions.M}'
+        )
+        export_params = [
+            ExportParameters(
+                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+                export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
+            ),
+            ExportParameters(
+                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+                export_folder_name, export_file_name + '_states',
+                [device_param.nodes[2] for device_param in device_params]
+            )
+        ]
 
     else:
         device_params = [DeviceParameters('xmem', 0, ['vin', 'gnd', 'l0'], 'memristor')]
         export_folder_name = 'default_test'
         export_file_name = 'default_test_simulation'
+        export_params = [
+            ExportParameters(
+                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+                export_folder_name, export_file_name, ['vin', 'i(v1)']
+            ),
+            ExportParameters(
+                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+                export_folder_name, export_file_name, ['l0']
+            )
+        ]
 
     simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
-    export_params = ExportParameters(
-        ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model), export_folder_name,
-        export_file_name, ['vin', 'i(v1)', 'l0']
-    )
 
     return [
         CircuitFileService(subcircuit_file_service, input_params, device_params, simulation_params, export_params)
@@ -164,7 +197,7 @@ def create_default_test_circuit_file_service(
 
 
 def create_default_test_subcircuit_file_service(model: MemristorModels,) -> List[SubcircuitFileService]:
-    model_parameters = ModelParameters(0, 100e3, 5e3, 10e3, 1e3, 4.6)
+    model_parameters = ModelParameters(0, 5e5, 200e3, 200e3, 2e3, 0.6)
     subcircuit = Subcircuit('memristor', ['pl', 'mn', 'x'], model_parameters)
     source_bx = Source(
         name='Bx', n_plus='0', n_minus='x', behaviour_function='I=\'(f1(V(pl,mn))>0) && (V(x)<Roff) ? {f1(V(pl,mn))}: '
@@ -200,7 +233,7 @@ def simulate(
         circuit_file_service = create_default_test_circuit_file_service(subcircuit_file_service[0])
 
     elif simulation_template == SimulationTemplate.DEFAULT_NETWORK:
-        network_dimensions = NetworkDimensions(N=16, M=16)
+        network_dimensions = NetworkDimensions(N=4, M=4)
         network_service = NetworkService(network_dimensions)
         subcircuit_file_service = create_default_test_subcircuit_file_service(model)
         circuit_file_service = create_default_test_circuit_file_service(subcircuit_file_service[0], network_service)
@@ -242,7 +275,7 @@ def simulate(
 
 
 def plot(
-        export_parameters: ExportParameters, model_parameters: ModelParameters = None,
+        export_parameters: List[ExportParameters], model_parameters: ModelParameters = None,
         input_parameters: InputParameters = None, plot_types: List[PlotType] = None
 ):
     if plot_types is not None:
@@ -250,30 +283,34 @@ def plot(
             simulation_results_directory_path=SIMULATIONS_DIR, export_parameters=export_parameters,
             model_parameters=model_parameters, input_parameters=input_parameters
         )
-        data_loader = plotter_service.load_data()
+        data_loaders = plotter_service.load_data()
 
-        plotter_service.plot_iv(
-            data_loader.dataframe, data_loader.csv_file_name_no_extension
-        ) if PlotType.IV in plot_types else None
-        plotter_service.plot_iv_overlapped(data_loader.dataframe) if PlotType.IV_OVERLAPPED in plot_types else None
-        plotter_service.plot_iv_log(
-            data_loader.dataframe, data_loader.csv_file_name_no_extension
-        ) if PlotType.IV_LOG in plot_types else None
-        plotter_service.plot_iv_log_overlapped(data_loader.dataframe) if PlotType.IV_LOG_OVERLAPPED in plot_types else None
-        plotter_service.plot_states(
-            data_loader.dataframe, data_loader.csv_file_name_no_extension
-        ) if PlotType.MEMRISTIVE_STATES in plot_types else None
-        plotter_service.plot_states_overlapped(
-            data_loader.dataframe
-        ) if PlotType.MEMRISTIVE_STATES_OVERLAPPED in plot_types else None
+        for data_loader in data_loaders:
+            try:
+                if PlotType.IV in plot_types:
+                    plotter_service.plot_iv(data_loader.dataframe, data_loader.csv_file_name_no_extension)
+                if PlotType.IV_OVERLAPPED in plot_types:
+                    plotter_service.plot_iv_overlapped(data_loader.dataframe)
+                if PlotType.IV_LOG in plot_types:
+                    plotter_service.plot_iv_log(data_loader.dataframe, data_loader.csv_file_name_no_extension)
+                if PlotType.IV_LOG_OVERLAPPED in plot_types:
+                    plotter_service.plot_iv_log_overlapped(data_loader.dataframe)
+                if PlotType.MEMRISTIVE_STATES in plot_types:
+                    plotter_service.plot_states(data_loader.dataframe, data_loader.csv_file_name_no_extension)
+                if PlotType.MEMRISTIVE_STATES_OVERLAPPED in plot_types:
+                    plotter_service.plot_states_overlapped(data_loader.dataframe)
+
+            except KeyError:
+                continue
 
 
 if __name__ == "__main__":
     simulate(
         simulation_template=SimulationTemplate.DEFAULT_NETWORK,
+        plot_types=[PlotType.IV, PlotType.IV_OVERLAPPED, PlotType.IV_LOG, PlotType.IV_LOG_OVERLAPPED],
         # plot_types=[
         #     PlotType.IV, PlotType.IV_OVERLAPPED, PlotType.IV_LOG, PlotType.IV_LOG_OVERLAPPED,
         #     PlotType.MEMRISTIVE_STATES, PlotType.MEMRISTIVE_STATES_OVERLAPPED
         # ],
-        model=MemristorModels.PERSHIN, amount_iterations=1
+        model=MemristorModels.PERSHIN_VOURKAS, amount_iterations=1
     )

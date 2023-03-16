@@ -12,7 +12,7 @@ class NetworkService:
     ):
         self.network_dimensions = network_dimensions
         self.network = nx.grid_2d_graph(self.network_dimensions.N, self.network_dimensions.M)
-        self.gnd_node = gnd_node or (self.network_dimensions.N - 1)
+        self.gnd_node = gnd_node or (self.network_dimensions.N - 1, 0)
         self.vin_node = vin_node or (0, 0)
 
         self.state_nodes = []

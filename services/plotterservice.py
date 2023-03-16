@@ -1,3 +1,5 @@
+from typing import List
+
 import pandas as pd
 import os
 
@@ -10,31 +12,32 @@ from services.directoriesmanagementservice import DirectoriesManagementService
 
 class PlotterService:
     def __init__(
-            self, simulation_results_directory_path: str, export_parameters: ExportParameters,
-            simulation_path: str = None, model_parameters: ModelParameters = None,
-            input_parameters: InputParameters = None
+            self, simulation_results_directory_path: str, export_parameters: List[ExportParameters],
+            model_parameters: ModelParameters = None, input_parameters: InputParameters = None
     ):
         self.directories_management_service = DirectoriesManagementService()
 
         self.simulation_results_directory_path = simulation_results_directory_path
         self.export_parameters = export_parameters
         self.model_simulations_directory_path = (
-            f'{self.simulation_results_directory_path}/{self.export_parameters.model_simulation_folder_name.value}'
+            f'{self.simulation_results_directory_path}/{self.export_parameters[0].model_simulation_folder_name.value}'
         )
         self.simulations_directory_path = (
-            f'{self.model_simulations_directory_path}/{self.export_parameters.folder_name}'
+            f'{self.model_simulations_directory_path}/{self.export_parameters[0].folder_name}'
         )
         self.figures_directory_path = f'{self.simulations_directory_path}/figures'
-        self.simulation_path = simulation_path  # TODO: Agregar posibilidad de simular 1 solo file
         self.directories_management_service.create_figures_directory(self.simulations_directory_path)
 
         self.model_parameters = model_parameters
         self.input_parameters = input_parameters
 
-    def load_data(self) -> DataLoader:
+    def load_data(self) -> List[DataLoader]:
+        data_loaders = []
         files_in_model_simulations_directory = os.listdir(self.simulations_directory_path)
         for file_in_simulations_directory in sorted(files_in_model_simulations_directory):
-            if file_in_simulations_directory.split('.csv')[0] == self.export_parameters.file_name:
+            if file_in_simulations_directory.split('.csv')[0] in [
+                export_parameter.file_name for export_parameter in self.export_parameters
+            ]:
                 csv_files_name = file_in_simulations_directory
                 csv_file_name_no_extension = file_in_simulations_directory.replace('.csv', '')
                 csv_file_path = os.path.join(self.simulations_directory_path, file_in_simulations_directory)
@@ -43,7 +46,9 @@ class PlotterService:
                         pd.read_csv(csv_file_path, sep=r"\s+", engine='python', skipfooter=4)
                     )
 
-                return DataLoader(csv_files_name, csv_file_name_no_extension, csv_file_path, dataframe)
+                data_loaders.append(DataLoader(csv_files_name, csv_file_name_no_extension, csv_file_path, dataframe))
+
+        return data_loaders
 
     def plot_iv(self, df: pd.DataFrame, csv_file_name: str, title: str = None) -> None:
         plt.figure(figsize=(12, 8))
@@ -62,7 +67,6 @@ class PlotterService:
         plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_iv.jpg')
         plt.close()
 
-    # TODO: Pasar parametro variable para construir label
     def plot_iv_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None) -> None:
         plt.figure(0, figsize=(12, 8))
         plt.plot(
@@ -97,7 +101,6 @@ class PlotterService:
         plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_iv_log.jpg')
         plt.close()
 
-    # TODO: Pasar parametro variable para construir label
     def plot_iv_log_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None):
         plt.figure(1, figsize=(12, 8))
         plt.plot(

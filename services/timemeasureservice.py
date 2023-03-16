@@ -15,7 +15,7 @@ class TimeMeasureService:
 
         self.command_line = None
         self.circuit_file_path = self.directories_management_service.get_circuit_file_path()
-        self.simulation_result_file_path = self.directories_management_service.get_export_simulation_file_path()
+        self.simulation_result_file_paths = self.directories_management_service.get_export_simulation_file_paths()
         self.simulation_log_path = self.directories_management_service.get_simulation_log_file_path()
         self.execute_command = ''
 
@@ -103,27 +103,29 @@ class TimeMeasureService:
         python_time_measure_ms = (self.end_python_execution_time_measure(time_measure.start_time)) * 1000
         time_measure.python_execution_time = python_time_measure_ms
 
-        with open(self.simulation_result_file_path, "a") as f:
-            f.write(f'\n# {TimeMeasures.PYTHON_EXECUTION_TIME.value} = {python_time_measure_ms} ms')
+        for simulation_result_file_path in self.simulation_result_file_paths:
+            with open(simulation_result_file_path, "a") as f:
+                f.write(f'\n# {TimeMeasures.PYTHON_EXECUTION_TIME.value} = {python_time_measure_ms} ms')
 
         return time_measure
 
     def write_linux_time_measure_into_csv(self, linux_time_output: bytes, time_measure: TimeMeasure) -> None:
         formatted_time_measure = self._format_linux_time_output(linux_time_output.decode(), time_measure)
 
-        with open(self.simulation_result_file_path, "a") as f:
-            f.write(
-                f'\n# {TimeMeasures.LINUX_REAL_EXECUTION_TIME.value} = '
-                f'{formatted_time_measure.linux_real_execution_time} ms'
-            )
-            f.write(
-                f'\n# {TimeMeasures.LINUX_USER_EXECUTION_TIME.value} = '
-                f'{formatted_time_measure.linux_user_execution_time} ms'
-            )
-            f.write(
-                f'\n# {TimeMeasures.LINUX_SYS_EXECUTION_TIME.value} = '
-                f'{formatted_time_measure.linux_sys_execution_time} ms'
-            )
+        for simulation_result_file_path in self.simulation_result_file_paths:
+            with open(simulation_result_file_path, "a") as f:
+                f.write(
+                    f'\n# {TimeMeasures.LINUX_REAL_EXECUTION_TIME.value} = '
+                    f'{formatted_time_measure.linux_real_execution_time} ms'
+                )
+                f.write(
+                    f'\n# {TimeMeasures.LINUX_USER_EXECUTION_TIME.value} = '
+                    f'{formatted_time_measure.linux_user_execution_time} ms'
+                )
+                f.write(
+                    f'\n# {TimeMeasures.LINUX_SYS_EXECUTION_TIME.value} = '
+                    f'{formatted_time_measure.linux_sys_execution_time} ms'
+                )
 
     @staticmethod
     def print_time_measure(time_measure: TimeMeasure):
@@ -143,8 +145,10 @@ class TimeMeasureService:
                 print(f'# {k} = {str(v)} ms')
         print(f'\n')
 
-    def write_simulation_log(self, simulation_log: str = None, time_measure: TimeMeasure = None,
-                             average_time_measure: AverageTimeMeasure = None) -> None:
+    def write_simulation_log(
+            self, simulation_log: str = None, time_measure: TimeMeasure = None,
+            average_time_measure: AverageTimeMeasure = None
+    ) -> None:
         with open(f'{self.simulation_log_path}', "a+") as f:
             if simulation_log:
                 f.write(f'{"#" * 60}\n{simulation_log}\n\n')

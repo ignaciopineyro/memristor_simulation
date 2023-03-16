@@ -24,7 +24,7 @@ class SubcircuitFileService:
     def _write_subcircuit_parameters(self, file: TextIO) -> None:
         file.write('\n\n* SUBCIRCUITS:\n')
         file.write(
-            f'.subckt {self.subcircuit.name} {self.subcircuit.get_nodes_as_string()}PARAMS: '
+            f'.subckt {self.subcircuit.name} {self.subcircuit.get_nodes_as_string()} PARAMS: '
             f'{self.subcircuit.parameters.get_parameters_as_string()}\n'
         )
 

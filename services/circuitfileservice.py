@@ -9,7 +9,7 @@ class CircuitFileService:
     def __init__(
             self, subcircuit_file_service: SubcircuitFileService, input_parameters: InputParameters,
             device_parameters: List[DeviceParameters], simulation_parameters: SimulationParameters,
-            export_parameters: ExportParameters,
+            export_parameters: List[ExportParameters],
     ):
         self.input_parameters = input_parameters
         self.device_parameters = device_parameters
@@ -39,11 +39,11 @@ class CircuitFileService:
         file.write('run\n')
         file.write('set wr_vecnames\n')
         file.write('set wr_singlescale\n')
-        file.write(
-            f'wrdata {self.directories_management_service.get_export_simulation_file_path()} '
-            f'{self.export_parameters.get_export_magnitudes()}'
-        )
-        # TODO: ADD NGSPICE SIMULATION TIME COMMAND IF EXISTS
+        for index, export_parameter in enumerate(self.export_parameters):
+            file.write(
+                f'wrdata {self.directories_management_service.get_export_simulation_file_paths()[index]} '
+                f'{export_parameter.get_export_magnitudes()}\n'
+            )
 
     def write_circuit_file(self) -> None:
         """

@@ -45,11 +45,11 @@ def create_di_francesco_variable_beta_circuit_file_service(
         export_params = [
             ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name, ['l0']
+                export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
             ),
             ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name, ['l0']
+                export_folder_name, export_file_name + '_states', ['l0']
             )
         ]
 
@@ -105,11 +105,11 @@ def create_di_francesco_variable_amplitude_circuit_file_service(
         export_params = [
             ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name, ['vin', 'i(v1)']
+                export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
             ),
             ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name, ['l0']
+                export_folder_name, export_file_name + '_states', ['l0']
             )
         ]
 
@@ -306,7 +306,7 @@ def plot(
 
 if __name__ == "__main__":
     simulate(
-        simulation_template=SimulationTemplate.DEFAULT_TEST,
+        simulation_template=SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA,
         plot_types=[PlotType.IV, PlotType.IV_LOG],
         # plot_types=[
         #     PlotType.IV, PlotType.IV_OVERLAPPED, PlotType.IV_LOG, PlotType.IV_LOG_OVERLAPPED,

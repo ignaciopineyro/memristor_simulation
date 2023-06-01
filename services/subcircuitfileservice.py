@@ -19,7 +19,7 @@ class SubcircuitFileService:
         self.control_commands = control_commands
 
         self.directories_management_service = DirectoriesManagementService(model=self.model)
-        self.model_file_path = self.directories_management_service.get_model_dir()
+        self.model_file_path = self.directories_management_service.get_model_path()
 
     def _write_subcircuit_parameters(self, file: TextIO) -> None:
         file.write('\n\n* SUBCIRCUITS:\n')
@@ -53,6 +53,7 @@ class SubcircuitFileService:
         Writes the .sub subcircuit file to include on circuit's file. The file is saved in models/
         :return: None
         """
+
         with open(self.model_file_path, "w+") as f:
             f.write(f'* MEMRISTOR SUBCIRCUIT - MODEL {self.model.value}')
             self._write_subcircuit_parameters(f)

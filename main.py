@@ -181,11 +181,11 @@ def create_default_test_circuit_file_service(
         export_params = [
             ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name, ['vin', 'i(v1)']
+                export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
             ),
             ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name, ['l0']
+                export_folder_name, export_file_name + '_states', ['l0']
             )
         ]
 
@@ -306,11 +306,11 @@ def plot(
 
 if __name__ == "__main__":
     simulate(
-        simulation_template=SimulationTemplate.DEFAULT_NETWORK,
-        plot_types=[PlotType.IV, PlotType.IV_OVERLAPPED, PlotType.IV_LOG, PlotType.IV_LOG_OVERLAPPED],
+        simulation_template=SimulationTemplate.DEFAULT_TEST,
+        plot_types=[PlotType.IV, PlotType.IV_LOG],
         # plot_types=[
         #     PlotType.IV, PlotType.IV_OVERLAPPED, PlotType.IV_LOG, PlotType.IV_LOG_OVERLAPPED,
         #     PlotType.MEMRISTIVE_STATES, PlotType.MEMRISTIVE_STATES_OVERLAPPED
         # ],
-        model=MemristorModels.PERSHIN_VOURKAS, amount_iterations=1
+        model=MemristorModels.PERSHIN, amount_iterations=1
     )

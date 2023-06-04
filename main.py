@@ -196,6 +196,70 @@ def create_default_test_circuit_file_service(
     ]
 
 
+def create_quinteros_experiments_subcircuit_file_service(model: MemristorModels) -> List[SubcircuitFileService]:
+
+    model_parameters = [
+        ModelParameters(alpha=0, beta=5e5, Rinit=2e5, Roff=2e5, Ron=2e3, Vt=0.6),
+        ModelParameters(alpha=0, beta=5e5, Rinit=2e3, Roff=2e5, Ron=2e3, Vt=0.6),
+        ModelParameters(alpha=0, beta=5e5, Rinit=2e5, Roff=2e5, Ron=2e3, Vt=0.6),
+        ModelParameters(alpha=0, beta=5e5, Rinit=2e3, Roff=2e5, Ron=2e3, Vt=0.6),
+    ]
+    subcircuits = [Subcircuit('memristor', ['pl', 'mn', 'x'], model_parameter) for model_parameter in model_parameters]
+    source_bx = Source(
+        name='Bx', n_plus='0', n_minus='x', behaviour_function='I=\'(f1(V(pl,mn))>0) && (V(x)<Roff) ? {f1(V(pl,mn))}: '
+                                                               '(f1(V(pl,mn))<0) && (V(x)>Ron) ? {f1(V(pl,mn))}: {0}\''
+    )
+
+    model_dependencies = None
+    default_components = None
+
+    if model == MemristorModels.PERSHIN:
+        default_components = _create_pershin_default_components()
+
+    elif model == MemristorModels.PERSHIN_VOURKAS:
+        default_components = _create_pershin_vourkas_default_components()
+        model_dependencies = [ModelDependence(name=SpiceDevices.DIODE, model=SpiceModel.DIODE)]
+
+    control_cmd = '.func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}'
+
+    return [
+        SubcircuitFileService(
+            model=model, subcircuit=subcircuit, sources=[source_bx], model_dependencies=model_dependencies,
+            components=default_components, control_commands=[control_cmd]
+        ) for subcircuit in subcircuits
+    ]
+
+
+def create_quinteros_experiments_circuit_file_service(
+        subcircuit_file_service: SubcircuitFileService, network_service: NetworkService, experiment_number: int
+) -> CircuitFileService:
+    input_params = InputParameters(1, 'vin', 'gnd', WaveForms.SIN, 0, 10, 1)
+    device_params = network_service.generate_device_parameters('xmem', 'memristor')
+
+    export_folder_name = f'quinteros_experiment_{experiment_number}_{network_service.network_dimensions.N}x' \
+                         f'{network_service.network_dimensions.M}'
+
+    export_file_name = f'quinteros_experiments_simulation_{experiment_number}_{network_service.network_dimensions.N}x' \
+                       f'{network_service.network_dimensions.M}'
+
+
+    export_params = [
+        ExportParameters(
+        ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+        export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
+    ),
+        ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+            export_folder_name, export_file_name + '_states',
+            [device_param.nodes[2] for device_param in device_params]
+        )
+    ]
+
+    simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
+
+    return CircuitFileService(subcircuit_file_service, input_params, device_params, simulation_params, export_params)
+
+
 def create_default_test_subcircuit_file_service(model: MemristorModels,) -> List[SubcircuitFileService]:
     model_parameters = ModelParameters(0, 5e5, 200e3, 200e3, 2e3, 0.6)
     subcircuit = Subcircuit('memristor', ['pl', 'mn', 'x'], model_parameters)
@@ -255,6 +319,22 @@ def simulate(
         )
         circuit_file_service = create_di_francesco_variable_beta_circuit_file_service(subcircuit_file_service)
 
+    elif simulation_template == SimulationTemplate.QUINTEROS_EXPERIMENTS:
+        network_dimensions = NetworkDimensions(N=4, M=4)
+        subcircuit_files_service = create_quinteros_experiments_subcircuit_file_service(model)
+        circuit_file_service = []
+
+        for experiment_number, subcircuit_index in zip([1, 2, 4, 5], range(len(subcircuit_files_service))):
+            if experiment_number in [4, 5]:
+                gnd_node = (3, 3)
+            else:
+                gnd_node = (3, 0)
+
+            network_service = NetworkService(network_dimensions, gnd_node=gnd_node)
+            circuit_file_service.append(create_quinteros_experiments_circuit_file_service(
+                subcircuit_files_service[subcircuit_index], network_service, experiment_number)
+            )
+
     else:
         raise InvalidSimulationTemplate()
 
@@ -265,13 +345,13 @@ def simulate(
         ngspice_service = NGSpiceService(cfs)
         ngspice_service.run_single_circuit_simulation(amount_iterations)
 
-    print('PLOT SERVICE STARTED\n')
+    print('PLOT SERVICE STARTED')
     for cfs in circuit_file_service:
         plot(
             export_parameters=cfs.export_parameters, model_parameters=cfs.subcircuit_file_service.subcircuit.parameters,
             input_parameters=cfs.input_parameters, plot_types=plot_types
         )
-    print('\nPLOT SERVICE ENDED')
+    print('PLOT SERVICE ENDED')
 
 
 def plot(
@@ -306,11 +386,14 @@ def plot(
 
 if __name__ == "__main__":
     simulate(
-        simulation_template=SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA,
-        plot_types=[PlotType.IV, PlotType.IV_LOG],
-        # plot_types=[
-        #     PlotType.IV, PlotType.IV_OVERLAPPED, PlotType.IV_LOG, PlotType.IV_LOG_OVERLAPPED,
-        #     PlotType.MEMRISTIVE_STATES, PlotType.MEMRISTIVE_STATES_OVERLAPPED
-        # ],
+        simulation_template=SimulationTemplate.QUINTEROS_EXPERIMENTS,
+        plot_types=[
+            PlotType.IV,
+        #     PlotType.IV_OVERLAPPED,
+            PlotType.IV_LOG,
+        #     PlotType.IV_LOG_OVERLAPPED,
+        #     PlotType.MEMRISTIVE_STATES,
+        #     PlotType.MEMRISTIVE_STATES_OVERLAPPED
+        ],
         model=MemristorModels.PERSHIN, amount_iterations=1
     )

@@ -6,6 +6,7 @@ import os
 from matplotlib import pyplot as plt
 from matplotlib import animation as anime
 
+from constants import MeasuredMagnitude
 from representations import DataLoader, ModelParameters, InputParameters, ExportParameters
 from services.directoriesmanagementservice import DirectoriesManagementService
 
@@ -31,6 +32,15 @@ class PlotterService:
         self.model_parameters = model_parameters
         self.input_parameters = input_parameters
 
+    @staticmethod
+    def _get_csv_measured_magnitude(csv_file_name_no_extension: str):
+        if csv_file_name_no_extension.endswith('_iv'):
+            return MeasuredMagnitude.IV
+        elif csv_file_name_no_extension.endswith('_states'):
+            return MeasuredMagnitude.STATES
+        else:
+            return MeasuredMagnitude.OTHER
+
     def load_data(self) -> List[DataLoader]:
         data_loaders = []
         files_in_model_simulations_directory = os.listdir(self.simulations_directory_path)
@@ -38,15 +48,19 @@ class PlotterService:
             if file_in_simulations_directory.split('.csv')[0] in [
                 export_parameter.file_name for export_parameter in self.export_parameters
             ]:
-                csv_files_name = file_in_simulations_directory
                 csv_file_name_no_extension = file_in_simulations_directory.replace('.csv', '')
                 csv_file_path = os.path.join(self.simulations_directory_path, file_in_simulations_directory)
-
                 dataframe = pd.DataFrame(
                         pd.read_csv(csv_file_path, sep=r"\s+", engine='python', skipfooter=4)
                     )
+                measured_magnitude = self._get_csv_measured_magnitude(csv_file_name_no_extension)
 
-                data_loaders.append(DataLoader(csv_files_name, csv_file_name_no_extension, csv_file_path, dataframe))
+                data_loaders.append(
+                    DataLoader(
+                        file_in_simulations_directory, csv_file_name_no_extension, csv_file_path, measured_magnitude,
+                        dataframe
+                    )
+                )
 
         return data_loaders
 
@@ -64,7 +78,7 @@ class PlotterService:
         plt.title(f'I-V {csv_file_name} {title if title is not None else ""}', fontsize=22)
         plt.autoscale()
         plt.legend(loc='lower right', fontsize=12)
-        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_iv.jpg')
+        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}.jpg')
         plt.close()
 
     def plot_iv_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None) -> None:
@@ -98,7 +112,7 @@ class PlotterService:
         plt.title(f'log(I)-V {csv_file_name} {title if title is not None else ""}', fontsize=22)
         plt.autoscale()
         plt.legend(loc='lower right', fontsize=12)
-        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_iv_log.jpg')
+        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_log.jpg')
         plt.close()
 
     def plot_iv_log_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None):
@@ -138,7 +152,7 @@ class PlotterService:
             f'Input voltage and State vs Time - {csv_file_name} {title if title is not None else ""}', fontsize=22
         )
         plt.legend(loc='center', bbox_to_anchor=(0.5, 1.1))
-        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_states.jpg')
+        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}.jpg')
         plt.close()
 
     def plot_states_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None) -> None:

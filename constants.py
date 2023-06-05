@@ -85,6 +85,12 @@ class PlotType(Enum):
     HEAVISIDE_TERMS = 'HEAVISIDE_TERMS'
 
 
+class MeasuredMagnitude(Enum):
+    IV = 'IV'
+    STATES = 'STATES'
+    OTHER = 'OTHER'
+
+
 class InvalidMemristorModel(Exception):
     pass
 

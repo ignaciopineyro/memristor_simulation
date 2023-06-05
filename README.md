@@ -8,6 +8,7 @@ consume them on demand by an interface.
 
 ## TODO list:
 * Create a file for defining templates instead of using main.py
+* Create a TestCase for Default Templates
 * Plot TimeMeasures vs # Simulation with error bars
 * Generate .cir and .sub files on each simulation dir instead of a unique file
 * Generate examples dir with default .sub and .cir files

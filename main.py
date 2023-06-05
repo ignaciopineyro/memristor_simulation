@@ -1,7 +1,7 @@
 from typing import List
 
 from constants import MemristorModels, WaveForms, AnalysisType, ModelsSimulationFolders, SpiceDevices, SpiceModel, \
-    SimulationTemplate, InvalidSimulationTemplate, SIMULATIONS_DIR, PlotType
+    SimulationTemplate, InvalidSimulationTemplate, SIMULATIONS_DIR, PlotType, MeasuredMagnitude
 from representations import Subcircuit, Source, Component, SimulationParameters, InputParameters, ModelParameters, \
     DeviceParameters, ExportParameters, ModelDependence, NetworkDimensions
 from services.networkservice import NetworkService
@@ -49,7 +49,7 @@ def create_di_francesco_variable_beta_circuit_file_service(
             ),
             ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name + '_states', ['l0']
+                export_folder_name, export_file_name + '_states', ['vin', 'l0']
             )
         ]
 
@@ -109,7 +109,7 @@ def create_di_francesco_variable_amplitude_circuit_file_service(
             ),
             ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name + '_states', ['l0']
+                export_folder_name, export_file_name + '_states', ['vin', 'l0']
             )
         ]
 
@@ -170,7 +170,7 @@ def create_default_test_circuit_file_service(
             ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
                 export_folder_name, export_file_name + '_states',
-                [device_param.nodes[2] for device_param in device_params]
+                ['vin'] + [device_param.nodes[2] for device_param in device_params]
             )
         ]
 
@@ -185,7 +185,7 @@ def create_default_test_circuit_file_service(
             ),
             ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name + '_states', ['l0']
+                export_folder_name, export_file_name + '_states', ['vin', 'l0']
             )
         ]
 
@@ -251,7 +251,7 @@ def create_quinteros_experiments_circuit_file_service(
         ExportParameters(
             ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
             export_folder_name, export_file_name + '_states',
-            [device_param.nodes[2] for device_param in device_params]
+            ['vin'] + [device_param.nodes[2] for device_param in device_params]
         )
     ]
 
@@ -366,7 +366,7 @@ def plot(
         data_loaders = plotter_service.load_data()
 
         for data_loader in data_loaders:
-            try:
+            if data_loader.measured_magnitude == MeasuredMagnitude.IV:
                 if PlotType.IV in plot_types:
                     plotter_service.plot_iv(data_loader.dataframe, data_loader.csv_file_name_no_extension)
                 if PlotType.IV_OVERLAPPED in plot_types:
@@ -375,25 +375,34 @@ def plot(
                     plotter_service.plot_iv_log(data_loader.dataframe, data_loader.csv_file_name_no_extension)
                 if PlotType.IV_LOG_OVERLAPPED in plot_types:
                     plotter_service.plot_iv_log_overlapped(data_loader.dataframe)
+
+            elif data_loader.measured_magnitude == MeasuredMagnitude.STATES:
                 if PlotType.MEMRISTIVE_STATES in plot_types:
                     plotter_service.plot_states(data_loader.dataframe, data_loader.csv_file_name_no_extension)
                 if PlotType.MEMRISTIVE_STATES_OVERLAPPED in plot_types:
                     plotter_service.plot_states_overlapped(data_loader.dataframe)
 
-            except KeyError:
-                continue
-
 
 if __name__ == "__main__":
     simulate(
-        simulation_template=SimulationTemplate.QUINTEROS_EXPERIMENTS,
+        simulation_template=(
+            # SimulationTemplate.DEFAULT_TEST
+            SimulationTemplate.DEFAULT_NETWORK
+            # SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE
+            # SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA
+            # SimulationTemplate.QUINTEROS_EXPERIMENTS
+        ),
         plot_types=[
             PlotType.IV,
-        #     PlotType.IV_OVERLAPPED,
+            PlotType.IV_OVERLAPPED,
             PlotType.IV_LOG,
-        #     PlotType.IV_LOG_OVERLAPPED,
-        #     PlotType.MEMRISTIVE_STATES,
-        #     PlotType.MEMRISTIVE_STATES_OVERLAPPED
+            PlotType.IV_LOG_OVERLAPPED,
+            PlotType.MEMRISTIVE_STATES,
+            PlotType.MEMRISTIVE_STATES_OVERLAPPED
         ],
-        model=MemristorModels.PERSHIN, amount_iterations=1
+        model=(
+            # MemristorModels.PERSHIN
+            MemristorModels.PERSHIN_VOURKAS
+        ),
+        amount_iterations=1
     )

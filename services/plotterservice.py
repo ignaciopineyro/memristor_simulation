@@ -100,7 +100,7 @@ class PlotterService:
     def plot_iv_log(self, df: pd.DataFrame, csv_file_name: str, title: str = None) -> None:
         plt.figure(figsize=(12, 8))
         plt.plot(
-            df['vin'], -df['i(v1)'],
+            df['vin'], abs(-df['i(v1)']),
             label=(
                 f'{self.model_parameters.get_parameters_as_string()}'
                 f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
@@ -118,7 +118,7 @@ class PlotterService:
     def plot_iv_log_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None):
         plt.figure(1, figsize=(12, 8))
         plt.plot(
-            df['vin'], -df['i(v1)'],
+            df['vin'], abs(-df['i(v1)']),
             label=label if label is not None else (
                 f'{self.model_parameters.get_parameters_as_string()}'
                 f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'

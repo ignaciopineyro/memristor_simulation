@@ -6,7 +6,7 @@
 *.jpg
 *.Identifier
 ./simulation_results/*
-./backup/*
+./backup/
 __pycache__/*
 *.pyc
 .idea

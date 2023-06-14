@@ -18,7 +18,3 @@ class NGSpiceService:
             average_time_measure = self.time_measure_service.compute_time_average(time_measures, amount_iterations)
             self.time_measure_service.write_simulation_log(average_time_measure=average_time_measure)
             self.time_measure_service.print_average_time_measure(average_time_measure)
-
-    def run_batch_simulations(self) -> None:
-        # TODO: Correr simulaciones con listas de argumentos
-        raise NotImplementedError

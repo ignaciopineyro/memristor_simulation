@@ -5,8 +5,8 @@
 *.txt
 *.jpg
 *.Identifier
-./simulation_results/*
-./backup/
+simulation_results/
+backup/
 __pycache__/*
 *.pyc
 .idea

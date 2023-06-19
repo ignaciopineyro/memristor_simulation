@@ -69,6 +69,7 @@ class TimeMeasures(Enum):
 class SimulationTemplate(Enum):
     DEFAULT_TEST = 'DEFAULT_TEST'
     DEFAULT_NETWORK = 'DEFAULT_NETWORK'
+    DEFAULT_NETWORK_WITH_EDGE_REMOVAL = 'DEFAULT_NETWORK_WITH_EDGE_REMOVAL'
     DI_FRANCESCO_VARIABLE_AMPLITUDE = 'DI_FRANCESCO_VARIABLE_AMPLITUDE'
     DI_FRANCESCO_VARIABLE_BETA = 'DI_FRANCESCO_VARIABLE_BETA'
     QUINTEROS_EXPERIMENTS = 'QUINTEROS_EXPERIMENTS'
@@ -82,6 +83,7 @@ class PlotType(Enum):
     IV_ANIMATED = 'IV_ANIMATED'
     MEMRISTIVE_STATES = 'MEMRISTIVE_STATES'
     MEMRISTIVE_STATES_OVERLAPPED = 'MEMRISTIVE_STATES_OVERLAPPED'
+    NETWORK = 'NETWORK'
     HEAVISIDE_TERMS = 'HEAVISIDE_TERMS'
 
 
@@ -91,9 +93,17 @@ class MeasuredMagnitude(Enum):
     OTHER = 'OTHER'
 
 
+class NetworkType(Enum):
+    GRID_2D_GRAPH = 'GRID_2D_GRAPH'
+
+
 class InvalidMemristorModel(Exception):
     pass
 
 
 class InvalidSimulationTemplate(Exception):
+    pass
+
+
+class NetworkTypeNotImplemented(Exception):
     pass

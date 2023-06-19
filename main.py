@@ -1,7 +1,9 @@
 from typing import List
 
+import networkx as nx
+
 from constants import MemristorModels, WaveForms, AnalysisType, ModelsSimulationFolders, SpiceDevices, SpiceModel, \
-    SimulationTemplate, InvalidSimulationTemplate, SIMULATIONS_DIR, PlotType, MeasuredMagnitude
+    SimulationTemplate, InvalidSimulationTemplate, SIMULATIONS_DIR, PlotType, MeasuredMagnitude, NetworkType
 from representations import Subcircuit, Source, Component, SimulationParameters, InputParameters, ModelParameters, \
     DeviceParameters, ExportParameters, ModelDependence, NetworkDimensions
 from services.networkservice import NetworkService
@@ -156,12 +158,25 @@ def create_default_test_circuit_file_service(
 
     if network_service:
         device_params = network_service.generate_device_parameters('xmem', 'memristor')
-        export_folder_name = (
-            f'default_network_{network_service.network_dimensions.N}x{network_service.network_dimensions.M}'
-        )
-        export_file_name = (
-            f'default_network_simulation_{network_service.network_dimensions.N}x{network_service.network_dimensions.M}'
-        )
+
+        if network_service.removal_probability == 0:
+            export_folder_name = (
+                f'default_network_{network_service.network_dimensions.N}x{network_service.network_dimensions.M}'
+            )
+            export_file_name = (
+                f'default_network_simulation_{network_service.network_dimensions.N}x{network_service.network_dimensions.M}'
+            )
+
+        else:
+            export_folder_name = (
+                f'default_network_with_edge_removal_{network_service.network_dimensions.N}x'
+                f'{network_service.network_dimensions.M}'
+            )
+            export_file_name = (
+                f'default_network_simulation_with_edge_removal_{network_service.network_dimensions.N}x'
+                f'{network_service.network_dimensions.M}'
+            )
+
         export_params = [
             ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
@@ -298,9 +313,26 @@ def simulate(
 
     elif simulation_template == SimulationTemplate.DEFAULT_NETWORK:
         network_dimensions = NetworkDimensions(N=4, M=4)
-        network_service = NetworkService(network_dimensions)
+        network_service = NetworkService(network_dimensions, network_type=NetworkType.GRID_2D_GRAPH)
         subcircuit_file_service = create_default_test_subcircuit_file_service(model)
         circuit_file_service = create_default_test_circuit_file_service(subcircuit_file_service[0], network_service)
+
+    elif simulation_template == SimulationTemplate.DEFAULT_NETWORK_WITH_EDGE_REMOVAL:
+        network_dimensions = NetworkDimensions(N=4, M=4)
+        removal_probability = 1
+        network_service = NetworkService(
+            network_dimensions, removal_probability=removal_probability, network_type=NetworkType.GRID_2D_GRAPH
+        )
+        subcircuit_file_service = create_default_test_subcircuit_file_service(model)
+        circuit_file_service = create_default_test_circuit_file_service(subcircuit_file_service[0], network_service)
+
+        plotter_service = PlotterService(
+            simulation_results_directory_path=SIMULATIONS_DIR,
+            export_parameters=circuit_file_service[0].export_parameters,
+            model_parameters=circuit_file_service[0].subcircuit_file_service.subcircuit.parameters,
+            input_parameters=circuit_file_service[0].input_parameters, graph=network_service.network
+        )
+        plotter_service.plot_networkx_graph()
 
     elif simulation_template == SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE:
         model_parameters = ModelParameters(0, 5e5, 200e3, 200e3, 2e3, 0.6)
@@ -330,7 +362,9 @@ def simulate(
             else:
                 gnd_node = (3, 0)
 
-            network_service = NetworkService(network_dimensions, gnd_node=gnd_node)
+            network_service = NetworkService(
+                network_dimensions, gnd_node=gnd_node, network_type=NetworkType.GRID_2D_GRAPH
+            )
             circuit_file_service.append(create_quinteros_experiments_circuit_file_service(
                 subcircuit_files_service[subcircuit_index], network_service, experiment_number)
             )
@@ -347,10 +381,9 @@ def simulate(
 
     print('PLOT SERVICE STARTED')
     for cfs in circuit_file_service:
-        plot(
-            export_parameters=cfs.export_parameters, model_parameters=cfs.subcircuit_file_service.subcircuit.parameters,
-            input_parameters=cfs.input_parameters, plot_types=plot_types
-        )
+        plot(export_parameters=cfs.export_parameters,
+             model_parameters=cfs.subcircuit_file_service.subcircuit.parameters, input_parameters=cfs.input_parameters,
+             plot_types=plot_types)
     print('PLOT SERVICE ENDED')
 
 
@@ -387,7 +420,8 @@ if __name__ == "__main__":
     simulate(
         simulation_template=(
             # SimulationTemplate.DEFAULT_TEST
-            SimulationTemplate.DEFAULT_NETWORK
+            # SimulationTemplate.DEFAULT_NETWORK
+            SimulationTemplate.DEFAULT_NETWORK_WITH_EDGE_REMOVAL
             # SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE
             # SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA
             # SimulationTemplate.QUINTEROS_EXPERIMENTS
@@ -396,13 +430,13 @@ if __name__ == "__main__":
             PlotType.IV,
             PlotType.IV_OVERLAPPED,
             PlotType.IV_LOG,
-            PlotType.IV_LOG_OVERLAPPED,
-            PlotType.MEMRISTIVE_STATES,
-            PlotType.MEMRISTIVE_STATES_OVERLAPPED
+            # PlotType.IV_LOG_OVERLAPPED,
+            # PlotType.MEMRISTIVE_STATES,
+            # PlotType.MEMRISTIVE_STATES_OVERLAPPED
         ],
         model=(
-            # MemristorModels.PERSHIN
-            MemristorModels.PERSHIN_VOURKAS
+            MemristorModels.PERSHIN
+            # MemristorModels.PERSHIN_VOURKAS
         ),
         amount_iterations=1
     )

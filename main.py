@@ -1,11 +1,9 @@
 from typing import List
 
-import networkx as nx
-
 from constants import MemristorModels, WaveForms, AnalysisType, ModelsSimulationFolders, SpiceDevices, SpiceModel, \
     SimulationTemplate, InvalidSimulationTemplate, SIMULATIONS_DIR, PlotType, MeasuredMagnitude, NetworkType
 from representations import Subcircuit, Source, Component, SimulationParameters, InputParameters, ModelParameters, \
-    DeviceParameters, ExportParameters, ModelDependence, NetworkDimensions
+    DeviceParameters, ExportParameters, ModelDependence, NetworkParameters
 from services.networkservice import NetworkService
 from services.circuitfileservice import CircuitFileService
 from services.ngspiceservice import NGSpiceService
@@ -161,20 +159,20 @@ def create_default_test_circuit_file_service(
 
         if network_service.removal_probability == 0:
             export_folder_name = (
-                f'default_network_{network_service.network_dimensions.N}x{network_service.network_dimensions.M}'
+                f'default_network_{network_service.network_parameters.N}x{network_service.network_parameters.M}'
             )
             export_file_name = (
-                f'default_network_simulation_{network_service.network_dimensions.N}x{network_service.network_dimensions.M}'
+                f'default_network_simulation_{network_service.network_parameters.N}x{network_service.network_parameters.M}'
             )
 
         else:
             export_folder_name = (
-                f'default_network_with_edge_removal_{network_service.network_dimensions.N}x'
-                f'{network_service.network_dimensions.M}'
+                f'default_network_with_edge_removal_{network_service.network_parameters.N}x'
+                f'{network_service.network_parameters.M}'
             )
             export_file_name = (
-                f'default_network_simulation_with_edge_removal_{network_service.network_dimensions.N}x'
-                f'{network_service.network_dimensions.M}'
+                f'default_network_simulation_with_edge_removal_{network_service.network_parameters.N}x'
+                f'{network_service.network_parameters.M}'
             )
 
         export_params = [
@@ -251,11 +249,11 @@ def create_quinteros_experiments_circuit_file_service(
     input_params = InputParameters(1, 'vin', 'gnd', WaveForms.SIN, 0, 10, 1)
     device_params = network_service.generate_device_parameters('xmem', 'memristor')
 
-    export_folder_name = f'quinteros_experiment_{experiment_number}_{network_service.network_dimensions.N}x' \
-                         f'{network_service.network_dimensions.M}'
+    export_folder_name = f'quinteros_experiment_{experiment_number}_{network_service.network_parameters.N}x' \
+                         f'{network_service.network_parameters.M}'
 
-    export_file_name = f'quinteros_experiments_simulation_{experiment_number}_{network_service.network_dimensions.N}x' \
-                       f'{network_service.network_dimensions.M}'
+    export_file_name = f'quinteros_experiments_simulation_{experiment_number}_{network_service.network_parameters.N}x' \
+                       f'{network_service.network_parameters.M}'
 
 
     export_params = [
@@ -303,6 +301,76 @@ def create_default_test_subcircuit_file_service(model: MemristorModels,) -> List
     ]
 
 
+def create_random_regular_circuit_file_service(
+        subcircuit_file_service: SubcircuitFileService, network_service: NetworkService
+):
+    input_params = InputParameters(1, 'vin', 'gnd', WaveForms.SIN, 0, 10, 1)
+    device_params = network_service.generate_device_parameters('xmem', 'memristor')
+
+    export_folder_name = (
+        f'random_regular_n{network_service.network_parameters.amount_nodes}_k'
+        f'{network_service.network_parameters.amount_connections}'
+    )
+    export_file_name = (
+        f'random_regular_n{network_service.network_parameters.amount_nodes}_k'
+        f'{network_service.network_parameters.amount_connections}'
+    )
+
+    export_params = [
+        ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+            export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
+        ),
+        ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+            export_folder_name, export_file_name + '_states',
+            ['vin'] + [device_param.nodes[2] for device_param in device_params]
+        )
+    ]
+
+    simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
+
+    return [
+        CircuitFileService(subcircuit_file_service, input_params, device_params, simulation_params, export_params)
+    ]
+
+
+def create_watts_strogatz_circuit_file_service(
+        subcircuit_file_service: SubcircuitFileService, network_service: NetworkService
+):
+    input_params = InputParameters(1, 'vin', 'gnd', WaveForms.SIN, 0, 10, 1)
+    device_params = network_service.generate_device_parameters('xmem', 'memristor')
+
+    export_folder_name = (
+        f'watss_strogatz_n{network_service.network_parameters.amount_nodes}_k'
+        f'{network_service.network_parameters.amount_connections}_p'
+        f'{network_service.network_parameters.shortcut_probability}'
+    )
+    export_file_name = (
+        f'watss_strogatz_n{network_service.network_parameters.amount_nodes}_k'
+        f'{network_service.network_parameters.amount_connections}_p'
+        f'{network_service.network_parameters.shortcut_probability}'
+    )
+
+    export_params = [
+        ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+            export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
+        ),
+        ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+            export_folder_name, export_file_name + '_states',
+            ['vin'] + [device_param.nodes[2] for device_param in device_params]
+        )
+    ]
+
+    simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
+
+    return [
+        CircuitFileService(subcircuit_file_service, input_params, device_params, simulation_params, export_params)
+    ]
+
+
 def simulate(
         simulation_template: SimulationTemplate = SimulationTemplate.DEFAULT_TEST, plot_types: List[PlotType] = None,
         model: MemristorModels = None, amount_iterations: int = 1
@@ -312,16 +380,16 @@ def simulate(
         circuit_file_service = create_default_test_circuit_file_service(subcircuit_file_service[0])
 
     elif simulation_template == SimulationTemplate.DEFAULT_NETWORK:
-        network_dimensions = NetworkDimensions(N=4, M=4)
-        network_service = NetworkService(network_dimensions, network_type=NetworkType.GRID_2D_GRAPH)
+        network_dimensions = NetworkParameters(N=50, M=50)
+        network_service = NetworkService(NetworkType.GRID_2D_GRAPH, network_dimensions)
         subcircuit_file_service = create_default_test_subcircuit_file_service(model)
         circuit_file_service = create_default_test_circuit_file_service(subcircuit_file_service[0], network_service)
 
     elif simulation_template == SimulationTemplate.DEFAULT_NETWORK_WITH_EDGE_REMOVAL:
-        network_dimensions = NetworkDimensions(N=4, M=4)
+        network_dimensions = NetworkParameters(N=4, M=4)
         removal_probability = 1
         network_service = NetworkService(
-            network_dimensions, removal_probability=removal_probability, network_type=NetworkType.GRID_2D_GRAPH
+            NetworkType.GRID_2D_GRAPH, network_dimensions, removal_probability=removal_probability
         )
         subcircuit_file_service = create_default_test_subcircuit_file_service(model)
         circuit_file_service = create_default_test_circuit_file_service(subcircuit_file_service[0], network_service)
@@ -352,7 +420,7 @@ def simulate(
         circuit_file_service = create_di_francesco_variable_beta_circuit_file_service(subcircuit_file_service)
 
     elif simulation_template == SimulationTemplate.QUINTEROS_EXPERIMENTS:
-        network_dimensions = NetworkDimensions(N=4, M=4)
+        network_dimensions = NetworkParameters(N=4, M=4)
         subcircuit_files_service = create_quinteros_experiments_subcircuit_file_service(model)
         circuit_file_service = []
 
@@ -362,12 +430,28 @@ def simulate(
             else:
                 gnd_node = (3, 0)
 
-            network_service = NetworkService(
-                network_dimensions, gnd_node=gnd_node, network_type=NetworkType.GRID_2D_GRAPH
-            )
+            network_service = NetworkService(NetworkType.GRID_2D_GRAPH, network_dimensions, gnd_node=gnd_node)
             circuit_file_service.append(create_quinteros_experiments_circuit_file_service(
                 subcircuit_files_service[subcircuit_index], network_service, experiment_number)
             )
+
+    elif simulation_template == SimulationTemplate.RANDOM_REGULAR:
+        network_parameters = NetworkParameters(amount_connections=20, amount_nodes=500)
+        network_service = NetworkService(NetworkType.RANDOM_REGULAR_GRAPH, network_parameters)
+        subcircuit_file_service = create_default_test_subcircuit_file_service(model)
+        circuit_file_service = create_random_regular_circuit_file_service(subcircuit_file_service[0], network_service)
+
+    elif simulation_template == SimulationTemplate.WATTS_STROGATZ_CIRCULAR_REGULAR:
+        network_parameters = NetworkParameters(amount_connections=20, amount_nodes=500, shortcut_probability=0)
+        network_service = NetworkService(NetworkType.WATTS_STROGATZ_GRAPH, network_parameters)
+        subcircuit_file_service = create_default_test_subcircuit_file_service(model)
+        circuit_file_service = create_watts_strogatz_circuit_file_service(subcircuit_file_service[0], network_service)
+
+    elif simulation_template == SimulationTemplate.WATTS_STROGATZ:
+        network_parameters = NetworkParameters(amount_connections=20, amount_nodes=500, shortcut_probability=0.1)
+        network_service = NetworkService(NetworkType.WATTS_STROGATZ_GRAPH, network_parameters)
+        subcircuit_file_service = create_default_test_subcircuit_file_service(model)
+        circuit_file_service = create_watts_strogatz_circuit_file_service(subcircuit_file_service[0], network_service)
 
     else:
         raise InvalidSimulationTemplate()
@@ -419,16 +503,19 @@ def plot(
 if __name__ == "__main__":
     simulate(
         simulation_template=(
-            # SimulationTemplate.DEFAULT_TEST
+            SimulationTemplate.DEFAULT_TEST
             # SimulationTemplate.DEFAULT_NETWORK
-            SimulationTemplate.DEFAULT_NETWORK_WITH_EDGE_REMOVAL
+            # SimulationTemplate.DEFAULT_NETWORK_WITH_EDGE_REMOVAL
             # SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE
             # SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA
             # SimulationTemplate.QUINTEROS_EXPERIMENTS
+            # SimulationTemplate.RANDOM_REGULAR
+            # SimulationTemplate.WATTS_STROGATZ_CIRCULAR_REGULAR
+            # SimulationTemplate.WATTS_STROGATZ
         ),
         plot_types=[
             PlotType.IV,
-            PlotType.IV_OVERLAPPED,
+            # PlotType.IV_OVERLAPPED,
             PlotType.IV_LOG,
             # PlotType.IV_LOG_OVERLAPPED,
             # PlotType.MEMRISTIVE_STATES,

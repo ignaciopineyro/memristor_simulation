@@ -169,6 +169,9 @@ class DataLoader:
 
 
 @dataclass()
-class NetworkDimensions:
-    N: int
-    M: int
+class NetworkParameters:
+    N: int = None  # N dimension of a 2D NxM grid
+    M: int = None  # M dimension of a 2D NxM grid
+    amount_connections: int = None  # Amount of connections per node in the network
+    amount_nodes: int = None  # Amount of nodes in the network
+    shortcut_probability: float = None  # Shortcut probability of a WATTS_STROGATZ_GRAPH (between 0 and 1)

@@ -242,12 +242,11 @@ def create_quinteros_experiments_circuit_file_service(
     export_file_name = f'quinteros_experiments_simulation_{experiment_number}_{network_service.network_dimensions.N}x' \
                        f'{network_service.network_dimensions.M}'
 
-
     export_params = [
         ExportParameters(
-        ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-        export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
-    ),
+            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+            export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
+        ),
         ExportParameters(
             ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
             export_folder_name, export_file_name + '_states',
@@ -386,8 +385,8 @@ def plot(
 if __name__ == "__main__":
     simulate(
         simulation_template=(
-            # SimulationTemplate.DEFAULT_TEST
-            SimulationTemplate.DEFAULT_NETWORK
+            SimulationTemplate.DEFAULT_TEST
+            # SimulationTemplate.DEFAULT_NETWORK
             # SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE
             # SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA
             # SimulationTemplate.QUINTEROS_EXPERIMENTS

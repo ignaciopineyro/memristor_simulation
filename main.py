@@ -162,7 +162,8 @@ def create_default_test_circuit_file_service(
                 f'default_network_{network_service.network_parameters.N}x{network_service.network_parameters.M}'
             )
             export_file_name = (
-                f'default_network_simulation_{network_service.network_parameters.N}x{network_service.network_parameters.M}'
+                f'default_network_simulation_{network_service.network_parameters.N}x'
+                f'{network_service.network_parameters.M}'
             )
 
         else:
@@ -255,12 +256,11 @@ def create_quinteros_experiments_circuit_file_service(
     export_file_name = f'quinteros_experiments_simulation_{experiment_number}_{network_service.network_parameters.N}x' \
                        f'{network_service.network_parameters.M}'
 
-
     export_params = [
         ExportParameters(
-        ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-        export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
-    ),
+            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+            export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
+        ),
         ExportParameters(
             ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
             export_folder_name, export_file_name + '_states',

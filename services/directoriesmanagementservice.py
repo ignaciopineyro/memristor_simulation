@@ -21,13 +21,6 @@ class DirectoriesManagementService:
             os.makedirs(f'{SIMULATIONS_DIR}/{ModelsSimulationFolders.get_simulation_folder_by_model(model).value}')
 
     @staticmethod
-    def create_models_folder_if_not_exists(model: MemristorModels):
-        if not os.path.exists(
-                f'{SIMULATIONS_DIR}/{ModelsSimulationFolders.get_simulation_folder_by_model(model).value}'
-        ):
-            os.makedirs(f'{SIMULATIONS_DIR}/{ModelsSimulationFolders.get_simulation_folder_by_model(model).value}')
-
-    @staticmethod
     def create_simulation_parameter_folder_if_not_exist(
             model_simulation_folder_name: ModelsSimulationFolders, folder_name: str
     ) -> None:
@@ -68,11 +61,20 @@ class DirectoriesManagementService:
 
     def get_circuit_dir_and_file_name(self) -> str:
         if self.model == MemristorModels.PERSHIN:
-            return f'{ModelsSimulationFolders.PERSHIN_SIMULATIONS.value}/pershin_simulation.cir'
+            return (
+                f'{ModelsSimulationFolders.PERSHIN_SIMULATIONS.value}/{self.export_parameters[0].folder_name}/'
+                f'pershin_circuit_file.cir'
+            )
         elif self.model == MemristorModels.VOURKAS:
-            return f'{ModelsSimulationFolders.VOURKAS_SIMULATIONS.value}/vourkas_simulation.cir'
+            return (
+                f'{ModelsSimulationFolders.VOURKAS_SIMULATIONS.value}/{self.export_parameters[0].folder_name}/'
+                f'pershin_vourkas_circuit_file.cir'
+            )
         elif self.model == MemristorModels.BIOLEK:
-            return f'{ModelsSimulationFolders.BIOLEK_SIMULATIONS.value}/biolek_simulation.cir'
+            return (
+                f'{ModelsSimulationFolders.BIOLEK_SIMULATIONS.value}/{self.export_parameters[0].folder_name}/'
+                f'biolek_circuit_file.cir'
+            )
         else:
             raise InvalidMemristorModel(f'The model {self.model} is not valid')
 

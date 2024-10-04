@@ -50,9 +50,11 @@ class CircuitFileService:
         Writes the .cir circuit file to execute in Spice. The file is saved in simulation_results/model-name_simulations
         :return: None
         """
+        self.directories_management_service.get_export_simulation_file_paths()
         self.directories_management_service.create_simulation_results_for_model_folder_if_not_exists(
             self.subcircuit_file_service.model
         )
+
         with open(self.directories_management_service.get_circuit_file_path(), "w+") as f:
             f.write(f'* MEMRISTOR CIRCUIT - MODEL {self.subcircuit_file_service.model.value}')
             self._write_dependencies(f)

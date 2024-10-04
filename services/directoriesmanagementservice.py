@@ -65,9 +65,9 @@ class DirectoriesManagementService:
                 f'{ModelsSimulationFolders.PERSHIN_SIMULATIONS.value}/{self.export_parameters[0].folder_name}/'
                 f'pershin_circuit_file.cir'
             )
-        elif self.model == MemristorModels.PERSHIN_VOURKAS:
+        elif self.model == MemristorModels.VOURKAS:
             return (
-                f'{ModelsSimulationFolders.PERSHIN_VOURKAS_SIMULATIONS.value}/{self.export_parameters[0].folder_name}/'
+                f'{ModelsSimulationFolders.VOURKAS_SIMULATIONS.value}/{self.export_parameters[0].folder_name}/'
                 f'pershin_vourkas_circuit_file.cir'
             )
         elif self.model == MemristorModels.BIOLEK:

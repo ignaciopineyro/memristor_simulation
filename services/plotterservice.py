@@ -1,5 +1,6 @@
 from typing import List
 
+import networkx as nx
 import pandas as pd
 import os
 
@@ -14,7 +15,7 @@ from services.directoriesmanagementservice import DirectoriesManagementService
 class PlotterService:
     def __init__(
             self, simulation_results_directory_path: str, export_parameters: List[ExportParameters],
-            model_parameters: ModelParameters = None, input_parameters: InputParameters = None
+            model_parameters: ModelParameters = None, input_parameters: InputParameters = None, graph: nx.Graph = None
     ):
         self.directories_management_service = DirectoriesManagementService()
 
@@ -31,6 +32,7 @@ class PlotterService:
 
         self.model_parameters = model_parameters
         self.input_parameters = input_parameters
+        self.graph = graph
 
     @staticmethod
     def _get_csv_measured_magnitude(csv_file_name_no_extension: str):
@@ -200,6 +202,11 @@ class PlotterService:
                 writer.grab_frame()
 
         plt.close()
+
+    def plot_networkx_graph(self):
+        fig = plt.figure(figsize=(12, 8))
+        nx.draw(self.graph, ax=fig.add_subplot(), with_labels=True)
+        fig.savefig(f'{self.figures_directory_path}/graph.jpg')
 
     def plot_heaviside_terms(self):
         raise NotImplementedError

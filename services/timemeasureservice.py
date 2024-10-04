@@ -57,9 +57,9 @@ class TimeMeasureService:
 
     @staticmethod
     def _format_linux_time_output(decoded_linux_time_output: str, time_measure: TimeMeasure) -> TimeMeasure:
-        decoded_real_time = decoded_linux_time_output.split('\n')[1]
-        decoded_user_time = decoded_linux_time_output.split('\n')[2]
-        decoded_sys_time = decoded_linux_time_output.split('\n')[3]
+        decoded_real_time = decoded_linux_time_output.split('\n')[1].replace(',', '.')
+        decoded_user_time = decoded_linux_time_output.split('\n')[2].replace(',', '.')
+        decoded_sys_time = decoded_linux_time_output.split('\n')[3].replace(',', '.')
 
         real_time_minutes = float(decoded_real_time.split('\t')[1].split('m')[0])
         real_time_seconds = float(decoded_real_time.split('\t')[1].split('m')[1].split('s')[0])

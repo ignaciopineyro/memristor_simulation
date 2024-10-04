@@ -69,8 +69,8 @@ class DirectoriesManagementService:
     def get_circuit_dir_and_file_name(self) -> str:
         if self.model == MemristorModels.PERSHIN:
             return f'{ModelsSimulationFolders.PERSHIN_SIMULATIONS.value}/pershin_simulation.cir'
-        elif self.model == MemristorModels.PERSHIN_VOURKAS:
-            return f'{ModelsSimulationFolders.PERSHIN_VOURKAS_SIMULATIONS.value}/pershin_vourkas_simulation.cir'
+        elif self.model == MemristorModels.VOURKAS:
+            return f'{ModelsSimulationFolders.VOURKAS_SIMULATIONS.value}/vourkas_simulation.cir'
         elif self.model == MemristorModels.BIOLEK:
             return f'{ModelsSimulationFolders.BIOLEK_SIMULATIONS.value}/biolek_simulation.cir'
         else:

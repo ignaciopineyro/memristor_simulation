@@ -9,13 +9,13 @@ SIMULATIONS_DIR = f'{PATH}/simulation_results'
 
 class MemristorModels(Enum):
     PERSHIN = 'pershin.sub'
-    PERSHIN_VOURKAS = 'pershin_vourkas.sub'
+    VOURKAS = 'vourkas.sub'
     BIOLEK = 'biolek.sub'
 
 
 class ModelsSimulationFolders(Enum):
     PERSHIN_SIMULATIONS = 'pershin_simulations'
-    PERSHIN_VOURKAS_SIMULATIONS = 'pershin_vourkas_simulations'
+    VOURKAS_SIMULATIONS = 'vourkas_simulations'
     BIOLEK_SIMULATIONS = 'biolek_simulations'
 
     @classmethod
@@ -23,8 +23,8 @@ class ModelsSimulationFolders(Enum):
         if model == MemristorModels.PERSHIN:
             return cls.PERSHIN_SIMULATIONS
 
-        elif model == MemristorModels.PERSHIN_VOURKAS:
-            return cls.PERSHIN_VOURKAS_SIMULATIONS
+        elif model == MemristorModels.VOURKAS:
+            return cls.VOURKAS_SIMULATIONS
 
         elif model == MemristorModels.BIOLEK:
             return cls.BIOLEK_SIMULATIONS
@@ -35,7 +35,7 @@ class ModelsSimulationFolders(Enum):
 
 class SimulationFileNames(Enum):
     PERSHIN = 'pershin_simulation.cir'
-    PERSHIN_VOURKAS = 'pershin_vourkas_simulation.cir'
+    VOURKAS = 'vourkas_simulation.cir'
     BIOLEK = 'biolek_simulation.cir'
 
 

@@ -19,7 +19,7 @@ def _create_pershin_default_components() -> List[Component]:
     return [capacitor, resistor, rmem]
 
 
-def _create_pershin_vourkas_default_components() -> List[Component]:
+def _create_vourkas_default_components() -> List[Component]:
     capacitor = Component(name='Cx', n_plus='x', n_minus='0', value=1, extra_data='IC={Rinit}')
     rmem = Component(name='Rmem', n_plus='pl', n_minus='mn', extra_data='r={V(x)}')
     diode_1 = Component(name='d1', n_plus='aux1', n_minus='x', model=SpiceDevices.DIODE.value)
@@ -77,8 +77,8 @@ def create_di_francesco_variable_beta_subcircuit_file_service(
     if model == MemristorModels.PERSHIN:
         default_components = _create_pershin_default_components()
 
-    elif model == MemristorModels.PERSHIN_VOURKAS:
-        default_components = _create_pershin_vourkas_default_components()
+    elif model == MemristorModels.VOURKAS:
+        default_components = _create_vourkas_default_components()
         model_dependencies = [ModelDependence(name=SpiceDevices.DIODE, model=SpiceModel.DIODE)]
 
     control_cmd = '.func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}'
@@ -135,8 +135,8 @@ def create_di_francesco_variable_amplitude_subcircuit_file_service(
     if model == MemristorModels.PERSHIN:
         default_components = _create_pershin_default_components()
 
-    elif model == MemristorModels.PERSHIN_VOURKAS:
-        default_components = _create_pershin_vourkas_default_components()
+    elif model == MemristorModels.VOURKAS:
+        default_components = _create_vourkas_default_components()
         model_dependencies = [ModelDependence(name=SpiceDevices.DIODE, model=SpiceModel.DIODE)]
 
     control_cmd = '.func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}'
@@ -216,8 +216,8 @@ def create_quinteros_experiments_subcircuit_file_service(model: MemristorModels)
     if model == MemristorModels.PERSHIN:
         default_components = _create_pershin_default_components()
 
-    elif model == MemristorModels.PERSHIN_VOURKAS:
-        default_components = _create_pershin_vourkas_default_components()
+    elif model == MemristorModels.VOURKAS:
+        default_components = _create_vourkas_default_components()
         model_dependencies = [ModelDependence(name=SpiceDevices.DIODE, model=SpiceModel.DIODE)]
 
     control_cmd = '.func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}'
@@ -273,8 +273,8 @@ def create_default_test_subcircuit_file_service(model: MemristorModels,) -> List
     if model == MemristorModels.PERSHIN:
         default_components = _create_pershin_default_components()
 
-    elif model == MemristorModels.PERSHIN_VOURKAS:
-        default_components = _create_pershin_vourkas_default_components()
+    elif model == MemristorModels.VOURKAS:
+        default_components = _create_vourkas_default_components()
         model_dependencies = [ModelDependence(name=SpiceDevices.DIODE, model=SpiceModel.DIODE)]
 
     control_cmd = '.func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}'
@@ -400,8 +400,8 @@ if __name__ == "__main__":
             PlotType.MEMRISTIVE_STATES_OVERLAPPED
         ],
         model=(
-            # MemristorModels.PERSHIN
-            MemristorModels.PERSHIN_VOURKAS
+            MemristorModels.PERSHIN
+            # MemristorModels.VOURKAS
         ),
         amount_iterations=1
     )

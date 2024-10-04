@@ -515,11 +515,11 @@ if __name__ == "__main__":
         ),
         plot_types=[
             PlotType.IV,
-            # PlotType.IV_OVERLAPPED,
+            PlotType.IV_OVERLAPPED,
             PlotType.IV_LOG,
-            # PlotType.IV_LOG_OVERLAPPED,
-            # PlotType.MEMRISTIVE_STATES,
-            # PlotType.MEMRISTIVE_STATES_OVERLAPPED
+            PlotType.IV_LOG_OVERLAPPED,
+            PlotType.MEMRISTIVE_STATES,
+            PlotType.MEMRISTIVE_STATES_OVERLAPPED
         ],
         model=(
             MemristorModels.PERSHIN

@@ -1,12 +1,10 @@
-from typing import List
-
 import networkx as nx
 import pandas as pd
 import os
 
 from matplotlib import pyplot as plt
 from matplotlib import animation as anime
-
+from typing import List
 from constants import MeasuredMagnitude
 from representations import DataLoader, ModelParameters, InputParameters, ExportParameters
 from services.directoriesmanagementservice import DirectoriesManagementService

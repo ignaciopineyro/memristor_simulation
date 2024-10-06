@@ -386,7 +386,7 @@ def simulate(
         circuit_file_service = create_default_test_circuit_file_service(subcircuit_file_service[0], network_service)
 
     elif simulation_template == SimulationTemplate.DEFAULT_NETWORK_WITH_EDGE_REMOVAL:
-        network_dimensions = NetworkParameters(N=4, M=4)
+        network_dimensions = NetworkParameters(N=50, M=50)
         removal_probability = 1
         network_service = NetworkService(
             NetworkType.GRID_2D_GRAPH, network_dimensions, removal_probability=removal_probability

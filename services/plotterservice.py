@@ -4,7 +4,7 @@ import os
 
 from matplotlib import pyplot as plt
 from matplotlib import animation as anime
-from typing import List
+from typing import List, Tuple
 from constants import MeasuredMagnitude
 from representations import DataLoader, ModelParameters, InputParameters, ExportParameters
 from services.directoriesmanagementservice import DirectoriesManagementService
@@ -31,6 +31,7 @@ class PlotterService:
         self.model_parameters = model_parameters
         self.input_parameters = input_parameters
         self.graph = graph
+
 
     @staticmethod
     def _get_csv_measured_magnitude(csv_file_name_no_extension: str):
@@ -201,10 +202,27 @@ class PlotterService:
 
         plt.close()
 
-    def plot_networkx_graph(self):
-        fig = plt.figure(figsize=(12, 8))
-        nx.draw(self.graph, ax=fig.add_subplot(), with_labels=True)
-        fig.savefig(f'{self.figures_directory_path}/graph.jpg')
+    def plot_networkx_graph(self, gnd_node: Tuple[int, int], vin_node: Tuple[int, int]):
+        color_map = []
+        labels = {}
+        for node in self.graph:
+            if node == gnd_node:
+                color_map.append('#f07b07')
+                labels[node] = f'V- {node}'
+            elif node == vin_node:
+                color_map.append('#f07b07')
+                labels[node] = f'V+ {node}'
+            else:
+                color_map.append('#93d9f5')
+                labels[node] = node
 
-    def plot_heaviside_terms(self):
-        raise NotImplementedError
+        fig = plt.figure(figsize=(12, 8))
+        pos = nx.spring_layout(self.graph)
+        nx.draw(
+            self.graph, pos=pos, ax=fig.add_subplot(), with_labels=False, node_color=color_map, edge_color='#545454'
+        )
+        nx.draw_networkx_labels(
+            self.graph, pos, labels, font_color='black', font_size=12, font_weight='bold'
+        )
+        fig.savefig(f'{self.figures_directory_path}/graph.jpg')
+        plt.close()

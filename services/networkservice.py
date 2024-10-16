@@ -2,7 +2,6 @@ import networkx as nx
 import random
 
 from typing import Tuple, List
-
 from constants import NetworkType, NetworkTypeNotImplemented
 from representations import NetworkParameters, DeviceParameters
 

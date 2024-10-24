@@ -497,10 +497,10 @@ def plot(
 if __name__ == "__main__":
     simulate(
         simulation_template=(
-            # SimulationTemplate.DEFAULT_TEST
+            SimulationTemplate.DEFAULT_TEST
             # SimulationTemplate.DEFAULT_NETWORK
             # SimulationTemplate.DEFAULT_NETWORK_WITH_EDGE_REMOVAL
-            SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE  # TODO: Parece que no funca
+            # SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE
             # SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA
             # SimulationTemplate.QUINTEROS_EXPERIMENTS
             # SimulationTemplate.RANDOM_REGULAR

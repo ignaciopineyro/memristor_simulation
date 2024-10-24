@@ -126,8 +126,6 @@ class NetworkService:
             elif node2 == self.gnd_node:
                 n2 = "gnd"
 
-            # TODO: Borrar?
-            # self.state_nodes.append(f"L({node1[0]};{node1[1]})({node2[0]};{node2[1]})")
             self.connections.append((n1, n2))
 
     def generate_device_parameters(self, device_name: str, subcircuit: str) -> List[DeviceParameters]:

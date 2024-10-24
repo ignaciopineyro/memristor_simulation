@@ -1,7 +1,7 @@
 from typing import List
 
 from constants import MemristorModels, WaveForms, AnalysisType, ModelsSimulationFolders, SpiceDevices, SpiceModel, \
-    SimulationTemplate, InvalidSimulationTemplate, SIMULATIONS_DIR, PlotType, MeasuredMagnitude, NetworkType
+    SimulationTemplate, InvalidSimulationTemplate, SIMULATIONS_DIR, PlotType, NetworkType
 from representations import Subcircuit, Source, Component, SimulationParameters, InputParameters, ModelParameters, \
     DeviceParameters, ExportParameters, ModelDependence, NetworkParameters
 from services.networkservice import NetworkService
@@ -42,16 +42,10 @@ def create_di_francesco_variable_beta_circuit_file_service(
 
     for subcircuit_file_service in subcircuit_file_services:
         export_file_name = f'beta_{subcircuit_file_service.subcircuit.parameters.beta}'
-        export_params = [
-            ExportParameters(
-                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
-            ),
-            ExportParameters(
-                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name + '_states', ['vin', 'l0']
-            )
-        ]
+        export_params = ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+            export_folder_name, export_file_name, ['vin', 'i(v1)', 'l0']
+        )
 
         circuit_file_service.append(
             CircuitFileService(subcircuit_file_service, input_params, device_params, simulation_params, export_params)
@@ -102,16 +96,10 @@ def create_di_francesco_variable_amplitude_circuit_file_service(
         simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
         export_folder_name = 'di_francesco_vin_amplitude'
         export_file_name = f'vin_{amplitude}'
-        export_params = [
-            ExportParameters(
-                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
-            ),
-            ExportParameters(
-                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name + '_states', ['vin', 'l0']
-            )
-        ]
+        export_params = ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+            export_folder_name, export_file_name, ['vin', 'i(v1)', 'l0']
+        )
 
         circuit_file_service.append(
             CircuitFileService(subcircuit_file_service, input_params, device_params, simulation_params, export_params)
@@ -176,32 +164,20 @@ def create_default_test_circuit_file_service(
                 f'{network_service.network_parameters.M}'
             )
 
-        export_params = [
-            ExportParameters(
-                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
-            ),
-            ExportParameters(
-                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name + '_states',
-                ['vin'] + [device_param.nodes[2] for device_param in device_params]
-            )
-        ]
+        export_params = ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+            export_folder_name, export_file_name,
+            ['vin', 'i(v1)'] + [device_param.nodes[2] for device_param in device_params]
+        )
 
     else:
         device_params = [DeviceParameters('xmem', 0, ['vin', 'gnd', 'l0'], 'memristor')]
         export_folder_name = 'default_test'
         export_file_name = 'default_test_simulation'
-        export_params = [
-            ExportParameters(
-                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
-            ),
-            ExportParameters(
-                ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-                export_folder_name, export_file_name + '_states', ['vin', 'l0']
-            )
-        ]
+        export_params = ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+            export_folder_name, export_file_name, ['vin', 'i(v1)', 'l0']
+        )
 
     simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
 
@@ -256,17 +232,11 @@ def create_quinteros_experiments_circuit_file_service(
     export_file_name = f'quinteros_experiments_simulation_{experiment_number}_{network_service.network_parameters.N}x' \
                        f'{network_service.network_parameters.M}'
 
-    export_params = [
-        ExportParameters(
-            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-            export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
-        ),
-        ExportParameters(
-            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-            export_folder_name, export_file_name + '_states',
-            ['vin'] + [device_param.nodes[2] for device_param in device_params]
-        )
-    ]
+    export_params = ExportParameters(
+        ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+        export_folder_name, export_file_name,
+        ['vin', 'i(v1)'] + [device_param.nodes[2] for device_param in device_params]
+    )
 
     simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
 
@@ -316,17 +286,11 @@ def create_random_regular_circuit_file_service(
         f'{network_service.network_parameters.amount_connections}'
     )
 
-    export_params = [
-        ExportParameters(
-            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-            export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
-        ),
-        ExportParameters(
-            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-            export_folder_name, export_file_name + '_states',
-            ['vin'] + [device_param.nodes[2] for device_param in device_params]
-        )
-    ]
+    export_params = ExportParameters(
+        ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+        export_folder_name, export_file_name,
+        ['vin', 'i(v1)'] + [device_param.nodes[2] for device_param in device_params]
+    )
 
     simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
 
@@ -352,17 +316,11 @@ def create_watts_strogatz_circuit_file_service(
         f'{network_service.network_parameters.shortcut_probability}'
     )
 
-    export_params = [
-        ExportParameters(
-            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-            export_folder_name, export_file_name + '_iv', ['vin', 'i(v1)']
-        ),
-        ExportParameters(
-            ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
-            export_folder_name, export_file_name + '_states',
-            ['vin'] + [device_param.nodes[2] for device_param in device_params]
-        )
-    ]
+    export_params = ExportParameters(
+        ModelsSimulationFolders.get_simulation_folder_by_model(subcircuit_file_service.model),
+        export_folder_name, export_file_name,
+        ['vin', 'i(v1)'] + [device_param.nodes[2] for device_param in device_params]
+    )
 
     simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
 
@@ -505,7 +463,7 @@ def simulate(
 
 
 def plot(
-        export_parameters: List[ExportParameters], model_parameters: ModelParameters = None,
+        export_parameters: ExportParameters, model_parameters: ModelParameters = None,
         input_parameters: InputParameters = None, plot_types: List[PlotType] = None
 ):
     if plot_types is not None:
@@ -513,24 +471,27 @@ def plot(
             simulation_results_directory_path=SIMULATIONS_DIR, export_parameters=export_parameters,
             model_parameters=model_parameters, input_parameters=input_parameters
         )
-        data_loaders = plotter_service.load_data()
+        data_loaders = plotter_service.load_data_from_csv()
 
         for data_loader in data_loaders:
-            if data_loader.measured_magnitude == MeasuredMagnitude.IV:
-                if PlotType.IV in plot_types:
-                    plotter_service.plot_iv(data_loader.dataframe, data_loader.csv_file_name_no_extension)
-                if PlotType.IV_OVERLAPPED in plot_types:
-                    plotter_service.plot_iv_overlapped(data_loader.dataframe)
-                if PlotType.IV_LOG in plot_types:
-                    plotter_service.plot_iv_log(data_loader.dataframe, data_loader.csv_file_name_no_extension)
-                if PlotType.IV_LOG_OVERLAPPED in plot_types:
-                    plotter_service.plot_iv_log_overlapped(data_loader.dataframe)
-
-            elif data_loader.measured_magnitude == MeasuredMagnitude.STATES:
-                if PlotType.MEMRISTIVE_STATES in plot_types:
-                    plotter_service.plot_states(data_loader.dataframe, data_loader.csv_file_name_no_extension)
-                if PlotType.MEMRISTIVE_STATES_OVERLAPPED in plot_types:
-                    plotter_service.plot_states_overlapped(data_loader.dataframe)
+            if PlotType.IV in plot_types:
+                plotter_service.plot_iv(data_loader.dataframe, data_loader.csv_file_name_no_extension)
+            if PlotType.IV_OVERLAPPED in plot_types:
+                plotter_service.plot_iv_overlapped(data_loader.dataframe)
+            if PlotType.IV_LOG in plot_types:
+                plotter_service.plot_iv_log(data_loader.dataframe, data_loader.csv_file_name_no_extension)
+            if PlotType.IV_LOG_OVERLAPPED in plot_types:
+                plotter_service.plot_iv_log_overlapped(data_loader.dataframe)
+            if PlotType.CURRENT_AND_VIN_VS_TIME in plot_types:
+                plotter_service.plot_current_and_vin_vs_time(
+                    data_loader.dataframe, data_loader.csv_file_name_no_extension
+                )
+            if PlotType.STATE_AND_VIN_VS_TIME in plot_types:
+                plotter_service.plot_state_and_vin_vs_time(
+                    data_loader.dataframe, data_loader.csv_file_name_no_extension
+                )
+            if PlotType.MEMRISTIVE_STATES_OVERLAPPED in plot_types:
+                plotter_service.plot_states_overlapped(data_loader.dataframe)
 
 
 if __name__ == "__main__":
@@ -551,7 +512,8 @@ if __name__ == "__main__":
             PlotType.IV_OVERLAPPED,
             PlotType.IV_LOG,
             PlotType.IV_LOG_OVERLAPPED,
-            PlotType.MEMRISTIVE_STATES,
+            PlotType.CURRENT_AND_VIN_VS_TIME,
+            PlotType.STATE_AND_VIN_VS_TIME,
             PlotType.MEMRISTIVE_STATES_OVERLAPPED
         ],
         model=(

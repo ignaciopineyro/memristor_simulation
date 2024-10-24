@@ -161,11 +161,8 @@ class AverageTimeMeasure:
 
 @dataclass()
 class DataLoader:
-    csv_file_name: str
-    csv_file_name_no_extension: str
-    csv_file_path: str
-    measured_magnitude: MeasuredMagnitude
     dataframe: pd.DataFrame
+    csv_file_name_no_extension: str
 
 
 @dataclass()

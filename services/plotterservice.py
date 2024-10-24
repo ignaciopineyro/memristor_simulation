@@ -12,7 +12,7 @@ from services.directoriesmanagementservice import DirectoriesManagementService
 
 class PlotterService:
     def __init__(
-            self, simulation_results_directory_path: str, export_parameters: List[ExportParameters],
+            self, simulation_results_directory_path: str, export_parameters: ExportParameters,
             model_parameters: ModelParameters = None, input_parameters: InputParameters = None, graph: nx.Graph = None
     ):
         self.directories_management_service = DirectoriesManagementService()
@@ -20,10 +20,10 @@ class PlotterService:
         self.simulation_results_directory_path = simulation_results_directory_path
         self.export_parameters = export_parameters
         self.model_simulations_directory_path = (
-            f'{self.simulation_results_directory_path}/{self.export_parameters[0].model_simulation_folder_name.value}'
+            f'{self.simulation_results_directory_path}/{self.export_parameters.model_simulation_folder_name.value}'
         )
         self.simulations_directory_path = (
-            f'{self.model_simulations_directory_path}/{self.export_parameters[0].folder_name}'
+            f'{self.model_simulations_directory_path}/{self.export_parameters.folder_name}'
         )
         self.figures_directory_path = f'{self.simulations_directory_path}/figures'
         self.directories_management_service.create_figures_directory(self.simulations_directory_path)
@@ -31,7 +31,6 @@ class PlotterService:
         self.model_parameters = model_parameters
         self.input_parameters = input_parameters
         self.graph = graph
-
 
     @staticmethod
     def _get_csv_measured_magnitude(csv_file_name_no_extension: str):
@@ -42,26 +41,18 @@ class PlotterService:
         else:
             return MeasuredMagnitude.OTHER
 
-    def load_data(self) -> List[DataLoader]:
+    def load_data_from_csv(self) -> List[DataLoader]:
         data_loaders = []
         files_in_model_simulations_directory = os.listdir(self.simulations_directory_path)
+
         for file_in_simulations_directory in sorted(files_in_model_simulations_directory):
-            if file_in_simulations_directory.split('.csv')[0] in [
-                export_parameter.file_name for export_parameter in self.export_parameters
-            ]:
+            if file_in_simulations_directory.split('.csv')[0] == f'{self.export_parameters.file_name}_results':
                 csv_file_name_no_extension = file_in_simulations_directory.replace('.csv', '')
                 csv_file_path = os.path.join(self.simulations_directory_path, file_in_simulations_directory)
                 dataframe = pd.DataFrame(
                         pd.read_csv(csv_file_path, sep=r"\s+", engine='python', skipfooter=4)
                     )
-                measured_magnitude = self._get_csv_measured_magnitude(csv_file_name_no_extension)
-
-                data_loaders.append(
-                    DataLoader(
-                        file_in_simulations_directory, csv_file_name_no_extension, csv_file_path, measured_magnitude,
-                        dataframe
-                    )
-                )
+                data_loaders.append(DataLoader(dataframe, csv_file_name_no_extension))
 
         return data_loaders
 
@@ -79,7 +70,7 @@ class PlotterService:
         plt.title(f'I-V {csv_file_name} {title if title is not None else ""}', fontsize=22)
         plt.autoscale()
         plt.legend(loc='lower right', fontsize=12)
-        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}.jpg')
+        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_iv.jpg')
         plt.close()
 
     def plot_iv_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None) -> None:
@@ -113,7 +104,7 @@ class PlotterService:
         plt.title(f'log(I)-V {csv_file_name} {title if title is not None else ""}', fontsize=22)
         plt.autoscale()
         plt.legend(loc='lower right', fontsize=12)
-        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_log.jpg')
+        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_log(i)v.jpg')
         plt.close()
 
     def plot_iv_log_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None):
@@ -133,7 +124,31 @@ class PlotterService:
         plt.legend(loc='lower right', fontsize=12)
         plt.savefig(f'{self.figures_directory_path}/iv_log_overlapped.jpg')
 
-    def plot_states(self, df: pd.DataFrame, csv_file_name: str, title: dict = None) -> None:
+    def plot_current_and_vin_vs_time(self, df: pd.DataFrame, csv_file_name: str, title: dict = None) -> None:
+        plt.figure(figsize=(12, 8))
+        plt.subplot(2, 1, 1)
+        plt.plot(df['time'], df['vin'])
+        plt.xticks([])
+        plt.ylabel('Vin [V]')
+        plt.subplot(2, 1, 2)
+        plt.plot(
+            df['time'], df['i(v1)'],
+            label=(
+                f'{self.model_parameters.get_parameters_as_string()}'
+                f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
+            )
+        )
+        plt.xlabel('Time [seg]')
+        plt.ylabel(f'I(t) [A]')
+        plt.suptitle(
+            f'Input voltage and Source Current vs Time - {csv_file_name} {title if title is not None else ""}',
+            fontsize=22
+        )
+        plt.legend(loc='center', bbox_to_anchor=(0.5, 1.1))
+        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_ivtime.jpg')
+        plt.close()
+
+    def plot_state_and_vin_vs_time(self, df: pd.DataFrame, csv_file_name: str, title: dict = None) -> None:
         plt.figure(figsize=(12, 8))
         plt.subplot(2, 1, 1)
         plt.plot(df['time'], df['vin'])
@@ -147,13 +162,13 @@ class PlotterService:
                 f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
             )
         )
-        plt.xlabel('Time [s]')
+        plt.xlabel('Time [seg]')
         plt.ylabel(f'l0 [ohm]')
         plt.suptitle(
             f'Input voltage and State vs Time - {csv_file_name} {title if title is not None else ""}', fontsize=22
         )
         plt.legend(loc='center', bbox_to_anchor=(0.5, 1.1))
-        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}.jpg')
+        plt.savefig(f'{self.figures_directory_path}/{csv_file_name}_statevtime.jpg')
         plt.close()
 
     def plot_states_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None) -> None:
@@ -191,7 +206,7 @@ class PlotterService:
         xlist = []
         ylist = []
 
-        with writer.saving(fig, f"{self.figures_directory_path}/{csv_file_name}_animation.gif", 100):
+        with writer.saving(fig, f"{self.figures_directory_path}/{csv_file_name}_ivanimation.gif", 100):
             for xval, yval in zip(df['vin'], -df['i(v1)']):
                 xlist.append(xval)
                 ylist.append(yval)

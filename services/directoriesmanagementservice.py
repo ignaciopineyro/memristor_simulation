@@ -1,5 +1,4 @@
 import os
-from typing import List
 
 from constants import SIMULATIONS_DIR, MODELS_DIR, ModelsSimulationFolders, MemristorModels
 
@@ -10,7 +9,7 @@ class DirectoriesManagementService:
 
         if circuit_file_service:
             self.circuit_file_service = circuit_file_service
-            self.export_parameters = self.circuit_file_service.export_parameters or []
+            self.export_parameters = self.circuit_file_service.export_parameters
             self.model = circuit_file_service.subcircuit_file_service.model or None
 
     @staticmethod
@@ -38,41 +37,37 @@ class DirectoriesManagementService:
     def get_circuit_file_path(self) -> str:
         return f'{SIMULATIONS_DIR}/{self.get_circuit_dir_and_file_name()}'
 
-    def get_export_simulation_file_paths(self) -> List[str]:
-        export_simulation_file_paths = []
+    def get_export_simulation_file_path(self) -> str:
+        self.create_simulation_parameter_folder_if_not_exist(
+            self.export_parameters.model_simulation_folder_name, self.export_parameters.folder_name
+        )
+        export_simulation_file_path = (
+            f"{SIMULATIONS_DIR}/{self.export_parameters.model_simulation_folder_name.value}/"
+            f"{self.export_parameters.folder_name}/{self.export_parameters.file_name}_results.csv"
+        )
 
-        for export_parameter in self.export_parameters:
-            self.create_simulation_parameter_folder_if_not_exist(
-                export_parameter.model_simulation_folder_name, export_parameter.folder_name
-            )
-
-            export_simulation_file_paths.append(
-                f"{SIMULATIONS_DIR}/{export_parameter.model_simulation_folder_name.value}/"
-                f"{export_parameter.folder_name}/{export_parameter.file_name}.csv"
-            )
-
-        return export_simulation_file_paths
+        return export_simulation_file_path
 
     def get_simulation_log_file_path(self) -> str:
         return (
-                f"./simulation_results/{self.export_parameters[0].model_simulation_folder_name.value}/"
-                f"{self.export_parameters[0].folder_name}/logs/{self.export_parameters[0].folder_name}.log"
+                f"./simulation_results/{self.export_parameters.model_simulation_folder_name.value}/"
+                f"{self.export_parameters.folder_name}/logs/{self.export_parameters.folder_name}.log"
         )
 
     def get_circuit_dir_and_file_name(self) -> str:
         if self.model == MemristorModels.PERSHIN:
             return (
-                f'{ModelsSimulationFolders.PERSHIN_SIMULATIONS.value}/{self.export_parameters[0].folder_name}/'
+                f'{ModelsSimulationFolders.PERSHIN_SIMULATIONS.value}/{self.export_parameters.folder_name}/'
                 f'pershin_circuit_file.cir'
             )
         elif self.model == MemristorModels.VOURKAS:
             return (
-                f'{ModelsSimulationFolders.VOURKAS_SIMULATIONS.value}/{self.export_parameters[0].folder_name}/'
+                f'{ModelsSimulationFolders.VOURKAS_SIMULATIONS.value}/{self.export_parameters.folder_name}/'
                 f'pershin_vourkas_circuit_file.cir'
             )
         elif self.model == MemristorModels.BIOLEK:
             return (
-                f'{ModelsSimulationFolders.BIOLEK_SIMULATIONS.value}/{self.export_parameters[0].folder_name}/'
+                f'{ModelsSimulationFolders.BIOLEK_SIMULATIONS.value}/{self.export_parameters.folder_name}/'
                 f'biolek_circuit_file.cir'
             )
         else:

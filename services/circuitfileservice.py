@@ -9,7 +9,7 @@ class CircuitFileService:
     def __init__(
             self, subcircuit_file_service: SubcircuitFileService, input_parameters: InputParameters,
             device_parameters: List[DeviceParameters], simulation_parameters: SimulationParameters,
-            export_parameters: List[ExportParameters],
+            export_parameters: ExportParameters,
     ):
         self.input_parameters = input_parameters
         self.device_parameters = device_parameters
@@ -39,18 +39,18 @@ class CircuitFileService:
         file.write('run\n')
         file.write('set wr_vecnames\n')
         file.write('set wr_singlescale\n')
-        for index, export_parameter in enumerate(self.export_parameters):
-            file.write(
-                f'wrdata {self.directories_management_service.get_export_simulation_file_paths()[index]} '
-                f'{export_parameter.get_export_magnitudes()}\n'
-            )
+        file.write(
+            f'wrdata {self.directories_management_service.get_export_simulation_file_path()} '
+            f'{self.export_parameters.get_export_magnitudes()}\n'
+        )
 
     def write_circuit_file(self) -> None:
         """
         Writes the .cir circuit file to execute in Spice. The file is saved in simulation_results/model-name_simulations
         :return: None
         """
-        self.directories_management_service.get_export_simulation_file_paths()
+        # TODO: Esta linea hace algo?
+        self.directories_management_service.get_export_simulation_file_path()
         self.directories_management_service.create_simulation_results_for_model_folder_if_not_exists(
             self.subcircuit_file_service.model
         )

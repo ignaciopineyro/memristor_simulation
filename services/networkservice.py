@@ -1,15 +1,15 @@
 import networkx as nx
 import random
 
-from typing import Tuple, List
+from typing import Tuple, List, Union
 from constants import NetworkType, NetworkTypeNotImplemented
 from representations import NetworkParameters, DeviceParameters
 
 
 class NetworkService:
     def __init__(
-            self, network_type: NetworkType, network_parameters: NetworkParameters, gnd_node: Tuple[int, int] = None,
-            vin_node: Tuple[int, int] = None, removal_probability: float = None
+            self, network_type: NetworkType, network_parameters: NetworkParameters, vin_minus: Union[int, Tuple[int, int]] = None,
+            vin_plus: Union[int, Tuple[int, int]] = None, removal_probability: float = None
     ):
         self.network_parameters = network_parameters
         self.network_type = network_type
@@ -17,22 +17,22 @@ class NetworkService:
         self._run_network_checks()
 
         if self.network_type == NetworkType.GRID_2D_GRAPH:
-            if (isinstance(vin_node, tuple) or vin_node is None) and (isinstance(gnd_node, tuple) or gnd_node is None):
-                self.vin_node = vin_node or (0, 0)
-                self.gnd_node = gnd_node or (self.network_parameters.N - 1, 0)
+            if (isinstance(vin_plus, tuple) or vin_plus is None) and (isinstance(vin_minus, tuple) or vin_minus is None):
+                self.vin_plus = vin_plus or (0, 0)
+                self.vin_minus = vin_minus or (self.network_parameters.N - 1, 0)
             else:
                 raise ValueError(
-                    f'NetworkService vin_node and gnd_node must be None or a tuple of integers for '
-                    f'NetworkType.GRID_2D_GRAPH vin_node={vin_node} and gnd_node={gnd_node} were received instead'
+                    f'NetworkService vin_plus and vin_minus must be None or a tuple of integers for '
+                    f'NetworkType.GRID_2D_GRAPH vin_plus={vin_plus} and vin_minus={vin_minus} were received instead'
                 )
         else:
-            if (isinstance(vin_node, int) or vin_node is None) and (isinstance(gnd_node, int) or gnd_node is None):
-                self.vin_node = vin_node or 0
-                self.gnd_node = gnd_node or round(self.network_parameters.amount_nodes / 2)
+            if (isinstance(vin_plus, int) or vin_plus is None) and (isinstance(vin_minus, int) or vin_minus is None):
+                self.vin_plus = vin_plus or 0
+                self.vin_minus = vin_minus or round(self.network_parameters.amount_nodes / 2)
             else:
                 raise ValueError(
-                    f'NetworkService vin_node and gnd_node must be None or integers but vin_node={vin_node} and '
-                    f'gnd_node={gnd_node} were received instead'
+                    f'NetworkService vin_plus and vin_minus must be None or integers but vin_plus={vin_plus} and '
+                    f'vin_minus={vin_minus} were received instead'
                 )
 
         self.network = self.generate_network()
@@ -114,16 +114,16 @@ class NetworkService:
                 n1 = f"n{node1}"
                 n2 = f"n{node2}"
 
-            if node1 == self.vin_node:
+            if node1 == self.vin_plus:
                 n1 = "vin"
 
-            elif node1 == self.gnd_node:
+            elif node1 == self.vin_minus:
                 n1 = "gnd"
 
-            if node2 == self.vin_node:
+            if node2 == self.vin_plus:
                 n2 = "vin"
 
-            elif node2 == self.gnd_node:
+            elif node2 == self.vin_minus:
                 n2 = "gnd"
 
             self.connections.append((n1, n2))

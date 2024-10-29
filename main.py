@@ -349,7 +349,7 @@ def simulate(
             model_parameters=circuit_file_service[0].subcircuit_file_service.subcircuit.parameters,
             input_parameters=circuit_file_service[0].input_parameters, graph=network_service.network
         )
-        plotter_service.plot_networkx_graph(network_service.gnd_node, network_service.vin_node)
+        plotter_service.plot_networkx_graph(network_service.vin_minus, network_service.vin_plus)
 
     elif simulation_template == SimulationTemplate.DEFAULT_NETWORK_WITH_EDGE_REMOVAL:
         network_dimensions = NetworkParameters(N=4, M=4)
@@ -366,7 +366,7 @@ def simulate(
             model_parameters=circuit_file_service[0].subcircuit_file_service.subcircuit.parameters,
             input_parameters=circuit_file_service[0].input_parameters, graph=network_service.network
         )
-        plotter_service.plot_networkx_graph(network_service.gnd_node, network_service.vin_node)
+        plotter_service.plot_networkx_graph(network_service.vin_minus, network_service.vin_plus)
 
     elif simulation_template == SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE:
         model_parameters = ModelParameters(0, 5e5, 200e3, 200e3, 2e3, 0.6)
@@ -392,11 +392,11 @@ def simulate(
 
         for experiment_number, subcircuit_index in zip([1, 2, 4, 5], range(len(subcircuit_files_service))):
             if experiment_number in [4, 5]:
-                gnd_node = (3, 3)
+                vin_minus = (3, 3)
             else:
-                gnd_node = (3, 0)
+                vin_minus = (3, 0)
 
-            network_service = NetworkService(NetworkType.GRID_2D_GRAPH, network_dimensions, gnd_node=gnd_node)
+            network_service = NetworkService(NetworkType.GRID_2D_GRAPH, network_dimensions, vin_minus=vin_minus)
             circuit_file_service.append(create_quinteros_experiments_circuit_file_service(
                 subcircuit_files_service[subcircuit_index], network_service, experiment_number)
             )
@@ -413,7 +413,7 @@ def simulate(
             model_parameters=circuit_file_service[0].subcircuit_file_service.subcircuit.parameters,
             input_parameters=circuit_file_service[0].input_parameters, graph=network_service.network
         )
-        plotter_service.plot_networkx_graph(network_service.gnd_node, network_service.vin_node)
+        plotter_service.plot_networkx_graph(network_service.vin_minus, network_service.vin_plus)
 
     elif simulation_template == SimulationTemplate.WATTS_STROGATZ_CIRCULAR_REGULAR:
         network_parameters = NetworkParameters(amount_connections=5, amount_nodes=50, shortcut_probability=0)
@@ -427,7 +427,7 @@ def simulate(
             model_parameters=circuit_file_service[0].subcircuit_file_service.subcircuit.parameters,
             input_parameters=circuit_file_service[0].input_parameters, graph=network_service.network
         )
-        plotter_service.plot_networkx_graph(network_service.gnd_node, network_service.vin_node)
+        plotter_service.plot_networkx_graph(network_service.vin_minus, network_service.vin_plus)
 
     elif simulation_template == SimulationTemplate.WATTS_STROGATZ:
         network_parameters = NetworkParameters(amount_connections=5, amount_nodes=50, shortcut_probability=0.1)
@@ -441,7 +441,7 @@ def simulate(
             model_parameters=circuit_file_service[0].subcircuit_file_service.subcircuit.parameters,
             input_parameters=circuit_file_service[0].input_parameters, graph=network_service.network
         )
-        plotter_service.plot_networkx_graph(network_service.gnd_node, network_service.vin_node)
+        plotter_service.plot_networkx_graph(network_service.vin_minus, network_service.vin_plus)
 
     else:
         raise InvalidSimulationTemplate()
@@ -499,7 +499,7 @@ if __name__ == "__main__":
         simulation_template=(
             SimulationTemplate.DEFAULT_TEST
             # SimulationTemplate.DEFAULT_NETWORK
-            # SimulationTemplate.DEFAULT_NETWORK_WITH_EDGE_REMOVAL
+            # SimulationTemplate.DEFAULT_NETWORK_WITH_EDGE_REMOVAL  # Not working
             # SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE
             # SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA
             # SimulationTemplate.QUINTEROS_EXPERIMENTS

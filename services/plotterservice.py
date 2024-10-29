@@ -225,14 +225,14 @@ class PlotterService:
 
         plt.close()
 
-    def plot_networkx_graph(self, gnd_node: Tuple[int, int], vin_node: Tuple[int, int]):
+    def plot_networkx_graph(self, vin_minus: Tuple[int, int], vin_plus: Tuple[int, int]):
         color_map = []
         labels = {}
         for node in self.graph:
-            if node == gnd_node:
+            if node == vin_minus:
                 color_map.append('#f07b07')
                 labels[node] = f'V- {node}'
-            elif node == vin_node:
+            elif node == vin_plus:
                 color_map.append('#f07b07')
                 labels[node] = f'V+ {node}'
             else:

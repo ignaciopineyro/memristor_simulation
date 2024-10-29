@@ -155,7 +155,7 @@ class TimeMeasureService:
                 for k, v in asdict(time_measure).items():
                     if k != 'start_time' and v is not None:
                         f.write(f'# {k} = {str(v)} ms\n')
-                f.write('\n\n')
+                f.write('\n')
 
             if average_time_measure:
                 f.write(f'{"#" * 20}  AVERAGE TIME MEASURES  {"#" * 20}\n')
@@ -164,7 +164,7 @@ class TimeMeasureService:
                         f.write(f'# {k} = {str(v)}\n')
                     elif v is not None:
                         f.write(f'# {k} = {str(v)} ms\n')
-                f.write('\n\n')
+                f.write('\n')
 
     @staticmethod
     def _is_os_linux() -> bool:

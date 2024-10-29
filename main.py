@@ -402,7 +402,7 @@ def simulate(
             )
 
     elif simulation_template == SimulationTemplate.RANDOM_REGULAR:
-        network_parameters = NetworkParameters(amount_connections=2, amount_nodes=50)
+        network_parameters = NetworkParameters(amount_connections=5, amount_nodes=50)
         network_service = NetworkService(NetworkType.RANDOM_REGULAR_GRAPH, network_parameters)
         subcircuit_file_service = create_default_test_subcircuit_file_service(model)
         circuit_file_service = create_random_regular_circuit_file_service(subcircuit_file_service[0], network_service)
@@ -416,7 +416,7 @@ def simulate(
         plotter_service.plot_networkx_graph(network_service.gnd_node, network_service.vin_node)
 
     elif simulation_template == SimulationTemplate.WATTS_STROGATZ_CIRCULAR_REGULAR:
-        network_parameters = NetworkParameters(amount_connections=2, amount_nodes=50, shortcut_probability=0)
+        network_parameters = NetworkParameters(amount_connections=5, amount_nodes=50, shortcut_probability=0)
         network_service = NetworkService(NetworkType.WATTS_STROGATZ_GRAPH, network_parameters)
         subcircuit_file_service = create_default_test_subcircuit_file_service(model)
         circuit_file_service = create_watts_strogatz_circuit_file_service(subcircuit_file_service[0], network_service)
@@ -430,7 +430,7 @@ def simulate(
         plotter_service.plot_networkx_graph(network_service.gnd_node, network_service.vin_node)
 
     elif simulation_template == SimulationTemplate.WATTS_STROGATZ:
-        network_parameters = NetworkParameters(amount_connections=2, amount_nodes=50, shortcut_probability=0.1)
+        network_parameters = NetworkParameters(amount_connections=5, amount_nodes=50, shortcut_probability=0.1)
         network_service = NetworkService(NetworkType.WATTS_STROGATZ_GRAPH, network_parameters)
         subcircuit_file_service = create_default_test_subcircuit_file_service(model)
         circuit_file_service = create_watts_strogatz_circuit_file_service(subcircuit_file_service[0], network_service)

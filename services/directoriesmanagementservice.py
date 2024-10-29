@@ -19,15 +19,12 @@ class DirectoriesManagementService:
         ):
             os.makedirs(f'{SIMULATIONS_DIR}/{ModelsSimulationFolders.get_simulation_folder_by_model(model).value}')
 
-    @staticmethod
     def create_simulation_parameter_folder_if_not_exist(
-            model_simulation_folder_name: ModelsSimulationFolders, folder_name: str
+            self, model_simulation_folder_name: ModelsSimulationFolders
     ) -> None:
-        folder_directory = f'{SIMULATIONS_DIR}/{model_simulation_folder_name.value}/{folder_name}'
+        folder_directory = f'{SIMULATIONS_DIR}/{model_simulation_folder_name.value}/{self.export_parameters.folder_name}'
         if not os.path.exists(folder_directory):
             os.makedirs(folder_directory)
-        if not os.path.exists(f'{folder_directory}/logs'):
-            os.makedirs(f'{folder_directory}/logs')
 
     @staticmethod
     def create_figures_directory(simulations_directory_path):
@@ -39,7 +36,7 @@ class DirectoriesManagementService:
 
     def get_export_simulation_file_path(self) -> str:
         self.create_simulation_parameter_folder_if_not_exist(
-            self.export_parameters.model_simulation_folder_name, self.export_parameters.folder_name
+            self.export_parameters.model_simulation_folder_name
         )
         export_simulation_file_path = (
             f"{SIMULATIONS_DIR}/{self.export_parameters.model_simulation_folder_name.value}/"
@@ -51,7 +48,7 @@ class DirectoriesManagementService:
     def get_simulation_log_file_path(self) -> str:
         return (
                 f"./simulation_results/{self.export_parameters.model_simulation_folder_name.value}/"
-                f"{self.export_parameters.folder_name}/logs/{self.export_parameters.folder_name}.log"
+                f"{self.export_parameters.folder_name}/{self.export_parameters.folder_name}.log"
         )
 
     def get_circuit_dir_and_file_name(self) -> str:

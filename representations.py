@@ -1,3 +1,4 @@
+import time
 from dataclasses import fields, dataclass, asdict
 from typing import List
 
@@ -93,6 +94,10 @@ class ExportParameters:
 
     def get_export_magnitudes(self) -> str:
         return ' '.join(self.magnitudes)
+
+    def __post_init__(self):
+        timestamp = int(time.time())
+        self.folder_name = self.folder_name + "_" + str(timestamp)
 
 
 @dataclass()

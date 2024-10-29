@@ -1,4 +1,5 @@
 import networkx as nx
+import numpy as np
 import pandas as pd
 import os
 
@@ -89,10 +90,16 @@ class PlotterService:
         plt.legend(loc='lower right', fontsize=12)
         plt.savefig(f'{self.figures_directory_path}/iv_overlapped.jpg')
 
+    @staticmethod
+    def _filter_zero_values_from_dataframe(df: pd.DataFrame, epsilon: float) -> pd.DataFrame:
+        df_filtered = df.dropna(subset=['i(v1)'])
+        return df_filtered[abs(df_filtered['i(v1)']) > epsilon]
+
     def plot_iv_log(self, df: pd.DataFrame, csv_file_name: str, title: str = None) -> None:
         plt.figure(figsize=(12, 8))
+        df_filtered = self._filter_zero_values_from_dataframe(df, 1e-7)
         plt.plot(
-            df['vin'], abs(-df['i(v1)']),
+            df_filtered['vin'], abs(-df_filtered['i(v1)']),
             label=(
                 f'{self.model_parameters.get_parameters_as_string()}'
                 f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'
@@ -109,8 +116,9 @@ class PlotterService:
 
     def plot_iv_log_overlapped(self, df: pd.DataFrame, title: str = None, label: str = None):
         plt.figure(1, figsize=(12, 8))
+        df_filtered = self._filter_zero_values_from_dataframe(df, 1e-7)
         plt.plot(
-            df['vin'], abs(-df['i(v1)']),
+            df_filtered['vin'], abs(-df_filtered['i(v1)']),
             label=label if label is not None else (
                 f'{self.model_parameters.get_parameters_as_string()}'
                 f'\n{self.input_parameters.get_input_parameters_for_plot_as_string()}'

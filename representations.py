@@ -4,7 +4,14 @@ from typing import List
 
 import pandas as pd
 
-from constants import WaveForms, AnalysisType, ModelsSimulationFolders, SpiceDevices, SpiceModel, MeasuredMagnitude
+from constants import (
+    WaveForms,
+    AnalysisType,
+    ModelsSimulationFolders,
+    SpiceDevices,
+    SpiceModel,
+    MeasuredMagnitude,
+)
 
 
 @dataclass()
@@ -21,22 +28,22 @@ class InputParameters:
     phase: float = None
 
     def get_voltage_source_as_string(self) -> str:
-        return(
+        return (
             f"V{self.source_number} {self.n_plus} {self.n_minus} {self.wave_form.value} {self.vo}"
             f" {self.amplitude} {self.frequency} {self.td if self.td else ''}"
             f" {self.theta if self.theta else ''} {self.phase if self.phase else ''}\n"
         )
 
     def get_input_parameters_for_plot_as_string(self):
-        input_params = ''
+        input_params = ""
         for k, v in asdict(self).items():
-            if k not in ['source_number', 'n_plus', 'n_minus'] and v is not None:
-                input_params += f'{k}={v} '
+            if k not in ["source_number", "n_plus", "n_minus"] and v is not None:
+                input_params += f"{k}={v} "
 
         return input_params
 
     def get_input_parameters_for_plot_legend(self):
-        return f'{self.wave_form} {self.amplitude} {self.frequency} {self.td} {self.theta} {self.phase} {self.vo}'
+        return f"{self.wave_form} {self.amplitude} {self.frequency} {self.td} {self.theta} {self.phase} {self.vo}"
 
 
 @dataclass()
@@ -47,9 +54,7 @@ class DeviceParameters:
     subcircuit: str
 
     def get_device(self) -> str:
-        return(
-            f"{self.device_name}{self.device_number} {' '.join(self.nodes)} {self.subcircuit}"
-        )
+        return f"{self.device_name}{self.device_number} {' '.join(self.nodes)} {self.subcircuit}"
 
 
 @dataclass()
@@ -62,9 +67,9 @@ class ModelParameters:
     Vt: float
 
     def get_parameters_as_string(self):
-        params = ''
+        params = ""
         for k, v in asdict(self).items():
-            params += f'{k}={v} '
+            params += f"{k}={v} "
 
         return params
 
@@ -79,7 +84,7 @@ class SimulationParameters:
     uic: bool = None
 
     def get_analysis(self) -> str:
-        return(
+        return (
             f"{self.analysis_type.value} {self.tstep} {self.tstop} {self.tstart if self.tstart else ''}"
             f" {self.tmax if self.tmax else ''} {'uic' if self.uic else ''}"
         )
@@ -93,7 +98,7 @@ class ExportParameters:
     magnitudes: List[str]
 
     def get_export_magnitudes(self) -> str:
-        return ' '.join(self.magnitudes)
+        return " ".join(self.magnitudes)
 
     def __post_init__(self):
         timestamp = int(time.time())
@@ -107,7 +112,7 @@ class Subcircuit:
     parameters: ModelParameters
 
     def get_nodes_as_string(self) -> str:
-        return ' '.join(self.nodes)
+        return " ".join(self.nodes)
 
 
 @dataclass()
@@ -125,7 +130,7 @@ class Source:
 
     @staticmethod
     def get_source_nodes(source) -> str:
-        return ' '.join(source.nodes)
+        return " ".join(source.nodes)
 
 
 @dataclass()
@@ -138,10 +143,10 @@ class Component:
     model: SpiceDevices = None
 
     def get_attributes_as_string(self):
-        attr_str = ''
+        attr_str = ""
         for field in fields(self):
             if getattr(self, field.name) is not None:
-                attr_str += f'{getattr(self, field.name) } '
+                attr_str += f"{getattr(self, field.name) } "
 
         return attr_str
 
@@ -176,4 +181,6 @@ class NetworkParameters:
     M: int = None  # M dimension of a 2D NxM grid
     amount_connections: int = None  # Amount of connections per node in the network
     amount_nodes: int = None  # Amount of nodes in the network
-    shortcut_probability: float = None  # Shortcut probability of a WATTS_STROGATZ_GRAPH (between 0 and 1)
+    shortcut_probability: float = (
+        None  # Shortcut probability of a WATTS_STROGATZ_GRAPH (between 0 and 1)
+    )

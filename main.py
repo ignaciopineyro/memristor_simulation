@@ -67,7 +67,7 @@ def create_di_francesco_variable_beta_circuit_file_service(
     input_params = InputParameters(1, "vin", "gnd", WaveForms.SIN, 0, 2, 1)
     device_params = [DeviceParameters("xmem", 0, ["vin", "gnd", "l0"], "memristor")]
     simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
-    export_folder_name = "di_francesco_beta"
+    export_folder_name = "pineyro_pfi_variable_beta"
 
     for subcircuit_file_service in subcircuit_file_services:
         export_file_name = f"beta_{subcircuit_file_service.subcircuit.parameters.beta}"
@@ -139,13 +139,13 @@ def create_di_francesco_variable_amplitude_circuit_file_service(
     subcircuit_file_service: SubcircuitFileService,
 ) -> List[CircuitFileService]:
     circuit_file_service = []
-    for amplitude in [0.7, 1, 2, 4]:
+    for amplitude in [0.5, 2, 4, 8]:
         input_params = InputParameters(1, "vin", "gnd", WaveForms.SIN, 0, amplitude, 1)
         device_params = [DeviceParameters("xmem", 0, ["vin", "gnd", "l0"], "memristor")]
         simulation_params = SimulationParameters(
             AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True
         )
-        export_folder_name = "di_francesco_vin_amplitude"
+        export_folder_name = "pineyro_pfi_variable_vin"
         export_file_name = f"vin_{amplitude}"
         export_params = ExportParameters(
             ModelsSimulationFolders.get_simulation_folder_by_model(
@@ -545,7 +545,9 @@ def simulate(
 
     elif simulation_template == SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA:
         model_parameters = [
+            ModelParameters(0, 50e3, 200e3, 200e3, 2e3, 0.6),
             ModelParameters(0, 500e3, 200e3, 200e3, 2e3, 0.6),
+            ModelParameters(0, 500e4, 200e3, 200e3, 2e3, 0.6),
             ModelParameters(0, 50e6, 200e3, 200e3, 2e3, 0.6),
         ]
         subcircuit_file_service = (
@@ -720,11 +722,11 @@ def plot(
 if __name__ == "__main__":
     simulate(
         simulation_template=(
-            SimulationTemplate.DEFAULT_TEST
+            # SimulationTemplate.DEFAULT_TEST
             # SimulationTemplate.DEFAULT_NETWORK
             # SimulationTemplate.DEFAULT_NETWORK_WITH_EDGE_REMOVAL  # Not working
             # SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE
-            # SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA
+            SimulationTemplate.DI_FRANCESCO_VARIABLE_BETA
             # SimulationTemplate.QUINTEROS_EXPERIMENTS
             # SimulationTemplate.RANDOM_REGULAR
             # SimulationTemplate.WATTS_STROGATZ_CIRCULAR_REGULAR
@@ -740,8 +742,8 @@ if __name__ == "__main__":
             PlotType.MEMRISTIVE_STATES_OVERLAPPED,
         ],
         model=(
-            MemristorModels.PERSHIN
-            # MemristorModels.VOURKAS
+            # MemristorModels.PERSHIN
+            MemristorModels.VOURKAS
         ),
         amount_iterations=1,
     )

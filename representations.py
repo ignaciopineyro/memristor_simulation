@@ -1,17 +1,56 @@
 import time
-from dataclasses import fields, dataclass, asdict
-from typing import List
-
 import pandas as pd
 
+from abc import ABC, abstractmethod
+from dataclasses import fields, dataclass, asdict
+from typing import List
 from constants import (
     WaveForms,
     AnalysisType,
     ModelsSimulationFolders,
     SpiceDevices,
     SpiceModel,
-    MeasuredMagnitude,
 )
+
+
+class WaveForm(ABC):
+    @abstractmethod
+    def to_string(self) -> str:
+        pass
+
+
+@dataclass
+class SinWaveForm(WaveForm):
+    vo: float
+    amplitude: float
+    frequency: float
+    td: float = 0.0
+    theta: float = 0.0
+    phase: float = 0.0
+
+    def to_string(self) -> str:
+        return (
+            f"{WaveForms.SIN.value} {self.vo} {self.amplitude} {self.frequency} {self.td if self.td else ''} "
+            f"{self.theta if self.theta else ''} {self.phase if self.phase else ''}\n"
+        )
+
+
+@dataclass
+class PulseWaveForm(WaveForm):
+    v1: float
+    v2: float
+    td: float = 0.0
+    tr: float = 0.0
+    tf: float = 0.0
+    pw: float = 0.5
+    per: float = 1
+    np: int = 0
+
+    def to_string(self) -> str:
+        return (
+            f"{WaveForms.PULSE.value} {self.v1} {self.v2} {self.td} {self.tr} {self.tf} {self.pw} {self.per} "
+            f"{self.np}\n"
+        )
 
 
 @dataclass()
@@ -19,20 +58,10 @@ class InputParameters:
     source_number: int
     n_plus: str
     n_minus: str
-    wave_form: WaveForms
-    vo: float
-    amplitude: float
-    frequency: float
-    td: float = None
-    theta: float = None
-    phase: float = None
+    wave_form: WaveForm
 
     def get_voltage_source_as_string(self) -> str:
-        return (
-            f"V{self.source_number} {self.n_plus} {self.n_minus} {self.wave_form.value} {self.vo}"
-            f" {self.amplitude} {self.frequency} {self.td if self.td else ''}"
-            f" {self.theta if self.theta else ''} {self.phase if self.phase else ''}\n"
-        )
+        return f"V{self.source_number} {self.n_plus} {self.n_minus} {self.wave_form.to_string()}"
 
     def get_input_parameters_for_plot_as_string(self):
         input_params = ""
@@ -41,9 +70,6 @@ class InputParameters:
                 input_params += f"{k}={v} "
 
         return input_params
-
-    def get_input_parameters_for_plot_legend(self):
-        return f"{self.wave_form} {self.amplitude} {self.frequency} {self.td} {self.theta} {self.phase} {self.vo}"
 
 
 @dataclass()
@@ -122,7 +148,17 @@ class ModelDependence:
 
 
 @dataclass()
-class Source:
+class SinSource:
+    vo: float
+    amplitude: float
+    frequency: float
+    td: float = None
+    theta: float = None
+    phase: float = None
+
+
+@dataclass()
+class BehaviouralSource:
     name: str
     n_plus: str
     n_minus: str

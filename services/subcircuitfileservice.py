@@ -1,7 +1,7 @@
 from typing import TextIO, List
 
 from constants import MemristorModels
-from representations import Subcircuit, ModelDependence, Source, Component
+from representations import Subcircuit, ModelDependence, BehaviouralSource, Component
 from services.directoriesmanagementservice import DirectoriesManagementService
 
 
@@ -10,7 +10,7 @@ class SubcircuitFileService:
         self,
         model: MemristorModels,
         subcircuit: Subcircuit,
-        sources: List[Source],
+        sources: List[BehaviouralSource],
         model_dependencies: List[ModelDependence] = None,
         components: List[Component] = None,
         control_commands: List[str] = None,

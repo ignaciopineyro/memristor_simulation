@@ -2,7 +2,6 @@ from typing import List
 
 from constants import (
     MemristorModels,
-    WaveForms,
     AnalysisType,
     ModelsSimulationFolders,
     SpiceDevices,
@@ -15,7 +14,7 @@ from constants import (
 )
 from representations import (
     Subcircuit,
-    Source,
+    BehaviouralSource,
     Component,
     SimulationParameters,
     InputParameters,
@@ -24,6 +23,8 @@ from representations import (
     ExportParameters,
     ModelDependence,
     NetworkParameters,
+    SinWaveForm,
+    PulseWaveForm,
 )
 from services.networkservice import NetworkService
 from services.circuitfileservice import CircuitFileService
@@ -64,7 +65,7 @@ def create_di_francesco_variable_beta_circuit_file_service(
     subcircuit_file_services: List[SubcircuitFileService],
 ) -> List[CircuitFileService]:
     circuit_file_service = []
-    input_params = InputParameters(1, "vin", "gnd", WaveForms.SIN, 0, 2, 1)
+    input_params = InputParameters(1, "vin", "gnd", SinWaveForm(0, 2, 1))
     device_params = [DeviceParameters("xmem", 0, ["vin", "gnd", "l0"], "memristor")]
     simulation_params = SimulationParameters(AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True)
     export_folder_name = "di_francesco_beta"
@@ -100,7 +101,7 @@ def create_di_francesco_variable_beta_subcircuit_file_service(
         Subcircuit("memristor", ["pl", "mn", "x"], model_parameter)
         for model_parameter in model_parameters
     ]
-    source_bx = Source(
+    source_bx = BehaviouralSource(
         name="Bx",
         n_plus="0",
         n_minus="x",
@@ -140,7 +141,7 @@ def create_di_francesco_variable_amplitude_circuit_file_service(
 ) -> List[CircuitFileService]:
     circuit_file_service = []
     for amplitude in [0.7, 1, 2, 4]:
-        input_params = InputParameters(1, "vin", "gnd", WaveForms.SIN, 0, amplitude, 1)
+        input_params = InputParameters(1, "vin", "gnd", SinWaveForm(0, amplitude, 1))
         device_params = [DeviceParameters("xmem", 0, ["vin", "gnd", "l0"], "memristor")]
         simulation_params = SimulationParameters(
             AnalysisType.TRAN, 2e-3, 2, 1e-9, uic=True
@@ -173,7 +174,7 @@ def create_di_francesco_variable_amplitude_subcircuit_file_service(
     model: MemristorModels, model_parameters: ModelParameters
 ) -> List[SubcircuitFileService]:
     subcircuit = Subcircuit("memristor", ["pl", "mn", "x"], model_parameters)
-    source_bx = Source(
+    source_bx = BehaviouralSource(
         name="Bx",
         n_plus="0",
         n_minus="x",
@@ -211,13 +212,16 @@ def create_default_test_circuit_file_service(
     subcircuit_file_service: SubcircuitFileService,
     network_service: NetworkService = None,
 ) -> List[CircuitFileService]:
-    input_params = InputParameters(1, "vin", "gnd", WaveForms.SIN, 0, 10, 1)
+    input_params = InputParameters(1, "vin", "gnd", SinWaveForm(0, 10, 1))
 
     if network_service:
         device_params = network_service.generate_device_parameters("xmem", "memristor")
 
         if network_service.removal_probability == 0:
-            export_folder_name = f"default_network_{network_service.network_parameters.N}x{network_service.network_parameters.M}"
+            export_folder_name = (
+                f"default_network_{network_service.network_parameters.N}x"
+                f"{network_service.network_parameters.M}"
+            )
             export_file_name = (
                 f"default_network_simulation_{network_service.network_parameters.N}x"
                 f"{network_service.network_parameters.M}"
@@ -283,7 +287,7 @@ def create_quinteros_experiments_subcircuit_file_service(
         Subcircuit("memristor", ["pl", "mn", "x"], model_parameter)
         for model_parameter in model_parameters
     ]
-    source_bx = Source(
+    source_bx = BehaviouralSource(
         name="Bx",
         n_plus="0",
         n_minus="x",
@@ -323,7 +327,7 @@ def create_quinteros_experiments_circuit_file_service(
     network_service: NetworkService,
     experiment_number: int,
 ) -> CircuitFileService:
-    input_params = InputParameters(1, "vin", "gnd", WaveForms.SIN, 0, 10, 1)
+    input_params = InputParameters(1, "vin", "gnd", SinWaveForm(0, 10, 1))
     device_params = network_service.generate_device_parameters("xmem", "memristor")
 
     export_folder_name = (
@@ -361,7 +365,7 @@ def create_default_test_subcircuit_file_service(
 ) -> List[SubcircuitFileService]:
     model_parameters = ModelParameters(0, 5e5, 200e3, 200e3, 2e3, 0.6)
     subcircuit = Subcircuit("memristor", ["pl", "mn", "x"], model_parameters)
-    source_bx = Source(
+    source_bx = BehaviouralSource(
         name="Bx",
         n_plus="0",
         n_minus="x",
@@ -398,7 +402,7 @@ def create_default_test_subcircuit_file_service(
 def create_random_regular_circuit_file_service(
     subcircuit_file_service: SubcircuitFileService, network_service: NetworkService
 ):
-    input_params = InputParameters(1, "vin", "gnd", WaveForms.SIN, 0, 10, 1)
+    input_params = InputParameters(1, "vin", "gnd", SinWaveForm(0, 10, 1))
     device_params = network_service.generate_device_parameters("xmem", "memristor")
 
     export_folder_name = (
@@ -435,7 +439,7 @@ def create_random_regular_circuit_file_service(
 def create_watts_strogatz_circuit_file_service(
     subcircuit_file_service: SubcircuitFileService, network_service: NetworkService
 ):
-    input_params = InputParameters(1, "vin", "gnd", WaveForms.SIN, 0, 10, 1)
+    input_params = InputParameters(1, "vin", "gnd", SinWaveForm(0, 10, 1))
     device_params = network_service.generate_device_parameters("xmem", "memristor")
 
     export_folder_name = (

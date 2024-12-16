@@ -41,6 +41,7 @@ class SimulationFileNames(Enum):
 
 class WaveForms(Enum):
     SIN = "sin"
+    PULSE = "pulse"
 
 
 class AnalysisType(Enum):

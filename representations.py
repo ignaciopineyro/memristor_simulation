@@ -1,9 +1,11 @@
 import time
+
+import networkx as nx
 import pandas as pd
 
 from abc import ABC, abstractmethod
 from dataclasses import fields, dataclass, asdict
-from typing import List
+from typing import List, Tuple
 from constants import (
     WaveForms,
     AnalysisType,
@@ -29,10 +31,7 @@ class SinWaveForm(WaveForm):
     phase: float = 0.0
 
     def to_string(self) -> str:
-        return (
-            f"{WaveForms.SIN.value} {self.vo} {self.amplitude} {self.frequency} {self.td if self.td else ''} "
-            f"{self.theta if self.theta else ''} {self.phase if self.phase else ''}\n"
-        )
+        return f"{WaveForms.SIN.value} {self.vo} {self.amplitude} {self.frequency} {self.td} {self.theta} {self.phase}\n"
 
 
 @dataclass
@@ -220,3 +219,10 @@ class NetworkParameters:
     shortcut_probability: float = (
         None  # Shortcut probability of a WATTS_STROGATZ_GRAPH (between 0 and 1)
     )
+
+
+@dataclass
+class Graph:
+    nx_graph: nx.Graph
+    vin_minus: Tuple[int, int]
+    vin_plus: Tuple[int, int]

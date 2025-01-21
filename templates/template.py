@@ -1,9 +1,6 @@
 from abc import ABC
 from typing import List, Union
-
-import networkx as nx
-
-from constants import MemristorModels, SpiceDevices, PlotType, SIMULATIONS_DIR
+from constants import SpiceDevices, PlotType, SIMULATIONS_DIR
 from representations import (
     Component,
     ExportParameters,
@@ -12,7 +9,6 @@ from representations import (
     Graph,
 )
 from services.circuitfileservice import CircuitFileService
-from services.networkservice import NetworkService
 from services.plotterservice import PlotterService
 from services.subcircuitfileservice import SubcircuitFileService
 
@@ -46,8 +42,8 @@ class Template(ABC):
 
         return [capacitor, rmem, diode_1, diode_2, v_1, v_2, raux]
 
+    @staticmethod
     def plot(
-        self,
         export_parameters: ExportParameters,
         model_parameters: ModelParameters = None,
         input_parameters: InputParameters = None,

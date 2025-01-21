@@ -13,10 +13,10 @@ from representations import (
     BehaviouralSource,
     ModelDependence,
     InputParameters,
-    SinWaveForm,
     DeviceParameters,
     SimulationParameters,
     ExportParameters,
+    PulseWaveForm,
 )
 from services.circuitfileservice import CircuitFileService
 from services.ngspiceservice import NGSpiceService
@@ -27,22 +27,23 @@ from templates.template import Template
 class SingleDeviceVariableAmplitude(Template):
     ALPHA = 0
     BETA = 500e3
-    RINIT = 200e3
+    RINIT = 2e3
     ROFF = 200e3
     RON = 2e3
     VT = 0.6
 
-    WAVE_FORM = SinWaveForm
+    WAVE_FORM = PulseWaveForm
 
-    VO = 0
-    AMPLITUDE = [0.5, 2, 4, 8]
-    FREQUENCY = 1
-    PHASE = 0
+    V1 = 0
+    V2 = [2, 4, 8]
+    TD = 0
+    TR = 0.05
+    TF = 0.01
 
     T_STEP = 2e-3
     T_STOP = 2
 
-    EXPORT_FOLDER_NAME = "single_device_variable_amplitude"
+    EXPORT_FOLDER_NAME = "single_device_variable_pulse"
     AMOUNT_ITERATIONS = 100
 
     PLOT_TYPES = [
@@ -101,8 +102,8 @@ class SingleDeviceVariableAmplitude(Template):
     ) -> List[CircuitFileService]:
         circuit_file_services = []
 
-        for amplitude in self.AMPLITUDE:
-            waveform = SinWaveForm(self.VO, amplitude, self.FREQUENCY, phase=self.PHASE)
+        for amplitude in self.V2:
+            waveform = PulseWaveForm(self.V1, amplitude, self.TD, self.TR, self.TF)
 
             input_params = InputParameters(
                 1,

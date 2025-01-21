@@ -35,14 +35,14 @@ class SingleDeviceVariableAmplitude(Template):
     WAVE_FORM = SinWaveForm
 
     VO = 0
-    AMPLITUDE = [0.5, 2, 4, 8]
+    AMPLITUDE = [2, 4, 8]
     FREQUENCY = 1
     PHASE = 0
 
-    T_STEP = 2e-3
+    T_STEP = 2e-2
     T_STOP = 2
 
-    EXPORT_FOLDER_NAME = "single_device_variable_amplitude"
+    EXPORT_FOLDER_NAME = "single_device_variable_tstep"
     AMOUNT_ITERATIONS = 100
 
     PLOT_TYPES = [
@@ -161,4 +161,4 @@ class SingleDeviceVariableAmplitude(Template):
 
 
 if __name__ == "__main__":
-    SingleDeviceVariableAmplitude(MemristorModels.PERSHIN).simulate()
+    SingleDeviceVariableAmplitude(MemristorModels.VOURKAS).simulate()

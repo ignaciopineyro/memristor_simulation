@@ -26,15 +26,15 @@ from templates.template import Template
 
 
 class SingleDeviceVariableBeta(Template):
-    ALPHA = 0
-    BETA = [50e3, 500e3, 5e6, 50e6]
+    ALPHA = [10e3, 100e3, 1e6]
+    BETA = 500e3
     RINIT = 200e3
     ROFF = 200e3
     RON = 2e3
     VT = 0.6
 
     VO = 0
-    AMPLITUDE = 2
+    AMPLITUDE = 4
     FREQUENCY = 1
     PHASE = 0
     WAVE_FORM = SinWaveForm
@@ -42,7 +42,7 @@ class SingleDeviceVariableBeta(Template):
     T_STEP = 2e-3
     T_STOP = 2
 
-    EXPORT_FOLDER_NAME = "single_device_variable_beta"
+    EXPORT_FOLDER_NAME = "single_device_variable_alpha"
     AMOUNT_ITERATIONS = 100
 
     PLOT_TYPES = [
@@ -62,8 +62,8 @@ class SingleDeviceVariableBeta(Template):
         self,
     ) -> List[SubcircuitFileService]:
         model_parameters = [
-            ModelParameters(self.ALPHA, beta, self.RINIT, self.ROFF, self.RON, self.VT)
-            for beta in self.BETA
+            ModelParameters(alpha, self.BETA, self.RINIT, self.ROFF, self.RON, self.VT)
+            for alpha in self.ALPHA
         ]
         subcircuit = [
             Subcircuit("memristor", ["pl", "mn", "x"], model_parameter)
@@ -119,7 +119,7 @@ class SingleDeviceVariableBeta(Template):
         )
         for subcircuit_file_service in subcircuit_file_services:
             export_file_name = (
-                f"beta_{subcircuit_file_service.subcircuit.parameters.beta}"
+                f"alpha_{subcircuit_file_service.subcircuit.parameters.alpha}"
             )
             export_params = ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(

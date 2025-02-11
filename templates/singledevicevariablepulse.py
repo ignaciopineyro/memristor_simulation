@@ -103,7 +103,7 @@ class SingleDeviceVariableAmplitude(Template):
         circuit_file_services = []
 
         for amplitude in self.V2:
-            waveform = PulseWaveForm(self.V1, amplitude, self.TD, self.TR, self.TF)
+            waveform = self.WAVE_FORM(self.V1, amplitude, self.TD, self.TR, self.TF)
 
             input_params = InputParameters(
                 1,

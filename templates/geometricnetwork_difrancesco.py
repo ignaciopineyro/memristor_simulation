@@ -26,7 +26,7 @@ from services.subcircuitfileservice import SubcircuitFileService
 from templates.template import Template
 
 
-class GeometricNetwork(Template):
+class GeometricNetworkDiFrancesco(Template):
     N = 4
     M = 4
     REMOVAL_PROBABILITY = 0
@@ -47,9 +47,9 @@ class GeometricNetwork(Template):
     T_STEP = 2e-3
     T_STOP = 10
 
-    EXPORT_FOLDER_NAME = f"geometric_network_{N}x{M}"
-    EXPORT_FILE_NAME = f"geometric_network_simulation_{N}x{M}"
-    AMOUNT_ITERATIONS = 1
+    EXPORT_FOLDER_NAME = f"geometric_network_difrancesco_{N}x{M}"
+    EXPORT_FILE_NAME = f"geometric_network_difrancesco_{N}x{M}_simulation"
+    AMOUNT_ITERATIONS = 100
 
     PLOT_TYPES = [
         PlotType.IV,
@@ -161,4 +161,4 @@ class GeometricNetwork(Template):
 
 
 if __name__ == "__main__":
-    GeometricNetwork(MemristorModels.PERSHIN).simulate()
+    GeometricNetworkDiFrancesco(MemristorModels.VOURKAS).simulate()

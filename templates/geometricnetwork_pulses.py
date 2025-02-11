@@ -13,11 +13,11 @@ from representations import (
     BehaviouralSource,
     ModelDependence,
     InputParameters,
-    SinWaveForm,
     SimulationParameters,
     ExportParameters,
     NetworkParameters,
     Graph,
+    PulseWaveForm,
 )
 from services.circuitfileservice import CircuitFileService
 from services.networkservice import NetworkService
@@ -26,30 +26,33 @@ from services.subcircuitfileservice import SubcircuitFileService
 from templates.template import Template
 
 
-class GeometricNetwork(Template):
+class GeometricNetworkPulses(Template):
     N = 4
     M = 4
     REMOVAL_PROBABILITY = 0
 
     ALPHA = 0
     BETA = 500e3
-    RINIT = 200e3
+    RINIT = 2e3
     ROFF = 200e3
     RON = 2e3
     VT = 0.6
 
-    VO = 0
-    AMPLITUDE = 12
-    FREQUENCY = 1
-    PHASE = 180
-    WAVE_FORM = SinWaveForm
+    WAVE_FORM = PulseWaveForm
+
+    V1 = 0
+    V2 = 12
+    TD = 0.5
+    TR = 0.05
+    TF = 0.01
+    PW = 0.05
 
     T_STEP = 2e-3
     T_STOP = 10
 
-    EXPORT_FOLDER_NAME = f"geometric_network_{N}x{M}"
-    EXPORT_FILE_NAME = f"geometric_network_simulation_{N}x{M}"
-    AMOUNT_ITERATIONS = 1
+    EXPORT_FOLDER_NAME = f"geometric_network_pulses_short_{N}x{M}"
+    EXPORT_FILE_NAME = f"geometric_network_pulses_short_{N}x{M}_simulation"
+    AMOUNT_ITERATIONS = 100
 
     PLOT_TYPES = [
         PlotType.IV,
@@ -116,7 +119,7 @@ class GeometricNetwork(Template):
             1,
             "vin",
             "gnd",
-            self.WAVE_FORM(self.VO, self.AMPLITUDE, self.FREQUENCY, phase=self.PHASE),
+            self.WAVE_FORM(self.V1, self.V2, self.TD, self.TR, self.TF, self.PW),
         )
 
         device_params = self.network_service.generate_device_parameters(
@@ -161,7 +164,4 @@ class GeometricNetwork(Template):
 
 
 if __name__ == "__main__":
-    raise NotImplementedError(
-        "Template not yet implemented (it's just a copy of difrancesco_geometricnetwork.py)"
-    )
-    # GeometricNetwork(MemristorModels.PERSHIN).simulate()
+    GeometricNetworkPulses(MemristorModels.VOURKAS).simulate()

@@ -41,7 +41,7 @@ class GeometricNetworkPulses(Template):
     WAVE_FORM = PulseWaveForm
 
     V1 = 0
-    V2 = 12
+    V2 = 2
     TD = 0.5
     TR = 0.05
     TF = 0.01
@@ -50,8 +50,8 @@ class GeometricNetworkPulses(Template):
     T_STEP = 2e-3
     T_STOP = 10
 
-    EXPORT_FOLDER_NAME = f"geometric_network_pulses_short_{N}x{M}"
-    EXPORT_FILE_NAME = f"geometric_network_pulses_short_{N}x{M}_simulation"
+    EXPORT_FOLDER_NAME = f"geometric_network_pulses_{N}x{M}"
+    EXPORT_FILE_NAME = f"geometric_network_pulses_{N}x{M}_simulation"
     AMOUNT_ITERATIONS = 100
 
     PLOT_TYPES = [
@@ -164,4 +164,4 @@ class GeometricNetworkPulses(Template):
 
 
 if __name__ == "__main__":
-    GeometricNetworkPulses(MemristorModels.VOURKAS).simulate()
+    GeometricNetworkPulses(MemristorModels.PERSHIN).simulate()

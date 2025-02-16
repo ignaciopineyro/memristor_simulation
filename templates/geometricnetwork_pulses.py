@@ -33,15 +33,18 @@ class GeometricNetworkPulses(Template):
 
     ALPHA = 0
     BETA = 500e3
-    RINIT = 2e3
+    RINIT = 20e3
     ROFF = 200e3
     RON = 2e3
     VT = 0.6
 
     WAVE_FORM = PulseWaveForm
 
+    V_PLUS = (0, 0)
+    V_MINUS = (3, 0)
+
     V1 = 0
-    V2 = 2
+    V2 = 5
     TD = 0.5
     TR = 0.05
     TF = 0.01
@@ -66,6 +69,8 @@ class GeometricNetworkPulses(Template):
         self.network_service = NetworkService(
             NetworkType.GRID_2D_GRAPH,
             NetworkParameters(N=self.N, M=self.M),
+            vin_minus=self.V_MINUS,
+            vin_plus=self.V_PLUS,
             removal_probability=self.REMOVAL_PROBABILITY,
         )
         self.graph = Graph(

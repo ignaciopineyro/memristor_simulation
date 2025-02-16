@@ -4,13 +4,14 @@ import os
 
 from matplotlib import pyplot as plt
 from matplotlib import animation as anime
-from typing import List, Tuple
+from typing import List
 from constants import MeasuredMagnitude
 from representations import (
     DataLoader,
     ModelParameters,
     InputParameters,
     ExportParameters,
+    Graph,
 )
 from services.directoriesmanagementservice import DirectoriesManagementService
 
@@ -22,7 +23,7 @@ class PlotterService:
         export_parameters: ExportParameters,
         model_parameters: ModelParameters = None,
         input_parameters: InputParameters = None,
-        graph: nx.Graph = None,
+        graph: Graph = None,
     ):
         self.directories_management_service = DirectoriesManagementService()
 
@@ -288,16 +289,14 @@ class PlotterService:
 
         plt.close()
 
-    def plot_networkx_graph(
-        self, vin_minus: Tuple[int, int], vin_plus: Tuple[int, int]
-    ):
+    def plot_networkx_graph(self):
         color_map = []
         labels = {}
-        for node in self.graph:
-            if node == vin_minus:
+        for node in self.graph.nx_graph:
+            if node == self.graph.vin_minus:
                 color_map.append("#f07b07")
                 labels[node] = f"V- {node}"
-            elif node == vin_plus:
+            elif node == self.graph.vin_plus:
                 color_map.append("#f07b07")
                 labels[node] = f"V+ {node}"
             else:
@@ -305,9 +304,9 @@ class PlotterService:
                 labels[node] = node
 
         fig = plt.figure(figsize=(12, 8))
-        pos = nx.spring_layout(self.graph)
+        pos = nx.spring_layout(self.graph.nx_graph)
         nx.draw(
-            self.graph,
+            self.graph.nx_graph,
             pos=pos,
             ax=fig.add_subplot(),
             with_labels=False,
@@ -315,7 +314,7 @@ class PlotterService:
             edge_color="#545454",
         )
         nx.draw_networkx_labels(
-            self.graph,
+            self.graph.nx_graph,
             pos,
             labels,
             font_color="black",

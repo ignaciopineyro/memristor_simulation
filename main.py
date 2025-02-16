@@ -495,19 +495,6 @@ def simulate(
             subcircuit_file_service[0], network_service
         )
 
-        plotter_service = PlotterService(
-            simulation_results_directory_path=SIMULATIONS_DIR,
-            export_parameters=circuit_file_service[0].export_parameters,
-            model_parameters=circuit_file_service[
-                0
-            ].subcircuit_file_service.subcircuit.parameters,
-            input_parameters=circuit_file_service[0].input_parameters,
-            graph=network_service.network,
-        )
-        plotter_service.plot_networkx_graph(
-            network_service.vin_minus, network_service.vin_plus
-        )
-
     elif simulation_template == SimulationTemplate.DEFAULT_NETWORK_WITH_EDGE_REMOVAL:
         network_dimensions = NetworkParameters(N=4, M=4)
         removal_probability = 1
@@ -519,19 +506,6 @@ def simulate(
         subcircuit_file_service = create_default_test_subcircuit_file_service(model)
         circuit_file_service = create_default_test_circuit_file_service(
             subcircuit_file_service[0], network_service
-        )
-
-        plotter_service = PlotterService(
-            simulation_results_directory_path=SIMULATIONS_DIR,
-            export_parameters=circuit_file_service[0].export_parameters,
-            model_parameters=circuit_file_service[
-                0
-            ].subcircuit_file_service.subcircuit.parameters,
-            input_parameters=circuit_file_service[0].input_parameters,
-            graph=network_service.network,
-        )
-        plotter_service.plot_networkx_graph(
-            network_service.vin_minus, network_service.vin_plus
         )
 
     elif simulation_template == SimulationTemplate.DI_FRANCESCO_VARIABLE_AMPLITUDE:
@@ -597,19 +571,6 @@ def simulate(
             subcircuit_file_service[0], network_service
         )
 
-        plotter_service = PlotterService(
-            simulation_results_directory_path=SIMULATIONS_DIR,
-            export_parameters=circuit_file_service[0].export_parameters,
-            model_parameters=circuit_file_service[
-                0
-            ].subcircuit_file_service.subcircuit.parameters,
-            input_parameters=circuit_file_service[0].input_parameters,
-            graph=network_service.network,
-        )
-        plotter_service.plot_networkx_graph(
-            network_service.vin_minus, network_service.vin_plus
-        )
-
     elif simulation_template == SimulationTemplate.WATTS_STROGATZ_CIRCULAR_REGULAR:
         network_parameters = NetworkParameters(
             amount_connections=5, amount_nodes=50, shortcut_probability=0
@@ -622,19 +583,6 @@ def simulate(
             subcircuit_file_service[0], network_service
         )
 
-        plotter_service = PlotterService(
-            simulation_results_directory_path=SIMULATIONS_DIR,
-            export_parameters=circuit_file_service[0].export_parameters,
-            model_parameters=circuit_file_service[
-                0
-            ].subcircuit_file_service.subcircuit.parameters,
-            input_parameters=circuit_file_service[0].input_parameters,
-            graph=network_service.network,
-        )
-        plotter_service.plot_networkx_graph(
-            network_service.vin_minus, network_service.vin_plus
-        )
-
     elif simulation_template == SimulationTemplate.WATTS_STROGATZ:
         network_parameters = NetworkParameters(
             amount_connections=5, amount_nodes=50, shortcut_probability=0.1
@@ -645,19 +593,6 @@ def simulate(
         subcircuit_file_service = create_default_test_subcircuit_file_service(model)
         circuit_file_service = create_watts_strogatz_circuit_file_service(
             subcircuit_file_service[0], network_service
-        )
-
-        plotter_service = PlotterService(
-            simulation_results_directory_path=SIMULATIONS_DIR,
-            export_parameters=circuit_file_service[0].export_parameters,
-            model_parameters=circuit_file_service[
-                0
-            ].subcircuit_file_service.subcircuit.parameters,
-            input_parameters=circuit_file_service[0].input_parameters,
-            graph=network_service.network,
-        )
-        plotter_service.plot_networkx_graph(
-            network_service.vin_minus, network_service.vin_plus
         )
 
     else:

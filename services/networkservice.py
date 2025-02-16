@@ -57,7 +57,7 @@ class NetworkService:
             )
 
         if self.network_type == NetworkType.GRID_2D_GRAPH:
-            if self.network_parameters.N is None or self.network_parameters.N is None:
+            if self.network_parameters.N is None or self.network_parameters.M is None:
                 raise ValueError(
                     f'NetworkService parameters "N" and "M" need to be an int > 0 for NetworkType.GRID_2D_GRAPH but '
                     f"N={self.network_parameters.N} M={self.network_parameters.M} were received instead"
@@ -80,8 +80,8 @@ class NetworkService:
                 or self.network_parameters.shortcut_probability is None
             ):
                 raise ValueError(
-                    'NetworkService parameters "amount_connections", "amount_nodes" and "shortcut_probability" cannot be None for '
-                    "NetworkType.RANDOM_REGULAR_GRAPH"
+                    'NetworkService parameters "amount_connections", "amount_nodes" and "shortcut_probability" cannot '
+                    "be None for NetworkType.RANDOM_REGULAR_GRAPH"
                 )
 
     def generate_network(self) -> nx.Graph:
@@ -106,7 +106,6 @@ class NetworkService:
             )
 
         if self.removal_probability > 0:
-            # EDGES_TO_REMOVE = [[(3, 0), (3, 1)], [(3, 1), (3, 2)], [(3, 2), (3, 3)]]
             for edge in list(network.edges):
                 network = self._remove_network_edges_by_neighbor_nodes(network, edge)
 

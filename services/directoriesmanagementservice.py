@@ -56,7 +56,7 @@ class DirectoriesManagementService:
 
     def get_simulation_log_file_path(self) -> str:
         return (
-            f"./simulation_results/{self.export_parameters.model_simulation_folder_name.value}/"
+            f"{SIMULATIONS_DIR}/{self.export_parameters.model_simulation_folder_name.value}/"
             f"{self.export_parameters.folder_name}/{self.export_parameters.folder_name}.log"
         )
 

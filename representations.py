@@ -31,7 +31,10 @@ class SinWaveForm(WaveForm):
     phase: float = 0.0
 
     def to_string(self) -> str:
-        return f"{WaveForms.SIN.value} {self.vo} {self.amplitude} {self.frequency} {self.td} {self.theta} {self.phase}\n"
+        return (
+            f"{WaveForms.SIN.value} {self.vo} {self.amplitude} {self.frequency} {self.td} {self.theta} {self.phase}"
+            f"\n"
+        )
 
 
 @dataclass
@@ -50,6 +53,33 @@ class PulseWaveForm(WaveForm):
             f"{WaveForms.PULSE.value} {self.v1} {self.v2} {self.td} {self.tr} {self.tf} {self.pw} {self.per} "
             f"{self.np}\n"
         )
+
+
+@dataclass
+class AlternatingPulseWaveForm(WaveForm):
+    v1: float
+    v2: List[float]
+    td: float = 0.0
+    tr: float = 0.0
+    tf: float = 0.0
+    pw: float = 0.5
+    per: float = 1
+    np: int = 0
+
+    def to_string(self) -> str:
+        wave_form_string = f"{WaveForms.PWL.value}(\n+ {self.td}\t {self.v1}\n"
+
+        for idx, v2 in enumerate(self.v2):
+            t1 = self.td + self.per * idx + self.tr
+            t2 = t1 + self.pw
+            t3 = t2 + self.tf
+            t4 = self.td + self.per * (idx + 1)
+            wave_form_string += (
+                f"+ {t1}\t {v2}\t {t2}\t {v2}\t {t3}\t {self.v1}\t {t4}\t {self.v1} ;\n"
+            )
+        wave_form_string += f")\n"
+
+        return wave_form_string
 
 
 @dataclass()

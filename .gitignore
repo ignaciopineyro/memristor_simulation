@@ -4,8 +4,9 @@
 *.sub
 *.txt
 *.jpg
+*.png
 *.Identifier
-simulation_results/
+memristorsimulation_app/simulation_results/
 backup/
 __pycache__/*
 *.pyc

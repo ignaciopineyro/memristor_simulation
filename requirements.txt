@@ -5,3 +5,4 @@ networkx==3.1
 scipy==1.14.1
 django==5.1.6
 djangorestframework==3.15.2
+pytest==8.3.4

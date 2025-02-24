@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from memristorsimulation_app.constants import (
     MemristorModels,
     SpiceDevices,
@@ -19,6 +19,9 @@ from memristorsimulation_app.representations import (
     PulseWaveForm,
 )
 from memristorsimulation_app.services.circuitfileservice import CircuitFileService
+from memristorsimulation_app.services.directoriesmanagementservice import (
+    DirectoriesManagementService,
+)
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
 from memristorsimulation_app.templates.template import Template
@@ -88,6 +91,17 @@ class SingleDeviceVariableAmplitude(Template):
 
         control_cmd = ".func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}"
 
+        export_file_name = "pulse_variable"
+        export_params = ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(self.model),
+            self.EXPORT_FOLDER_NAME,
+            export_file_name,
+            ["vin", "i(v1)", "l0"],
+        )
+        subcircuit_directories_management_service = DirectoriesManagementService(
+            self.model, export_params
+        )
+
         return SubcircuitFileService(
             model=self.model,
             subcircuit=subcircuit,
@@ -95,12 +109,13 @@ class SingleDeviceVariableAmplitude(Template):
             model_dependencies=model_dependencies,
             components=default_components,
             control_commands=[control_cmd],
+            directories_management_service=subcircuit_directories_management_service,
         )
 
     def create_circuit_file_service(
         self, subcircuit_file_service: SubcircuitFileService
-    ) -> List[CircuitFileService]:
-        circuit_file_services = []
+    ) -> Tuple[List[CircuitFileService], List[DirectoriesManagementService]]:
+        circuit_file_services, circuit_directories_management_services = [], []
 
         for amplitude in self.V2:
             waveform = self.WAVE_FORM(self.V1, amplitude, self.TD, self.TR, self.TF)
@@ -126,6 +141,9 @@ class SingleDeviceVariableAmplitude(Template):
                 export_file_name,
                 ["vin", "i(v1)", "l0"],
             )
+            circuit_directories_management_service = DirectoriesManagementService(
+                self.model, export_params
+            )
 
             circuit_file_services.append(
                 CircuitFileService(
@@ -133,28 +151,31 @@ class SingleDeviceVariableAmplitude(Template):
                     input_params,
                     device_params,
                     simulation_params,
-                    export_params,
+                    circuit_directories_management_service,
                 )
             )
+            circuit_directories_management_services.append(
+                circuit_directories_management_service
+            )
 
-        return circuit_file_services
+        return circuit_file_services, circuit_directories_management_services
 
     def simulate(self):
         subcircuit_file_service = self.create_subcircuit_file_service()
-        circuit_file_services = self.create_circuit_file_service(
-            subcircuit_file_service
+        circuit_file_services, directories_management_services = (
+            self.create_circuit_file_service(subcircuit_file_service)
         )
 
-        for cfs in circuit_file_services:
+        for cfs, dms in zip(circuit_file_services, directories_management_services):
             cfs.subcircuit_file_service.write_subcircuit_file()
             cfs.write_circuit_file()
 
-            ngspice_service = NGSpiceService(cfs)
+            ngspice_service = NGSpiceService(dms)
             ngspice_service.run_single_circuit_simulation(self.AMOUNT_ITERATIONS)
 
-        for cfs in circuit_file_services:
+        for cfs, dms in zip(circuit_file_services, directories_management_services):
             self.plot(
-                export_parameters=cfs.export_parameters,
+                export_parameters=dms.export_parameters,
                 model_parameters=cfs.subcircuit_file_service.subcircuit.parameters,
                 input_parameters=cfs.input_parameters,
                 plot_types=self.PLOT_TYPES,

@@ -18,6 +18,9 @@ from memristorsimulation_app.representations import (
     ExportParameters,
 )
 from memristorsimulation_app.services.circuitfileservice import CircuitFileService
+from memristorsimulation_app.services.directoriesmanagementservice import (
+    DirectoriesManagementService,
+)
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
 from memristorsimulation_app.templates.template import Template
@@ -53,6 +56,15 @@ class SingleDevice(Template):
 
     def __init__(self, model: MemristorModels):
         self.model = model
+        self.export_params = ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(self.model),
+            self.EXPORT_FOLDER_NAME,
+            self.EXPORT_FILE_NAME,
+            ["vin", "i(v1)", "l0"],
+        )
+        self.directories_management_service = DirectoriesManagementService(
+            self.model, self.export_params
+        )
 
     def create_subcircuit_file_service(
         self,
@@ -87,6 +99,7 @@ class SingleDevice(Template):
             model=self.model,
             subcircuit=subcircuit,
             sources=[source_bx],
+            directories_management_service=self.directories_management_service,
             model_dependencies=model_dependencies,
             components=default_components,
             control_commands=[control_cmd],
@@ -103,14 +116,6 @@ class SingleDevice(Template):
         )
 
         device_params = [DeviceParameters("xmem", 0, ["vin", "gnd", "l0"], "memristor")]
-        export_params = ExportParameters(
-            ModelsSimulationFolders.get_simulation_folder_by_model(
-                subcircuit_file_services.model
-            ),
-            self.EXPORT_FOLDER_NAME,
-            self.EXPORT_FILE_NAME,
-            ["vin", "i(v1)", "l0"],
-        )
 
         simulation_params = SimulationParameters(
             AnalysisType.TRAN, self.T_STEP, self.T_STOP, 1e-9, uic=True
@@ -121,7 +126,7 @@ class SingleDevice(Template):
             input_params,
             device_params,
             simulation_params,
-            export_params,
+            self.directories_management_service,
         )
 
     def simulate(self):
@@ -129,10 +134,10 @@ class SingleDevice(Template):
         circuit_file_service = self.create_circuit_file_service(subcircuit_file_service)
         circuit_file_service.subcircuit_file_service.write_subcircuit_file()
         circuit_file_service.write_circuit_file()
-        ngspice_service = NGSpiceService(circuit_file_service)
+        ngspice_service = NGSpiceService(self.directories_management_service)
         ngspice_service.run_single_circuit_simulation(self.AMOUNT_ITERATIONS)
         self.plot(
-            export_parameters=circuit_file_service.export_parameters,
+            export_parameters=self.export_params,
             model_parameters=circuit_file_service.subcircuit_file_service.subcircuit.parameters,
             input_parameters=circuit_file_service.input_parameters,
             plot_types=self.PLOT_TYPES,

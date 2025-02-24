@@ -1,5 +1,4 @@
 from typing import TextIO, List
-
 from memristorsimulation_app.constants import MemristorModels
 from memristorsimulation_app.representations import (
     Subcircuit,
@@ -18,6 +17,7 @@ class SubcircuitFileService:
         model: MemristorModels,
         subcircuit: Subcircuit,
         sources: List[BehaviouralSource],
+        directories_management_service: DirectoriesManagementService,
         model_dependencies: List[ModelDependence] = None,
         components: List[Component] = None,
         control_commands: List[str] = None,
@@ -29,10 +29,10 @@ class SubcircuitFileService:
         self.components = components
         self.control_commands = control_commands
 
-        self.directories_management_service = DirectoriesManagementService(
-            model=self.model
+        self.directories_management_service = directories_management_service
+        self.model_file_path = (
+            self.directories_management_service.get_subcircuit_file_path()
         )
-        self.model_file_path = self.directories_management_service.get_model_path()
 
     def _write_subcircuit_parameters(self, file: TextIO) -> None:
         file.write("\n\n* SUBCIRCUITS:\n")
@@ -70,6 +70,7 @@ class SubcircuitFileService:
         Writes the .sub subcircuit file to include on circuit's file. The file is saved in models/
         :return: None
         """
+        self.directories_management_service.get_export_simulation_file_path()
 
         with open(self.model_file_path, "w+") as f:
             f.write(f"* MEMRISTOR SUBCIRCUIT - MODEL {self.model.value}")

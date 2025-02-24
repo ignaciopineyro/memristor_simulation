@@ -4,7 +4,6 @@ from memristorsimulation_app.representations import (
     InputParameters,
     SimulationParameters,
     DeviceParameters,
-    ExportParameters,
 )
 from memristorsimulation_app.services.directoriesmanagementservice import (
     DirectoriesManagementService,
@@ -19,21 +18,20 @@ class CircuitFileService:
         input_parameters: InputParameters,
         device_parameters: List[DeviceParameters],
         simulation_parameters: SimulationParameters,
-        export_parameters: ExportParameters,
+        directories_management_service: DirectoriesManagementService,
     ):
         self.input_parameters = input_parameters
         self.device_parameters = device_parameters
         self.simulation_parameters = simulation_parameters
-        self.export_parameters = export_parameters
 
         self.subcircuit_file_service = subcircuit_file_service
-        self.directories_management_service = DirectoriesManagementService(
-            circuit_file_service=self
-        )
+        self.directories_management_service = directories_management_service
 
     def _write_dependencies(self, f: TextIO) -> None:
         f.write("\n\n* DEPENDENCIES:\n")
-        f.write(f".include {self.directories_management_service.get_model_path()}")
+        f.write(
+            f".include {self.directories_management_service.get_subcircuit_file_path()}"
+        )
 
     def _write_components(self, file: TextIO) -> None:
         file.write("\n\n* COMPONENTS:\n")
@@ -53,7 +51,7 @@ class CircuitFileService:
         file.write("set wr_singlescale\n")
         file.write(
             f"wrdata {self.directories_management_service.get_export_simulation_file_path()} "
-            f"{self.export_parameters.get_export_magnitudes()}\n"
+            f"{self.directories_management_service.export_parameters.get_export_magnitudes()}\n"
         )
 
     def write_circuit_file(self) -> None:

@@ -17,7 +17,10 @@ class TemplatesTestCase(BaseTestCase):
         )
         dataframe = self.load_dataframe_from_csv(memristor_model, export_folder_name)
 
-        self.assertEqual(7, len(files_in_simulation_directory))
+        self.assertEqual(8, len(files_in_simulation_directory))
+        self.assertTrue(
+            self.check_file_size(".sub", files_in_simulation_directory, 300)
+        )
         self.assertTrue(
             self.check_file_size(".cir", files_in_simulation_directory, 300)
         )

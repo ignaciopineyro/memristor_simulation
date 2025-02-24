@@ -12,10 +12,8 @@ from memristorsimulation_app.services.directoriesmanagementservice import (
 
 
 class TimeMeasureService:
-    def __init__(self, circuit_file_service=None):
-        self.directories_management_service = DirectoriesManagementService(
-            circuit_file_service=circuit_file_service
-        )
+    def __init__(self, directories_management_service: DirectoriesManagementService):
+        self.directories_management_service = directories_management_service
 
         self.command_line = None
         self.circuit_file_path = (

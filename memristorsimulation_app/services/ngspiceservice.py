@@ -1,11 +1,12 @@
-from memristorsimulation_app.services.circuitfileservice import CircuitFileService
+from memristorsimulation_app.services.directoriesmanagementservice import (
+    DirectoriesManagementService,
+)
 from memristorsimulation_app.services.timemeasureservice import TimeMeasureService
 
 
 class NGSpiceService:
-    def __init__(self, circuit_file_service: CircuitFileService):
-        self.circuit_file_service = circuit_file_service
-        self.time_measure_service = TimeMeasureService(self.circuit_file_service)
+    def __init__(self, directories_management_service: DirectoriesManagementService):
+        self.time_measure_service = TimeMeasureService(directories_management_service)
 
     def run_single_circuit_simulation(self, amount_iterations: int = 1) -> None:
         enable_print_time_measure = True if amount_iterations == 1 else False

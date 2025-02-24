@@ -1,5 +1,4 @@
-from typing import List
-
+from typing import List, Tuple
 from memristorsimulation_app.constants import (
     MemristorModels,
     SpiceDevices,
@@ -20,21 +19,24 @@ from memristorsimulation_app.representations import (
     ExportParameters,
 )
 from memristorsimulation_app.services.circuitfileservice import CircuitFileService
+from memristorsimulation_app.services.directoriesmanagementservice import (
+    DirectoriesManagementService,
+)
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
 from memristorsimulation_app.templates.template import Template
 
 
 class SingleDeviceVariableBeta(Template):
-    ALPHA = [10e3, 100e3, 1e6]
-    BETA = 500e3
+    ALPHA = 0
+    BETA = [50e3, 500e3, 5e6, 50e6]
     RINIT = 200e3
     ROFF = 200e3
     RON = 2e3
     VT = 0.6
 
     VO = 0
-    AMPLITUDE = 4
+    AMPLITUDE = 2
     FREQUENCY = 1
     PHASE = 0
     WAVE_FORM = SinWaveForm
@@ -42,7 +44,7 @@ class SingleDeviceVariableBeta(Template):
     T_STEP = 2e-3
     T_STOP = 2
 
-    EXPORT_FOLDER_NAME = "single_device_variable_alpha"
+    EXPORT_FOLDER_NAME = "single_device_variable_beta"
     AMOUNT_ITERATIONS = 100
 
     PLOT_TYPES = [
@@ -62,8 +64,8 @@ class SingleDeviceVariableBeta(Template):
         self,
     ) -> List[SubcircuitFileService]:
         model_parameters = [
-            ModelParameters(alpha, self.BETA, self.RINIT, self.ROFF, self.RON, self.VT)
-            for alpha in self.ALPHA
+            ModelParameters(self.ALPHA, beta, self.RINIT, self.ROFF, self.RON, self.VT)
+            for beta in self.BETA
         ]
         subcircuit = [
             Subcircuit("memristor", ["pl", "mn", "x"], model_parameter)
@@ -91,6 +93,17 @@ class SingleDeviceVariableBeta(Template):
 
         control_cmd = ".func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}"
 
+        export_file_name = "beta_variable"
+        export_params = ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(self.model),
+            self.EXPORT_FOLDER_NAME,
+            export_file_name,
+            ["vin", "i(v1)", "l0"],
+        )
+        subcircuit_directories_management_service = DirectoriesManagementService(
+            self.model, export_params
+        )
+
         return [
             SubcircuitFileService(
                 model=self.model,
@@ -99,14 +112,15 @@ class SingleDeviceVariableBeta(Template):
                 model_dependencies=model_dependencies,
                 components=default_components,
                 control_commands=[control_cmd],
+                directories_management_service=subcircuit_directories_management_service,
             )
             for subcircuit in subcircuit
         ]
 
     def create_circuit_file_service(
         self, subcircuit_file_services: List[SubcircuitFileService]
-    ) -> List[CircuitFileService]:
-        circuit_file_service = []
+    ) -> Tuple[List[CircuitFileService], List[DirectoriesManagementService]]:
+        circuit_file_services, circuit_directories_management_services = [], []
         input_params = InputParameters(
             1,
             "vin",
@@ -119,7 +133,7 @@ class SingleDeviceVariableBeta(Template):
         )
         for subcircuit_file_service in subcircuit_file_services:
             export_file_name = (
-                f"alpha_{subcircuit_file_service.subcircuit.parameters.alpha}"
+                f"beta_{subcircuit_file_service.subcircuit.parameters.beta}"
             )
             export_params = ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(
@@ -129,35 +143,41 @@ class SingleDeviceVariableBeta(Template):
                 export_file_name,
                 ["vin", "i(v1)", "l0"],
             )
+            circuit_directories_management_service = DirectoriesManagementService(
+                self.model, export_params
+            )
 
-            circuit_file_service.append(
+            circuit_file_services.append(
                 CircuitFileService(
                     subcircuit_file_service,
                     input_params,
                     device_params,
                     simulation_params,
-                    export_params,
+                    circuit_directories_management_service,
                 )
             )
+            circuit_directories_management_services.append(
+                circuit_directories_management_service
+            )
 
-        return circuit_file_service
+        return circuit_file_services, circuit_directories_management_services
 
     def simulate(self):
         subcircuit_file_service = self.create_subcircuit_file_service()
-        circuit_file_services = self.create_circuit_file_service(
-            subcircuit_file_service
+        circuit_file_services, directories_management_services = (
+            self.create_circuit_file_service(subcircuit_file_service)
         )
 
-        for cfs in circuit_file_services:
+        for cfs, dms in zip(circuit_file_services, directories_management_services):
             cfs.subcircuit_file_service.write_subcircuit_file()
             cfs.write_circuit_file()
 
-            ngspice_service = NGSpiceService(cfs)
+            ngspice_service = NGSpiceService(dms)
             ngspice_service.run_single_circuit_simulation(self.AMOUNT_ITERATIONS)
 
-        for cfs in circuit_file_services:
+        for cfs, dms in zip(circuit_file_services, directories_management_services):
             self.plot(
-                export_parameters=cfs.export_parameters,
+                export_parameters=dms.export_parameters,
                 model_parameters=cfs.subcircuit_file_service.subcircuit.parameters,
                 input_parameters=cfs.input_parameters,
                 plot_types=self.PLOT_TYPES,

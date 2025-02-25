@@ -25,7 +25,7 @@ class NetworkService:
                 isinstance(vin_minus, tuple) or vin_minus is None
             ):
                 self.vin_plus = vin_plus or (0, 0)
-                self.vin_minus = vin_minus or (self.network_parameters.N - 1, 0)
+                self.vin_minus = vin_minus or (self.network_parameters.n - 1, 0)
             else:
                 raise ValueError(
                     f"NetworkService vin_plus and vin_minus must be None or a tuple of integers for "
@@ -57,10 +57,10 @@ class NetworkService:
             )
 
         if self.network_type == NetworkType.GRID_2D_GRAPH:
-            if self.network_parameters.N is None or self.network_parameters.M is None:
+            if self.network_parameters.n is None or self.network_parameters.m is None:
                 raise ValueError(
                     f'NetworkService parameters "N" and "M" need to be an int > 0 for NetworkType.GRID_2D_GRAPH but '
-                    f"N={self.network_parameters.N} M={self.network_parameters.M} were received instead"
+                    f"N={self.network_parameters.n} M={self.network_parameters.m} were received instead"
                 )
 
         if self.network_type == NetworkType.RANDOM_REGULAR_GRAPH:
@@ -87,7 +87,7 @@ class NetworkService:
     def generate_network(self) -> nx.Graph:
         if self.network_type == NetworkType.GRID_2D_GRAPH:
             network = nx.grid_2d_graph(
-                self.network_parameters.N, self.network_parameters.M
+                self.network_parameters.n, self.network_parameters.m
             )
         elif self.network_type == NetworkType.RANDOM_REGULAR_GRAPH:
             network = nx.random_regular_graph(

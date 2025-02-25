@@ -115,10 +115,10 @@ class DeviceParameters:
 class ModelParameters:
     alpha: float
     beta: float
-    Rinit: float
-    Roff: float
-    Ron: float
-    Vt: float
+    rinit: float
+    roff: float
+    ron: float
+    vt: float
 
     def get_parameters_as_string(self):
         params = ""
@@ -241,13 +241,11 @@ class DataLoader:
 
 @dataclass()
 class NetworkParameters:
-    N: int = None  # N dimension of a 2D NxM grid
-    M: int = None  # M dimension of a 2D NxM grid
-    amount_connections: int = None  # Amount of connections per node in the network
-    amount_nodes: int = None  # Amount of nodes in the network
-    shortcut_probability: float = (
-        None  # Shortcut probability of a WATTS_STROGATZ_GRAPH (between 0 and 1)
-    )
+    n: int = None
+    m: int = None
+    amount_connections: int = None
+    amount_nodes: int = None
+    shortcut_probability: float = None
 
 
 @dataclass

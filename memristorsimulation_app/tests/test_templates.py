@@ -1,5 +1,5 @@
 from memristorsimulation_app.constants import MemristorModels
-from memristorsimulation_app.templates.singledevice import SingleDevice
+from memristorsimulation_app.simulation_templates.singledevice import SingleDevice
 from memristorsimulation_app.tests.basetestcase import BaseTestCase
 
 

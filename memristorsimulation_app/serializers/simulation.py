@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from memristorsimulation_app.serializers.baseserializers import CamelCaseSerializer
 
 

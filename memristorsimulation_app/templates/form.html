@@ -1,0 +1,23 @@
+<form id="simulationForm" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Ejecutar Simulación</button>
+</form>
+<div id="state"></div>
+
+<script>
+    document.getElementById("simulationForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        let formData = new FormData(this);
+
+        fetch("{% url 'form' %}", {
+            method: "POST",
+            body: formData,
+            headers: {"X-CSRFToken": "{{ csrf_token }}"}
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log("data=", data)
+            });
+    });
+</script>

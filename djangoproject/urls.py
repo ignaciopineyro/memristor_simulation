@@ -1,9 +1,12 @@
 from django.contrib import admin
 from django.urls import path
 
-from memristorsimulation_app.views import SimulationView
+from memristorsimulation_app.views import (
+    SimulationView,
+    form_view,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("simulate/", SimulationView.as_view(), name="simulate"),
+    path("", SimulationView.as_view(), name="form"),
 ]

@@ -3,7 +3,7 @@ import networkx as nx
 import pandas as pd
 
 from abc import ABC, abstractmethod
-from dataclasses import fields, dataclass, asdict
+from dataclasses import fields, dataclass, asdict, field
 from typing import List, Tuple
 from memristorsimulation_app.constants import (
     WaveForms,
@@ -161,9 +161,9 @@ class ExportParameters:
 
 @dataclass()
 class Subcircuit:
-    name: str
-    nodes: List[str]
     parameters: ModelParameters
+    name: str = "memristor"
+    nodes: List[str] = field(default_factory=lambda: ["pl", "mn", "x"])
 
     def get_nodes_as_string(self) -> str:
         return " ".join(self.nodes)
@@ -208,9 +208,9 @@ class Component:
 
     def get_attributes_as_string(self):
         attr_str = ""
-        for field in fields(self):
-            if getattr(self, field.name) is not None:
-                attr_str += f"{getattr(self, field.name) } "
+        for f in fields(self):
+            if getattr(self, f.name) is not None:
+                attr_str += f"{getattr(self, f.name) } "
 
         return attr_str
 

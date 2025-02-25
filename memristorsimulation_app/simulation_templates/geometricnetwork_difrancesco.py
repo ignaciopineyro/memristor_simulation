@@ -26,32 +26,32 @@ from memristorsimulation_app.services.directoriesmanagementservice import (
 from memristorsimulation_app.services.networkservice import NetworkService
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
-from memristorsimulation_app.templates.template import Template
+from memristorsimulation_app.simulation_templates.template import Template
 
 
-class CircularNetwork(Template):
-    AMOUNT_CONNECTIONS = 4
-    AMOUNT_NODES = 50
-    SHORTCUT_PROBABILITY = 0.1
+class GeometricNetworkDiFrancesco(Template):
+    N = 4
+    M = 4
+    REMOVAL_PROBABILITY = 0
 
     ALPHA = 0
-    BETA = 5e5
+    BETA = 500e3
     RINIT = 200e3
     ROFF = 200e3
     RON = 2e3
     VT = 0.6
 
     VO = 0
-    AMPLITUDE = 10
+    AMPLITUDE = 12
     FREQUENCY = 1
-    PHASE = 0
+    PHASE = 180
     WAVE_FORM = SinWaveForm
 
     T_STEP = 2e-3
-    T_STOP = 2
+    T_STOP = 10
 
-    EXPORT_FOLDER_NAME = f"circular_network_n{AMOUNT_NODES}_k{AMOUNT_CONNECTIONS}_p{SHORTCUT_PROBABILITY}"
-    EXPORT_FILE_NAME = "circular_network_simulation"
+    EXPORT_FOLDER_NAME = f"geometric_network_difrancesco_{N}x{M}"
+    EXPORT_FILE_NAME = f"geometric_network_difrancesco_{N}x{M}_simulation"
     AMOUNT_ITERATIONS = 1
 
     PLOT_TYPES = [
@@ -64,12 +64,9 @@ class CircularNetwork(Template):
     def __init__(self, model: MemristorModels):
         self.model = model
         self.network_service = NetworkService(
-            NetworkType.WATTS_STROGATZ_GRAPH,
-            NetworkParameters(
-                amount_connections=self.AMOUNT_CONNECTIONS,
-                amount_nodes=self.AMOUNT_NODES,
-                shortcut_probability=self.SHORTCUT_PROBABILITY,
-            ),
+            NetworkType.GRID_2D_GRAPH,
+            NetworkParameters(n=self.N, m=self.M),
+            removal_probability=self.REMOVAL_PROBABILITY,
         )
         self.graph = Graph(
             self.network_service.network,
@@ -96,7 +93,7 @@ class CircularNetwork(Template):
         model_parameters = ModelParameters(
             self.ALPHA, self.BETA, self.RINIT, self.ROFF, self.RON, self.VT
         )
-        subcircuit = Subcircuit("memristor", ["pl", "mn", "x"], model_parameters)
+        subcircuit = Subcircuit(model_parameters)
         source_bx = BehaviouralSource(
             name="Bx",
             n_plus="0",
@@ -123,10 +120,10 @@ class CircularNetwork(Template):
             model=self.model,
             subcircuit=subcircuit,
             sources=[source_bx],
+            directories_management_service=self.directories_management_service,
             model_dependencies=model_dependencies,
             components=default_components,
             control_commands=[control_cmd],
-            directories_management_service=self.directories_management_service,
         )
 
     def create_circuit_file_service(
@@ -159,7 +156,7 @@ class CircularNetwork(Template):
         ngspice_service = NGSpiceService(self.directories_management_service)
         ngspice_service.run_single_circuit_simulation(self.AMOUNT_ITERATIONS)
         self.plot(
-            export_parameters=self.directories_management_service.export_parameters,
+            export_parameters=self.export_params,
             model_parameters=circuit_file_service.subcircuit_file_service.subcircuit.parameters,
             input_parameters=circuit_file_service.input_parameters,
             plot_types=self.PLOT_TYPES,
@@ -168,4 +165,4 @@ class CircularNetwork(Template):
 
 
 if __name__ == "__main__":
-    CircularNetwork(MemristorModels.PERSHIN).simulate()
+    GeometricNetworkDiFrancesco(MemristorModels.PERSHIN).simulate()

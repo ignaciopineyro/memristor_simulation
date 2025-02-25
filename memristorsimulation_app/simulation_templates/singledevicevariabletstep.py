@@ -24,7 +24,7 @@ from memristorsimulation_app.services.directoriesmanagementservice import (
 )
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
-from memristorsimulation_app.templates.template import Template
+from memristorsimulation_app.simulation_templates.template import Template
 
 
 class SingleDeviceVariableAmplitude(Template):
@@ -38,14 +38,14 @@ class SingleDeviceVariableAmplitude(Template):
     WAVE_FORM = SinWaveForm
 
     VO = 0
-    AMPLITUDE = [0.5, 2, 4, 8]
+    AMPLITUDE = [2, 4, 8]
     FREQUENCY = 1
     PHASE = 0
 
-    T_STEP = 2e-3
+    T_STEP = 2e-2
     T_STOP = 2
 
-    EXPORT_FOLDER_NAME = "single_device_variable_amplitude"
+    EXPORT_FOLDER_NAME = "single_device_variable_tstep"
     AMOUNT_ITERATIONS = 100
 
     PLOT_TYPES = [
@@ -67,7 +67,7 @@ class SingleDeviceVariableAmplitude(Template):
         model_parameters = ModelParameters(
             self.ALPHA, self.BETA, self.RINIT, self.ROFF, self.RON, self.VT
         )
-        subcircuit = Subcircuit("memristor", ["pl", "mn", "x"], model_parameters)
+        subcircuit = Subcircuit(model_parameters)
         source_bx = BehaviouralSource(
             name="Bx",
             n_plus="0",
@@ -90,7 +90,7 @@ class SingleDeviceVariableAmplitude(Template):
 
         control_cmd = ".func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}"
 
-        export_file_name = "alpha_variable"
+        export_file_name = "tstep_variable"
         export_params = ExportParameters(
             ModelsSimulationFolders.get_simulation_folder_by_model(self.model),
             self.EXPORT_FOLDER_NAME,
@@ -105,10 +105,10 @@ class SingleDeviceVariableAmplitude(Template):
             model=self.model,
             subcircuit=subcircuit,
             sources=[source_bx],
-            directories_management_service=subcircuit_directories_management_service,
             model_dependencies=model_dependencies,
             components=default_components,
             control_commands=[control_cmd],
+            directories_management_service=subcircuit_directories_management_service,
         )
 
     def create_circuit_file_service(

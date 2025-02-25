@@ -71,7 +71,7 @@ class GeometricNetworkPulses(Template):
         self.model = model
         self.network_service = NetworkService(
             NetworkType.GRID_2D_GRAPH,
-            NetworkParameters(N=self.N, M=self.M),
+            NetworkParameters(n=self.N, m=self.M),
             vin_minus=self.V_MINUS,
             vin_plus=self.V_PLUS,
             removal_probability=self.REMOVAL_PROBABILITY,

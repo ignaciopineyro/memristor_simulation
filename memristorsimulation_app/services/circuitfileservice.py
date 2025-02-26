@@ -19,10 +19,12 @@ class CircuitFileService:
         device_parameters: List[DeviceParameters],
         simulation_parameters: SimulationParameters,
         directories_management_service: DirectoriesManagementService,
+        ignore_states: bool = False,
     ):
         self.input_parameters = input_parameters
         self.device_parameters = device_parameters
         self.simulation_parameters = simulation_parameters
+        self.ignore_states = ignore_states
 
         self.subcircuit_file_service = subcircuit_file_service
         self.directories_management_service = directories_management_service
@@ -49,10 +51,16 @@ class CircuitFileService:
         file.write("run\n")
         file.write("set wr_vecnames\n")
         file.write("set wr_singlescale\n")
-        file.write(
-            f"wrdata {self.directories_management_service.get_export_simulation_file_path()} "
-            f"{self.directories_management_service.export_parameters.get_export_magnitudes()}\n"
-        )
+
+        if self.ignore_states:
+            file.write(
+                f"wrdata {self.directories_management_service.get_export_simulation_file_path()} vin i(v1)\n"
+            )
+        else:
+            file.write(
+                f"wrdata {self.directories_management_service.get_export_simulation_file_path()} "
+                f"{self.directories_management_service.export_parameters.get_export_magnitudes()}\n"
+            )
 
     def write_circuit_file(self) -> None:
         """

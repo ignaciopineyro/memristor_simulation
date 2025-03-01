@@ -44,10 +44,10 @@ class GeometricNetworkPulses(Template):
     WAVE_FORM = PulseWaveForm
 
     V_PLUS = (0, 0)
-    V_MINUS = (3, 0)
+    V_MINUS = (N - 1, 0)
 
     V1 = 0
-    V2 = 5
+    V2 = 10
     TD = 0.5
     TR = 0.05
     TF = 0.01
@@ -58,7 +58,7 @@ class GeometricNetworkPulses(Template):
 
     EXPORT_FOLDER_NAME = f"geometric_network_pulses_{N}x{M}"
     EXPORT_FILE_NAME = f"geometric_network_pulses_{N}x{M}_simulation"
-    AMOUNT_ITERATIONS = 100
+    AMOUNT_ITERATIONS = 1
 
     PLOT_TYPES = [
         PlotType.IV,
@@ -69,6 +69,7 @@ class GeometricNetworkPulses(Template):
 
     def __init__(self, model: MemristorModels):
         self.model = model
+        self.ignore_states = True if (self.N * self.M) > 100 else False
         self.network_service = NetworkService(
             NetworkType.GRID_2D_GRAPH,
             NetworkParameters(n=self.N, m=self.M),
@@ -154,6 +155,7 @@ class GeometricNetworkPulses(Template):
             self.device_params,
             simulation_params,
             self.directories_management_service,
+            ignore_states=self.ignore_states,
         )
 
     def simulate(self):

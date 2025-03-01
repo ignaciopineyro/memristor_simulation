@@ -13,11 +13,11 @@ from memristorsimulation_app.representations import (
     BehaviouralSource,
     ModelDependence,
     InputParameters,
-    SinWaveForm,
     SimulationParameters,
     ExportParameters,
     NetworkParameters,
     Graph,
+    PulseWaveForm,
 )
 from memristorsimulation_app.services.circuitfileservice import CircuitFileService
 from memristorsimulation_app.services.directoriesmanagementservice import (
@@ -30,27 +30,32 @@ from memristorsimulation_app.simulation_templates.template import Template
 
 
 class RandomRegularNetwork(Template):
-    AMOUNT_CONNECTIONS = 5
-    AMOUNT_NODES = 50
+    AMOUNT_CONNECTIONS = 2
+    AMOUNT_NODES = 20
 
     ALPHA = 0
-    BETA = 5e5
-    RINIT = 200e3
+    BETA = 500e3
+    RINIT = 20e3
     ROFF = 200e3
     RON = 2e3
     VT = 0.6
 
-    VO = 0
-    AMPLITUDE = 10
-    FREQUENCY = 1
-    PHASE = 0
-    WAVE_FORM = SinWaveForm
+    WAVE_FORM = PulseWaveForm
+
+    V1 = 0
+    V2 = 10
+    TD = 0.5
+    TR = 0.05
+    TF = 0.01
+    PW = 0.05
 
     T_STEP = 2e-3
-    T_STOP = 2
+    T_STOP = 10
 
     EXPORT_FOLDER_NAME = f"random_regular_network_k{AMOUNT_CONNECTIONS}_n{AMOUNT_NODES}"
-    EXPORT_FILE_NAME = "random_regular_network_simulation"
+    EXPORT_FILE_NAME = (
+        f"random_regular_network_k{AMOUNT_CONNECTIONS}_n{AMOUNT_NODES}_simulation"
+    )
     AMOUNT_ITERATIONS = 1
 
     PLOT_TYPES = [
@@ -134,7 +139,7 @@ class RandomRegularNetwork(Template):
             1,
             "vin",
             "gnd",
-            self.WAVE_FORM(self.VO, self.AMPLITUDE, self.FREQUENCY, phase=self.PHASE),
+            self.WAVE_FORM(self.V1, self.V2, self.TD, self.TR, self.TF, self.PW),
         )
 
         simulation_params = SimulationParameters(

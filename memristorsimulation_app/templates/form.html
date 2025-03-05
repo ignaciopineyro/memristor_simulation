@@ -1,23 +1,52 @@
-<form id="simulationForm" method="post">
+<form id="simulationForm">
     {% csrf_token %}
-    {{ form.as_p }}
+    <label>Alpha: <input type="number" step="any" name="alpha"></label>
+    <label>Beta: <input type="number" step="any" name="beta"></label>
+    <label>Rinit: <input type="number" step="any" name="rinit"></label>
+    <label>Roff: <input type="number" step="any" name="roff"></label>
+    <label>Ron: <input type="number" step="any" name="ron"></label>
+    <label>Vt: <input type="number" step="any" name="vt"></label>
+
+    <label>Modelo de Memristor:</label>
+    <select name="model">
+        <option value="pershin.sub">Pershin</option>
+        <option value="vourkas.sub">Vourkas</option>
+    </select>
+
     <button type="submit">Ejecutar Simulación</button>
 </form>
-<div id="state"></div>
 
 <script>
     document.getElementById("simulationForm").addEventListener("submit", function (event) {
         event.preventDefault();
-        let formData = new FormData(this);
+
+        const form = new FormData(this);
+
+        const data = {
+            model_parameters: {
+                alpha: parseFloat(form.get("alpha")),
+                beta: parseFloat(form.get("beta")),
+                rinit: parseFloat(form.get("rinit")),
+                roff: parseFloat(form.get("roff")),
+                ron: parseFloat(form.get("ron")),
+                vt: parseFloat(form.get("vt")),
+            },
+            model: {
+                model: form.get("model")
+            }
+        };
 
         fetch("{% url 'form' %}", {
             method: "POST",
-            body: formData,
-            headers: {"X-CSRFToken": "{{ csrf_token }}"}
+            body: JSON.stringify(data),
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            }
         })
             .then(response => response.json())
             .then(data => {
-                console.log("data=", data)
+                console.log("data=", data);
             });
     });
 </script>

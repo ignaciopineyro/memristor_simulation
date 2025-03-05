@@ -3,7 +3,6 @@ from django.urls import path
 
 from memristorsimulation_app.views import (
     SimulationView,
-    form_view,
 )
 
 urlpatterns = [

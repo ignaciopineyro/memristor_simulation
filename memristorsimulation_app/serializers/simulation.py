@@ -9,3 +9,12 @@ class ModelParametersSerializer(CamelCaseSerializer):
     roff = serializers.FloatField()
     ron = serializers.FloatField()
     vt = serializers.FloatField()
+
+
+class ModelSerializer(CamelCaseSerializer):
+    model = serializers.CharField()
+
+
+class InputParametersSerializer(CamelCaseSerializer):
+    model_parameters = ModelParametersSerializer()
+    model = ModelSerializer()

@@ -246,6 +246,7 @@ class NetworkParameters:
     amount_connections: int = None
     amount_nodes: int = None
     shortcut_probability: float = None
+    seed: int = None
 
 
 @dataclass
@@ -253,3 +254,4 @@ class Graph:
     nx_graph: nx.Graph
     vin_minus: Tuple[int, int]
     vin_plus: Tuple[int, int]
+    seed: int = None

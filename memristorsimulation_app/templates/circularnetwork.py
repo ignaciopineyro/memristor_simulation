@@ -33,6 +33,7 @@ class CircularNetwork(Template):
     AMOUNT_CONNECTIONS = 4
     AMOUNT_NODES = 50
     SHORTCUT_PROBABILITY = 0.1
+    SEED = 12345
 
     ALPHA = 0
     BETA = 5e5
@@ -69,12 +70,14 @@ class CircularNetwork(Template):
                 amount_connections=self.AMOUNT_CONNECTIONS,
                 amount_nodes=self.AMOUNT_NODES,
                 shortcut_probability=self.SHORTCUT_PROBABILITY,
+                seed=self.SEED,
             ),
         )
         self.graph = Graph(
             self.network_service.network,
             self.network_service.vin_minus,
             self.network_service.vin_plus,
+            seed=self.SEED,
         )
         self.device_params = self.network_service.generate_device_parameters(
             "xmem", "memristor"

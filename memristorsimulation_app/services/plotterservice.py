@@ -5,6 +5,9 @@ import os
 from matplotlib import pyplot as plt
 from matplotlib import animation as anime
 from typing import List
+
+from networkx import NetworkXError
+
 from memristorsimulation_app.constants import MeasuredMagnitude
 from memristorsimulation_app.representations import (
     DataLoader,
@@ -312,6 +315,21 @@ class PlotterService:
                 labels[node] = node
 
         fig = plt.figure(figsize=(12, 8))
+        try:
+            average_shortest_path_length = nx.average_shortest_path_length(
+                self.graph.nx_graph
+            )
+            average_clustering = nx.average_clustering(self.graph.nx_graph)
+            title = (
+                f"{self.graph.nx_graph.__str__()} V+={self.graph.vin_plus} V-={self.graph.vin_minus} "
+                f"L={average_shortest_path_length:.2f} C={average_clustering:.2f} Seed={self.graph.seed}"
+            )
+        except NetworkXError:
+            title = (
+                f"{self.graph.nx_graph.__str__()} V+={self.graph.vin_plus} V-={self.graph.vin_minus} "
+                f"Seed={self.graph.seed}"
+            )
+        plt.title(title)
         pos = nx.spring_layout(self.graph.nx_graph)
         nx.draw(
             self.graph.nx_graph,

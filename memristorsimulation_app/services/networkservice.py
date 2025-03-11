@@ -93,12 +93,14 @@ class NetworkService:
             network = nx.random_regular_graph(
                 self.network_parameters.amount_connections,
                 self.network_parameters.amount_nodes,
+                seed=self.network_parameters.seed,
             )
         elif self.network_type == NetworkType.WATTS_STROGATZ_GRAPH:
             network = nx.watts_strogatz_graph(
                 self.network_parameters.amount_nodes,
                 self.network_parameters.amount_connections,
                 self.network_parameters.shortcut_probability,
+                seed=self.network_parameters.seed,
             )
         else:
             raise NetworkTypeNotImplemented(

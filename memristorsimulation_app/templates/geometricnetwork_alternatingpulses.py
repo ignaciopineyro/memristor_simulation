@@ -47,7 +47,7 @@ class GeometricNetworkPulses(Template):
     V_MINUS = (3, 0)
 
     V1 = 0
-    V2 = [2, -2, -3, 4, 5, 2, -2, 1]
+    V2 = [-10, 10, 10]
     TD = 0.5
     TR = 0.05
     TF = 0.01

@@ -17,6 +17,7 @@ from memristorsimulation_app.representations import (
     ExportParameters,
     NetworkParameters,
     Graph,
+    PulseWaveForm,
     AlternatingPulseWaveForm,
 )
 from memristorsimulation_app.services.circuitfileservice import CircuitFileService
@@ -29,10 +30,11 @@ from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFil
 from memristorsimulation_app.templates.template import Template
 
 
-class GeometricNetworkPulses(Template):
-    N = 4
-    M = 4
-    REMOVAL_PROBABILITY = 0
+class WattsStrogatz(Template):
+    AMOUNT_CONNECTIONS = 2
+    AMOUNT_NODES = 20
+    SHORTCUT_PROBABILITY = 0.5
+    SEED = None
 
     ALPHA = 0
     BETA = 500e3
@@ -43,11 +45,8 @@ class GeometricNetworkPulses(Template):
 
     WAVE_FORM = AlternatingPulseWaveForm
 
-    V_PLUS = (0, 0)
-    V_MINUS = (3, 0)
-
     V1 = 0
-    V2 = [-10, 10, 10]
+    V2 = [3, -3]
     TD = 0.5
     TR = 0.05
     TF = 0.01
@@ -56,9 +55,12 @@ class GeometricNetworkPulses(Template):
     T_STEP = 2e-3
     T_STOP = 10
 
-    EXPORT_FOLDER_NAME = f"geometric_network_pulses_alternating_{N}x{M}"
-    EXPORT_FILE_NAME = f"geometric_network_pulses_alternating_{N}x{M}_simulation"
-    AMOUNT_ITERATIONS = 100
+    EXPORT_FOLDER_NAME = (
+        f"watts_strogatz_network_pulses_alternating_k{AMOUNT_CONNECTIONS}_n{AMOUNT_NODES}_"
+        f"p{SHORTCUT_PROBABILITY}"
+    )
+    EXPORT_FILE_NAME = "watts_strogatz_network_pulses_alternating_simulation"
+    AMOUNT_ITERATIONS = 1
 
     PLOT_TYPES = [
         PlotType.IV,
@@ -70,17 +72,21 @@ class GeometricNetworkPulses(Template):
     def __init__(self, model: MemristorModels):
         self.model = model
         self.network_service = NetworkService(
-            NetworkType.GRID_2D_GRAPH,
-            NetworkParameters(n=self.N, m=self.M),
-            vin_minus=self.V_MINUS,
-            vin_plus=self.V_PLUS,
-            removal_probability=self.REMOVAL_PROBABILITY,
+            NetworkType.WATTS_STROGATZ_GRAPH,
+            NetworkParameters(
+                amount_connections=self.AMOUNT_CONNECTIONS,
+                amount_nodes=self.AMOUNT_NODES,
+                shortcut_probability=self.SHORTCUT_PROBABILITY,
+                seed=self.SEED,
+            ),
         )
         self.graph = Graph(
             self.network_service.network,
             self.network_service.vin_minus,
             self.network_service.vin_plus,
+            seed=self.SEED,
         )
+        self.ignore_states = True if len(self.graph.nx_graph.edges) > 100 else False
         self.device_params = self.network_service.generate_device_parameters(
             "xmem", "memristor"
         )
@@ -154,6 +160,7 @@ class GeometricNetworkPulses(Template):
             self.device_params,
             simulation_params,
             self.directories_management_service,
+            ignore_states=self.ignore_states,
         )
 
     def simulate(self):
@@ -173,4 +180,4 @@ class GeometricNetworkPulses(Template):
 
 
 if __name__ == "__main__":
-    GeometricNetworkPulses(MemristorModels.PERSHIN).simulate()
+    WattsStrogatz(MemristorModels.PERSHIN).simulate()

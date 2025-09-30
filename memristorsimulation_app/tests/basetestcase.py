@@ -2,27 +2,43 @@ import os
 import random
 import shutil
 import string
+import tempfile
 import pandas as pd
 
-from typing import Dict, Optional, Set
+from pathlib import Path
+from typing import Dict, List, Optional, Set, Union
 from unittest import TestCase
 from memristorsimulation_app.constants import (
     SIMULATIONS_DIR,
     MemristorModels,
     ModelsSimulationFolders,
+    SpiceDevices,
+    SpiceModel,
 )
+from memristorsimulation_app.representations import (
+    BehaviouralSource,
+    Component,
+    ExportParameters,
+    ModelDependence,
+    ModelParameters,
+    Subcircuit,
+)
+from memristorsimulation_app.services.directoriesmanagementservice import (
+    DirectoriesManagementService,
+)
+from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
 
 
 class BaseTestCase(TestCase):
     def setUp(self) -> None:
-        self.test_simulation_path = None
+        self.temp_test_dir = Path(tempfile.mkdtemp(prefix="memristor_test_"))
 
     def tearDown(self) -> None:
         self._delete_test_simulation_folder()
 
     def _delete_test_simulation_folder(self):
-        if self.test_simulation_path and os.path.exists(self.test_simulation_path):
-            shutil.rmtree(self.test_simulation_path)
+        if self.temp_test_dir.exists():
+            shutil.rmtree(self.temp_test_dir)
 
     @staticmethod
     def get_random_string(length=10, use_numbers=True, use_letters=True) -> str:
@@ -125,3 +141,80 @@ class BaseTestCase(TestCase):
         has_min_amount_rows = len(dataframe) >= min_amount_rows
 
         return has_columns and has_min_amount_rows
+
+    def open_file(self, file_path: Path) -> str:
+        self.assertTrue(os.path.exists(file_path))
+        self.assertGreater(os.path.getsize(file_path), 300)
+
+        with open(file_path, "r") as f:
+            content = f.read()
+
+        return content
+
+    def create_subcircuit_file_service(
+        self, memristor_model: MemristorModels = MemristorModels.PERSHIN
+    ) -> SubcircuitFileService:
+        export_file_name = self.get_random_string()
+        export_folder_name = self.get_random_string()
+        magnitudes = [
+            self.get_random_string(),
+            self.get_random_string(),
+            self.get_random_string(),
+        ]
+        model_parameters = ModelParameters(
+            self.get_random_int(),
+            self.get_random_int(),
+            self.get_random_int(),
+            self.get_random_int(),
+            self.get_random_int(),
+            self.get_random_int(),
+        )
+        subcircuit = Subcircuit(
+            self.get_random_string(),
+            [
+                self.get_random_string(),
+                self.get_random_string(),
+                self.get_random_string(),
+            ],
+            model_parameters,
+        )
+        behavioural_sources = [
+            BehaviouralSource(
+                name=self.get_random_string(),
+                n_plus=self.get_random_string(),
+                n_minus=self.get_random_string(),
+                behaviour_function=self.get_random_string(),
+            )
+        ]
+        components = [
+            Component(
+                name=self.get_random_string(),
+                n_plus=self.get_random_string(),
+                n_minus=self.get_random_string(),
+                value=self.get_random_int(),
+            )
+        ]
+        model_dependencies = [
+            ModelDependence(name=SpiceDevices.DIODE, model=SpiceModel.DIODE)
+        ]
+        control_cmd = [self.get_random_string()]
+        export_file_name = self.get_random_string()
+
+        export_params = ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(memristor_model),
+            export_folder_name,
+            export_file_name,
+            magnitudes,
+        )
+        directories_management_service = DirectoriesManagementService(
+            memristor_model, export_params
+        )
+        return SubcircuitFileService(
+            model=memristor_model,
+            subcircuit=subcircuit,
+            sources=behavioural_sources,
+            directories_management_service=directories_management_service,
+            model_dependencies=model_dependencies,
+            components=components,
+            control_commands=control_cmd,
+        )

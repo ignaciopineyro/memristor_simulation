@@ -10,7 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from pathlib import Path
+import sys
+
+from dotenv import load_dotenv
+from pyparsing import Enum
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -123,3 +128,27 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+if "pytest" in sys.argv[0] or "py.test" in sys.argv[0] or "test" in sys.argv:
+    env_file = BASE_DIR / "envs" / "testing.env"
+else:
+    env_file = BASE_DIR / "envs" / "dev.env"
+
+load_dotenv(dotenv_path=env_file)
+
+
+class Environments(Enum):
+    DEV = "DEV"
+    TESTING = "TESTING"
+
+    @classmethod
+    def is_dev(cls, value):
+        return value == Environments.DEV
+
+    @classmethod
+    def is_testing(cls, value):
+        return value == Environments.TESTING
+
+
+CURRENT_ENVIRONMENT = Environments[os.getenv("CURRENT_ENVIRONMENT", "DEV")]

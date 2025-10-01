@@ -31,14 +31,14 @@ from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFil
 
 class BaseTestCase(TestCase):
     def setUp(self) -> None:
-        self.temp_test_dir = Path(tempfile.mkdtemp(prefix="memristor_test_"))
+        self._delete_test_simulation_folder()
 
     def tearDown(self) -> None:
         self._delete_test_simulation_folder()
 
     def _delete_test_simulation_folder(self):
-        if self.temp_test_dir.exists():
-            shutil.rmtree(self.temp_test_dir)
+        if os.path.exists(SIMULATIONS_DIR):
+            shutil.rmtree(SIMULATIONS_DIR)
 
     @staticmethod
     def get_random_string(length=10, use_numbers=True, use_letters=True) -> str:

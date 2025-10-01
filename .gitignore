@@ -14,3 +14,4 @@ __pycache__/*
 NGSpice
 !backup/**
 .vscode/
+temp/

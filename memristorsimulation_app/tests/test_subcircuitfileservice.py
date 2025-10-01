@@ -1,73 +1,12 @@
-from click import Path
 from memristorsimulation_app.constants import (
     MemristorModels,
-    ModelsSimulationFolders,
-    SpiceDevices,
-    SpiceModel,
 )
-from memristorsimulation_app.representations import (
-    BehaviouralSource,
-    Component,
-    ExportParameters,
-    ModelDependence,
-    ModelParameters,
-    Subcircuit,
-)
-from memristorsimulation_app.services.directoriesmanagementservice import (
-    DirectoriesManagementService,
-)
-from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
 from memristorsimulation_app.tests.basetestcase import BaseTestCase
 
 
 class SubcircuitFileServiceTestCase(BaseTestCase):
     def setUp(self) -> None:
         super().setUp()
-        # self.export_file_name = self.get_random_string()
-        # self.export_folder_name = self.get_random_string()
-        # self.magnitudes = [
-        #     self.get_random_string(),
-        #     self.get_random_string(),
-        #     self.get_random_string(),
-        # ]
-        # self.model_parameters = ModelParameters(
-        #     self.get_random_int(),
-        #     self.get_random_int(),
-        #     self.get_random_int(),
-        #     self.get_random_int(),
-        #     self.get_random_int(),
-        #     self.get_random_int(),
-        # )
-        # self.subcircuit = Subcircuit(
-        #     self.get_random_string(),
-        #     [
-        #         self.get_random_string(),
-        #         self.get_random_string(),
-        #         self.get_random_string(),
-        #     ],
-        #     self.model_parameters,
-        # )
-        # self.behavioural_sources = [
-        #     BehaviouralSource(
-        #         name=self.get_random_string(),
-        #         n_plus=self.get_random_string(),
-        #         n_minus=self.get_random_string(),
-        #         behaviour_function=self.get_random_string(),
-        #     )
-        # ]
-        # self.components = [
-        #     Component(
-        #         name=self.get_random_string(),
-        #         n_plus=self.get_random_string(),
-        #         n_minus=self.get_random_string(),
-        #         value=self.get_random_int(),
-        #     )
-        # ]
-        # self.model_dependencies = [
-        #     ModelDependence(name=SpiceDevices.DIODE, model=SpiceModel.DIODE)
-        # ]
-        # self.control_cmd = [self.get_random_string()]
-        # self.export_file_name = self.get_random_string()
 
     def test_write_pershin_subcircuit_file(self):
         subcircuit_file_service = self.create_subcircuit_file_service(
@@ -81,13 +20,9 @@ class SubcircuitFileServiceTestCase(BaseTestCase):
             f"* MEMRISTOR SUBCIRCUIT - MODEL {MemristorModels.PERSHIN.value}",
             content,
         )
-        self.assertIn("* SUBCIRCUITS:", content)
-        self.assertIn("* SPICE DEPENDENCIES:", content)
-        self.assertIn("* SOURCES:", content)
-        self.assertIn("* COMPONENTS:", content)
-        self.assertIn("* CONTROL COMMANDS:", content)
-        self.assertIn(".ends", content)
 
+        # Subcircuits
+        self.assertIn("* SUBCIRCUITS:", content)
         self.assertIn(
             f".subckt {subcircuit_file_service.subcircuit.name} {subcircuit_file_service.subcircuit.get_nodes_as_string()}",
             content,
@@ -97,28 +32,33 @@ class SubcircuitFileServiceTestCase(BaseTestCase):
             content,
         )
 
-        # Dependencias
+        # Spice dependencies
+        self.assertIn("* SPICE DEPENDENCIES:", content)
+        model_dependence = subcircuit_file_service.model_dependencies[0]
         self.assertIn(
-            f".model {self.model_dependencies[0].name.value} {self.model_dependencies[0].model.value}",
+            f".model {model_dependence.name.value} {model_dependence.model.value}",
             content,
         )
 
-        # Fuentes
-        source = self.behavioural_sources[0]
+        # Sources
+        self.assertIn("* SOURCES:", content)
+        source = subcircuit_file_service.sources[0]
         self.assertIn(
             f"{source.name} {source.n_plus} {source.n_minus} {source.behaviour_function}",
             content,
         )
 
-        # Componentes
-        component = self.components[0]
+        # Components
+        self.assertIn("* COMPONENTS:", content)
+        component = subcircuit_file_service.components[0]
         self.assertIn(
             f"{component.name} {component.n_plus} {component.n_minus} {component.value}",
             content,
         )
 
-        # Comandos de control
-        self.assertIn(self.control_cmd[0], content)
+        # Control commands
+        control_command = subcircuit_file_service.control_commands[0]
+        self.assertIn("* CONTROL COMMANDS:", content)
+        self.assertIn(f"{control_command}", content)
 
-    def test_write_vourkas_subcircuit_file(self):
-        pass
+        self.assertIn(".ends", content)

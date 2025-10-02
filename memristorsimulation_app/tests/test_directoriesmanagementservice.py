@@ -87,7 +87,7 @@ class DirectoriesManagementServiceTestCase(BaseTestCase):
             export_params = self._create_export_parameters(
                 model_simulation_folder=model_sim_folder
             )
-            model_name = model_sim_folder.value.replace("_simulations", "")
+            model_name = model.name.lower()
             expected_path = (
                 f"{SIMULATIONS_DIR}/{model_sim_folder.value}/{export_params.folder_name}/"
                 f"{model_name}_circuit_file.cir"
@@ -100,16 +100,83 @@ class DirectoriesManagementServiceTestCase(BaseTestCase):
             self.assertEqual(circuit_file_path, expected_path)
 
     def test_get_subcircuit_file_path(self):
-        pass
+        for model, model_sim_folder in zip(MemristorModels, ModelsSimulationFolders):
+            export_params = self._create_export_parameters(
+                model_simulation_folder=model_sim_folder
+            )
+            expected_path = (
+                f"{SIMULATIONS_DIR}/{model_sim_folder.value}/{export_params.folder_name}/"
+                f"{model.value}"
+            )
+            dsm = DirectoriesManagementService(
+                model=model, export_parameters=export_params
+            )
+            subcircuit_file_path = dsm.get_subcircuit_file_path()
+
+            self.assertEqual(subcircuit_file_path, expected_path)
 
     def test_get_export_simulation_file_path(self):
-        pass
+        for model, model_sim_folder in zip(MemristorModels, ModelsSimulationFolders):
+            export_params = self._create_export_parameters(
+                model_simulation_folder=model_sim_folder
+            )
+            expected_path = (
+                f"{SIMULATIONS_DIR}/{model_sim_folder.value}/{export_params.folder_name}/"
+                f"{export_params.file_name}_results.csv"
+            )
+            dsm = DirectoriesManagementService(
+                model=model, export_parameters=export_params
+            )
+            export_file_path = dsm.get_export_simulation_file_path()
+
+            self.assertEqual(export_file_path, expected_path)
+            self.assertTrue(os.path.exists(os.path.dirname(export_file_path)))
 
     def test_get_simulation_log_file_path(self):
-        pass
+        for model, model_sim_folder in zip(MemristorModels, ModelsSimulationFolders):
+            export_params = self._create_export_parameters(
+                model_simulation_folder=model_sim_folder
+            )
+            expected_path = (
+                f"{SIMULATIONS_DIR}/{model_sim_folder.value}/{export_params.folder_name}/"
+                f"{export_params.folder_name}.log"
+            )
+            dsm = DirectoriesManagementService(
+                model=model, export_parameters=export_params
+            )
+            log_file_path = dsm.get_simulation_log_file_path()
+
+            self.assertEqual(log_file_path, expected_path)
 
     def test_get_circuit_dir_and_file_name(self):
-        pass
+        for model, model_sim_folder in zip(MemristorModels, ModelsSimulationFolders):
+            export_params = self._create_export_parameters(
+                model_simulation_folder=model_sim_folder
+            )
+            model_name = model.name.lower()
+            expected_path = (
+                f"{model_sim_folder.value}/{export_params.folder_name}/"
+                f"{model_name}_circuit_file.cir"
+            )
+            dsm = DirectoriesManagementService(
+                model=model, export_parameters=export_params
+            )
+            dir_and_file = dsm.get_circuit_dir_and_file_name()
+
+            self.assertEqual(dir_and_file, expected_path)
 
     def test_get_subcircuit_dir_and_file_name(self):
-        pass
+        for model, model_sim_folder in zip(MemristorModels, ModelsSimulationFolders):
+            export_params = self._create_export_parameters(
+                model_simulation_folder=model_sim_folder
+            )
+            expected_path = (
+                f"{model_sim_folder.value}/{export_params.folder_name}/"
+                f"{model.value}"
+            )
+            dsm = DirectoriesManagementService(
+                model=model, export_parameters=export_params
+            )
+            dir_and_file = dsm.get_subcircuit_dir_and_file_name()
+
+            self.assertEqual(dir_and_file, expected_path)

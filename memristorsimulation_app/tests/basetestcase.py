@@ -2,7 +2,6 @@ import os
 import random
 import shutil
 import string
-import tempfile
 import pandas as pd
 
 from pathlib import Path
@@ -10,22 +9,32 @@ from typing import Dict, List, Optional, Set, Union
 from unittest import TestCase
 from memristorsimulation_app.constants import (
     SIMULATIONS_DIR,
+    AnalysisType,
     MemristorModels,
     ModelsSimulationFolders,
+    NetworkType,
     SpiceDevices,
     SpiceModel,
+    WaveForms,
 )
 from memristorsimulation_app.representations import (
     BehaviouralSource,
     Component,
+    DeviceParameters,
     ExportParameters,
+    InputParameters,
     ModelDependence,
     ModelParameters,
+    NetworkParameters,
+    PulseWaveForm,
+    SimulationParameters,
     Subcircuit,
 )
+from memristorsimulation_app.services.circuitfileservice import CircuitFileService
 from memristorsimulation_app.services.directoriesmanagementservice import (
     DirectoriesManagementService,
 )
+from memristorsimulation_app.services.networkservice import NetworkService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
 
 
@@ -151,9 +160,9 @@ class BaseTestCase(TestCase):
 
         return content
 
-    def create_subcircuit_file_service(
-        self, memristor_model: MemristorModels = MemristorModels.PERSHIN
-    ) -> SubcircuitFileService:
+    def create_directories_management_service(
+        self, memristor_model: MemristorModels
+    ) -> DirectoriesManagementService:
         export_file_name = self.get_random_string()
         export_folder_name = self.get_random_string()
         magnitudes = [
@@ -161,6 +170,18 @@ class BaseTestCase(TestCase):
             self.get_random_string(),
             self.get_random_string(),
         ]
+        export_params = ExportParameters(
+            ModelsSimulationFolders.get_simulation_folder_by_model(memristor_model),
+            export_folder_name,
+            export_file_name,
+            magnitudes,
+        )
+
+        return DirectoriesManagementService(memristor_model, export_params)
+
+    def create_subcircuit_file_service(
+        self, memristor_model: MemristorModels = MemristorModels.PERSHIN
+    ) -> SubcircuitFileService:
         model_parameters = ModelParameters(
             self.get_random_int(),
             self.get_random_int(),
@@ -198,16 +219,9 @@ class BaseTestCase(TestCase):
             ModelDependence(name=SpiceDevices.DIODE, model=SpiceModel.DIODE)
         ]
         control_cmd = [self.get_random_string()]
-        export_file_name = self.get_random_string()
 
-        export_params = ExportParameters(
-            ModelsSimulationFolders.get_simulation_folder_by_model(memristor_model),
-            export_folder_name,
-            export_file_name,
-            magnitudes,
-        )
-        directories_management_service = DirectoriesManagementService(
-            memristor_model, export_params
+        directories_management_service = self.create_directories_management_service(
+            memristor_model
         )
         return SubcircuitFileService(
             model=memristor_model,
@@ -217,4 +231,97 @@ class BaseTestCase(TestCase):
             model_dependencies=model_dependencies,
             components=components,
             control_commands=control_cmd,
+        )
+
+    def create_circuit_file_service(
+        self, subcircuit_file_service: SubcircuitFileService
+    ) -> CircuitFileService:
+        input_parameters = InputParameters(
+            source_number=self.get_random_int(),
+            n_plus=self.get_random_string(),
+            n_minus=self.get_random_string(),
+            wave_form=PulseWaveForm(
+                v1=self.get_random_int(),
+                v2=self.get_random_int(),
+                td=self.get_random_int(),
+                tr=self.get_random_int(),
+                tf=self.get_random_int(),
+                pw=self.get_random_int(),
+                per=self.get_random_int(),
+            ),
+        )
+        device_parameters = [
+            DeviceParameters(
+                device_name=self.get_random_string(),
+                device_number=self.get_random_int(),
+                nodes=[
+                    self.get_random_string(),
+                    self.get_random_string(),
+                    self.get_random_string(),
+                ],
+                subcircuit=self.get_random_string(),
+            )
+        ]
+        simulation_parameters = SimulationParameters(
+            analysis_type=AnalysisType.TRAN,
+            tstep=self.get_random_int(),
+            tstop=self.get_random_int(),
+        )
+        directories_management_service = self.create_directories_management_service(
+            MemristorModels.PERSHIN
+        )
+
+        return CircuitFileService(
+            subcircuit_file_service,
+            input_parameters,
+            device_parameters,
+            simulation_parameters,
+            directories_management_service,
+        )
+
+    def create_grid_network_service(self, n=3, m=3, removal_probability=0):
+        network_parameters = NetworkParameters(n=n, m=m)
+        return NetworkService(
+            network_type=NetworkType.GRID_2D_GRAPH,
+            network_parameters=network_parameters,
+            vin_plus=(0, 0),
+            vin_minus=(n - 1, 0),
+            removal_probability=removal_probability,
+        )
+
+    def create_random_regular_network_service(
+        self, amount_nodes=10, amount_connections=4, removal_probability=0
+    ):
+        network_parameters = NetworkParameters(
+            amount_nodes=amount_nodes,
+            amount_connections=amount_connections,
+            seed=42,
+        )
+        return NetworkService(
+            network_type=NetworkType.RANDOM_REGULAR_GRAPH,
+            network_parameters=network_parameters,
+            vin_plus=0,
+            vin_minus=amount_nodes // 2,
+            removal_probability=removal_probability,
+        )
+
+    def create_watts_strogatz_network_service(
+        self,
+        amount_nodes=10,
+        amount_connections=4,
+        shortcut_probability=0.3,
+        removal_probability=0,
+    ):
+        network_parameters = NetworkParameters(
+            amount_nodes=amount_nodes,
+            amount_connections=amount_connections,
+            shortcut_probability=shortcut_probability,
+            seed=42,
+        )
+        return NetworkService(
+            network_type=NetworkType.WATTS_STROGATZ_GRAPH,
+            network_parameters=network_parameters,
+            vin_plus=0,
+            vin_minus=amount_nodes // 2,
+            removal_probability=removal_probability,
         )

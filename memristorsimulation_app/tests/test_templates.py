@@ -4,7 +4,10 @@ from memristorsimulation_app.tests.basetestcase import BaseTestCase
 
 
 class TemplatesTestCase(BaseTestCase):
-    def test_singledevice_pershin_template(self):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_singledevice_template(self):
         memristor_model = MemristorModels.PERSHIN
         export_folder_name = self.get_random_string()
         SingleDevice.EXPORT_FOLDER_NAME = export_folder_name
@@ -38,3 +41,51 @@ class TemplatesTestCase(BaseTestCase):
         self.assertTrue(
             self.check_csv_content(dataframe, {"time", "vin", "i(v1)", "l0"}, 500)
         )
+
+    def test_singledevicevariableamplitude_template(self):
+        # TODO: Implement test
+        pass
+
+    def test_singledevicevariablealpha_template(self):
+        # TODO: Implement test
+        pass
+
+    def test_singledevicevariablebeta_template(self):
+        # TODO: Implement test
+        pass
+
+    def test_singledevicevariablevt_template(self):
+        # TODO: Implement test
+        pass
+
+    def test_singledevicevariabletstep_template(self):
+        # TODO: Implement test
+        pass
+
+    def test_singledevicevariablepulse_template(self):
+        # TODO: Implement test
+        pass
+
+    def test_geometricnetwork_difrancesco_template(self):
+        # TODO: Implement test
+        pass
+
+    def test_geometricnetwork_pulses_template(self):
+        # TODO: Implement test
+        pass
+
+    def test_geometricnetwork_alternatingpulses_template(self):
+        # TODO: Implement test
+        pass
+
+    def test_randomregularnetwork_template(self):
+        # TODO: Implement test
+        pass
+
+    def test_wattssstrogatznetwork_template(self):
+        # TODO: Implement test
+        pass
+
+    def test_wattssstrogatznetwork_alternatingpulses_template(self):
+        # TODO: Implement test
+        pass

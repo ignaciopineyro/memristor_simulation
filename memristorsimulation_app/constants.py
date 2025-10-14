@@ -1,9 +1,14 @@
 import os
 
 from enum import Enum
+from djangoproject.settings import CURRENT_ENVIRONMENT, Environments
 
 
-PATH = os.path.dirname(__file__)
+PATH = (
+    f"{os.path.dirname(__file__)}/temp"
+    if Environments.is_testing(CURRENT_ENVIRONMENT)
+    else f"{os.path.dirname(__file__)}"
+)
 MODELS_DIR = f"{PATH}/models"
 SIMULATIONS_DIR = f"{PATH}/simulation_results"
 

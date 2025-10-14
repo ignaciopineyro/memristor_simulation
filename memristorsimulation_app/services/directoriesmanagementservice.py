@@ -21,12 +21,11 @@ class DirectoriesManagementService:
     def create_simulation_results_for_model_folder_if_not_exists(
         model: MemristorModels,
     ):
-        if not os.path.exists(
-            f"{SIMULATIONS_DIR}/{ModelsSimulationFolders.get_simulation_folder_by_model(model).value}"
-        ):
-            os.makedirs(
-                f"{SIMULATIONS_DIR}/{ModelsSimulationFolders.get_simulation_folder_by_model(model).value}"
-            )
+        model_simulation_folder_ = (
+            ModelsSimulationFolders.get_simulation_folder_by_model(model).value
+        )
+        if not os.path.exists(f"{SIMULATIONS_DIR}/{model_simulation_folder_}"):
+            os.makedirs(f"{SIMULATIONS_DIR}/{model_simulation_folder_}")
 
     def create_simulation_parameter_folder_if_not_exist(
         self, model_simulation_folder_name: ModelsSimulationFolders

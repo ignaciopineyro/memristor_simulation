@@ -13,11 +13,11 @@ from memristorsimulation_app.representations import (
     BehaviouralSource,
     ModelDependence,
     InputParameters,
-    SinWaveForm,
     SimulationParameters,
     ExportParameters,
     NetworkParameters,
     Graph,
+    PulseWaveForm,
 )
 from memristorsimulation_app.services.circuitfileservice import CircuitFileService
 from memristorsimulation_app.services.directoriesmanagementservice import (
@@ -29,29 +29,33 @@ from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFil
 from memristorsimulation_app.simulation_templates.template import Template
 
 
-class CircularNetwork(Template):
-    AMOUNT_CONNECTIONS = 4
-    AMOUNT_NODES = 50
-    SHORTCUT_PROBABILITY = 0.1
+class WattsStrogatz(Template):
+    AMOUNT_CONNECTIONS = 2
+    AMOUNT_NODES = 10
+    SHORTCUT_PROBABILITY = 0.5
+    SEED = None
 
     ALPHA = 0
-    BETA = 5e5
-    RINIT = 200e3
+    BETA = 500e3
+    RINIT = 20e3
     ROFF = 200e3
     RON = 2e3
     VT = 0.6
 
-    VO = 0
-    AMPLITUDE = 10
-    FREQUENCY = 1
-    PHASE = 0
-    WAVE_FORM = SinWaveForm
+    WAVE_FORM = PulseWaveForm
+
+    V1 = 0
+    V2 = 10
+    TD = 0.5
+    TR = 0.05
+    TF = 0.01
+    PW = 0.05
 
     T_STEP = 2e-3
-    T_STOP = 2
+    T_STOP = 10
 
-    EXPORT_FOLDER_NAME = f"circular_network_n{AMOUNT_NODES}_k{AMOUNT_CONNECTIONS}_p{SHORTCUT_PROBABILITY}"
-    EXPORT_FILE_NAME = "circular_network_simulation"
+    EXPORT_FOLDER_NAME = f"watts_strogatz_network_k{AMOUNT_CONNECTIONS}_n{AMOUNT_NODES}_p{SHORTCUT_PROBABILITY}"
+    EXPORT_FILE_NAME = "watts_strogatz_network_simulation"
     AMOUNT_ITERATIONS = 1
 
     PLOT_TYPES = [
@@ -69,13 +73,16 @@ class CircularNetwork(Template):
                 amount_connections=self.AMOUNT_CONNECTIONS,
                 amount_nodes=self.AMOUNT_NODES,
                 shortcut_probability=self.SHORTCUT_PROBABILITY,
+                seed=self.SEED,
             ),
         )
         self.graph = Graph(
             self.network_service.network,
             self.network_service.vin_minus,
             self.network_service.vin_plus,
+            seed=self.SEED,
         )
+        self.ignore_states = True if len(self.graph.nx_graph.edges) > 100 else False
         self.device_params = self.network_service.generate_device_parameters(
             "xmem", "memristor"
         )
@@ -136,7 +143,7 @@ class CircularNetwork(Template):
             1,
             "vin",
             "gnd",
-            self.WAVE_FORM(self.VO, self.AMPLITUDE, self.FREQUENCY, phase=self.PHASE),
+            self.WAVE_FORM(self.V1, self.V2, self.TD, self.TR, self.TF, self.PW),
         )
 
         simulation_params = SimulationParameters(
@@ -149,6 +156,7 @@ class CircularNetwork(Template):
             self.device_params,
             simulation_params,
             self.directories_management_service,
+            ignore_states=self.ignore_states,
         )
 
     def simulate(self):
@@ -168,4 +176,4 @@ class CircularNetwork(Template):
 
 
 if __name__ == "__main__":
-    CircularNetwork(MemristorModels.PERSHIN).simulate()
+    WattsStrogatz(MemristorModels.PERSHIN).simulate()

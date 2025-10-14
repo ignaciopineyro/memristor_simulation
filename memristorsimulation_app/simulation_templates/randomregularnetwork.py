@@ -31,7 +31,12 @@ from memristorsimulation_app.simulation_templates.template import Template
 
 class RandomRegularNetwork(Template):
     AMOUNT_CONNECTIONS = 2
-    AMOUNT_NODES = 20
+    AMOUNT_NODES = 10
+    # SEED = None
+    # SEED = 123456789  # 4x20
+    # SEED = 12345  # 2x10
+    # SEED = 123456789  # 2x20
+    SEED = None
 
     ALPHA = 0
     BETA = 500e3
@@ -72,13 +77,16 @@ class RandomRegularNetwork(Template):
             NetworkParameters(
                 amount_connections=self.AMOUNT_CONNECTIONS,
                 amount_nodes=self.AMOUNT_NODES,
+                seed=self.SEED,
             ),
         )
         self.graph = Graph(
             self.network_service.network,
             self.network_service.vin_minus,
             self.network_service.vin_plus,
+            seed=self.SEED,
         )
+        self.ignore_states = True if len(self.graph.nx_graph.edges) > 100 else False
         self.device_params = self.network_service.generate_device_parameters(
             "xmem", "memristor"
         )
@@ -152,6 +160,7 @@ class RandomRegularNetwork(Template):
             self.device_params,
             simulation_params,
             self.directories_management_service,
+            ignore_states=self.ignore_states,
         )
 
     def simulate(self):

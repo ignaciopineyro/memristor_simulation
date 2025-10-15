@@ -27,10 +27,10 @@ from memristorsimulation_app.services.directoriesmanagementservice import (
 from memristorsimulation_app.services.networkservice import NetworkService
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
-from memristorsimulation_app.templates.template import Template
+from memristorsimulation_app.simulation_templates.basetemplate import BaseTemplate
 
 
-class WattsStrogatz(Template):
+class WattsStrogatz(BaseTemplate):
     AMOUNT_CONNECTIONS = 2
     AMOUNT_NODES = 20
     SHORTCUT_PROBABILITY = 0.5

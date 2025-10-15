@@ -191,13 +191,13 @@ class BaseTestCase(TestCase):
             self.get_random_int(),
         )
         subcircuit = Subcircuit(
+            model_parameters,
             self.get_random_string(),
             [
                 self.get_random_string(),
                 self.get_random_string(),
                 self.get_random_string(),
             ],
-            model_parameters,
         )
         behavioural_sources = [
             BehaviouralSource(

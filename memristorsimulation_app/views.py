@@ -4,9 +4,14 @@ from django.http import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from memristorsimulation_app.serializers.simulation import InputParametersSerializer
+from memristorsimulation_app.serializers.simulation import SimulationInputsSerializer
 from django.shortcuts import render
-from .constants import MemristorModels
+
+from memristorsimulation_app.services.directoriesmanagementservice import (
+    DirectoriesManagementService,
+)
+from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
+from .constants import MemristorModels, ModelsSimulationFolders
 from .forms import ModelParametersForm
 from .representations import Subcircuit
 
@@ -18,15 +23,18 @@ class SimulationView(APIView):
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-        serializer = InputParametersSerializer(data=data)
+        serializer = SimulationInputsSerializer(data=data)
 
         if not serializer.is_valid():
             Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         validated_data = serializer.validated_data
 
-        subcircuit = Subcircuit(validated_data["model_parameters"])
-        model = MemristorModels(validated_data["model"]["model"])
+        model = validated_data["model"]["model"]
+        model_parameters = validated_data["model_parameters"]
+        magnitudes = validated_data["magnitudes"]
+        export_folder_name = validated_data["export_folder_name"]
+        export_file_name = validated_data["export_file_name"]
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

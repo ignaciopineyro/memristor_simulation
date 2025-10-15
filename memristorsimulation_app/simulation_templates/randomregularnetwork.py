@@ -26,10 +26,10 @@ from memristorsimulation_app.services.directoriesmanagementservice import (
 from memristorsimulation_app.services.networkservice import NetworkService
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
-from memristorsimulation_app.simulation_templates.template import Template
+from memristorsimulation_app.simulation_templates.basetemplate import BaseTemplate
 
 
-class RandomRegularNetwork(Template):
+class RandomRegularNetwork(BaseTemplate):
     AMOUNT_CONNECTIONS = 2
     AMOUNT_NODES = 10
     # SEED = None

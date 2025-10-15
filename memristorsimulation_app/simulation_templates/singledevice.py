@@ -23,7 +23,7 @@ from memristorsimulation_app.services.directoriesmanagementservice import (
 )
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
-from memristorsimulation_app.simulation_templates.template import Template
+from memristorsimulation_app.simulation_templates.basetemplate import Template
 
 
 class SingleDevice(Template):

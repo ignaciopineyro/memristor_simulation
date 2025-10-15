@@ -26,10 +26,10 @@ from memristorsimulation_app.services.directoriesmanagementservice import (
 from memristorsimulation_app.services.networkservice import NetworkService
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
-from memristorsimulation_app.simulation_templates.template import Template
+from memristorsimulation_app.simulation_templates.basetemplate import BaseTemplate
 
 
-class GeometricNetworkDiFrancesco(Template):
+class GeometricNetworkDiFrancesco(BaseTemplate):
     N = 4
     M = 4
     REMOVAL_PROBABILITY = 0

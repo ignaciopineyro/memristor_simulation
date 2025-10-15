@@ -15,6 +15,6 @@ class ModelSerializer(CamelCaseSerializer):
     model = serializers.CharField()
 
 
-class InputParametersSerializer(CamelCaseSerializer):
+class SimulationInputsSerializer(CamelCaseSerializer):
     model_parameters = ModelParametersSerializer()
     model = ModelSerializer()

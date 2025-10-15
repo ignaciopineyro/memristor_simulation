@@ -1,20 +1,68 @@
-<form id="simulationForm">
-    {% csrf_token %}
-    <label>Alpha: <input type="number" step="any" name="alpha"></label>
-    <label>Beta: <input type="number" step="any" name="beta"></label>
-    <label>Rinit: <input type="number" step="any" name="rinit"></label>
-    <label>Roff: <input type="number" step="any" name="roff"></label>
-    <label>Ron: <input type="number" step="any" name="ron"></label>
-    <label>Vt: <input type="number" step="any" name="vt"></label>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación de Memristor</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/form.css' %}">
+</head>
+<body>
 
-    <label>Modelo de Memristor:</label>
-    <select name="model">
-        <option value="pershin.sub">Pershin</option>
-        <option value="vourkas.sub">Vourkas</option>
-    </select>
+<div class="form-container">
+    <form id="simulationForm" method="post" action="{% url 'form' %}">
+        {% csrf_token %}
+        
+        <div class="form-section">
+            <h3>Configuración del modelo</h3>
+            
+            <div class="form-group">
+                <label for="model">Modelo de Memristor:</label>
+                <select id="model" name="model" required>
+                    <option value="">Seleccione un modelo</option>
+                    <option value="pershin.sub" selected>Pershin</option>
+                    <option value="vourkas.sub">Vourkas</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h3>Parámetros del modelo</h3>
+            
+            <div class="form-group">
+                <label for="alpha">Alpha:</label>
+                <input type="number" step="any" id="alpha" name="alpha" value="0" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="beta">Beta:</label>
+                <input type="number" step="any" id="beta" name="beta" value="500000" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="rinit">Rinit:</label>
+                <input type="number" step="any" id="rinit" name="rinit" value="200000" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="roff">Roff:</label>
+                <input type="number" step="any" id="roff" name="roff" value="200000" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="ron">Ron:</label>
+                <input type="number" step="any" id="ron" name="ron" value="2000" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="vt">Vt:</label>
+                <input type="number" step="any" id="vt" name="vt" value="0.6" required>
+            </div>
+        </div>
 
-    <button type="submit">Ejecutar Simulación</button>
-</form>
+        <button type="submit" class="submit-btn">Ejecutar Simulación</button>
+    </form>
+</div>
 
 <script>
     document.getElementById("simulationForm").addEventListener("submit", function (event) {
@@ -46,7 +94,15 @@
         })
             .then(response => response.json())
             .then(data => {
-                console.log("data=", data);
+                console.log("Respuesta exitosa:", data);
+                alert("Simulación enviada correctamente!");
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Error al enviar la simulación");
             });
     });
 </script>
+
+</body>
+</html>

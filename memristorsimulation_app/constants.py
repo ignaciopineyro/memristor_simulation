@@ -93,6 +93,7 @@ class MeasuredMagnitude(Enum):
 
 
 class NetworkType(Enum):
+    SINGLE_DEVICE = "SINGLE_DEVICE"
     GRID_2D_GRAPH = "GRID_2D_GRAPH"
     RANDOM_REGULAR_GRAPH = "RANDOM_REGULAR_GRAPH"
     WATTS_STROGATZ_GRAPH = "WATTS_STROGATZ_GRAPH"
@@ -107,4 +108,12 @@ class InvalidSimulationTemplate(Exception):
 
 
 class NetworkTypeNotImplemented(Exception):
+    pass
+
+
+class WaveFormNotImplemented(Exception):
+    pass
+
+
+class InvalidNetworkType(Exception):
     pass

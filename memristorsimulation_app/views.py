@@ -10,6 +10,7 @@ from django.shortcuts import render
 from memristorsimulation_app.services.directoriesmanagementservice import (
     DirectoriesManagementService,
 )
+from memristorsimulation_app.services.simulationservice import SimulationService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
 from .constants import MemristorModels, ModelsSimulationFolders
 from .forms import ModelParametersForm
@@ -35,6 +36,9 @@ class SimulationView(APIView):
         magnitudes = validated_data["magnitudes"]
         export_folder_name = validated_data["export_folder_name"]
         export_file_name = validated_data["export_file_name"]
+
+        simulation_service = SimulationService(request_parameters=validated_data)
+        simulation_service.simulate()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

@@ -23,10 +23,10 @@ from memristorsimulation_app.services.directoriesmanagementservice import (
 )
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
-from memristorsimulation_app.simulation_templates.basetemplate import Template
+from memristorsimulation_app.simulation_templates.basetemplate import BaseTemplate
 
 
-class SingleDevice(Template):
+class SingleDevice(BaseTemplate):
     ALPHA = 0
     BETA = 5e5
     RINIT = 200e3

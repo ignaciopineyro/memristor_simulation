@@ -62,6 +62,10 @@ class BaseTestCase(TestCase):
     def get_random_int() -> int:
         return random.randint(0, 2**16)
 
+    @staticmethod
+    def get_random_float() -> float:
+        return random.uniform(0, 1)
+
     def get_simulation_folder_path(
         self, model: MemristorModels, folder_name: str
     ) -> str:

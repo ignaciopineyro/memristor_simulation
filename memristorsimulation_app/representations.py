@@ -6,6 +6,9 @@ from abc import ABC, abstractmethod
 from dataclasses import fields, dataclass, asdict, field
 from typing import List, Tuple
 from memristorsimulation_app.constants import (
+    MemristorModels,
+    NetworkType,
+    PlotType,
     WaveForms,
     AnalysisType,
     ModelsSimulationFolders,
@@ -79,6 +82,12 @@ class AlternatingPulseWaveForm(WaveForm):
         wave_form_string += f")\n"
 
         return wave_form_string
+
+
+@dataclass
+class Wave:
+    form: WaveForms
+    parameters: dict
 
 
 @dataclass()
@@ -255,3 +264,19 @@ class Graph:
     vin_minus: Tuple[int, int]
     vin_plus: Tuple[int, int]
     seed: int = None
+
+
+@dataclass
+class SimulationInputs:
+    model: MemristorModels
+    model_parameters: ModelParameters
+    magnitudes: List[str]
+    subcircuit: Subcircuit
+    input_parameters: InputParameters
+    simulation_parameters: SimulationParameters
+    export_parameters: ExportParameters
+    wave: Wave
+    network_type: NetworkType
+    amount_iterations: int = 1
+    network_parameters: NetworkParameters = None
+    plot_types: List[PlotType] = None

@@ -1,9 +1,6 @@
 from abc import ABC
-from typing import List, Union
-from click import Tuple
-from pyparsing import Optional
+from typing import List, Union, Tuple, Optional
 from memristorsimulation_app.constants import (
-    AnalysisType,
     InvalidNetworkType,
     MemristorModels,
     NetworkType,
@@ -25,8 +22,8 @@ from memristorsimulation_app.representations import (
     InputParameters,
     Graph,
     PulseWaveForm,
-    SimulationParameters,
     SinWaveForm,
+    Wave,
     WaveForm,
 )
 from memristorsimulation_app.services.circuitfileservice import CircuitFileService
@@ -59,7 +56,6 @@ class BaseTemplate(ABC):
         if model == MemristorModels.PERSHIN:
             default_components = self._create_pershin_default_components()
             model_dependencies = None
-
         elif model == MemristorModels.VOURKAS:
             default_components = self._create_vourkas_default_components()
             model_dependencies = [
@@ -98,9 +94,9 @@ class BaseTemplate(ABC):
 
         return [capacitor, rmem, diode_1, diode_2, v_1, v_2, raux]
 
-    def create_wave_form(
-        self, wave_form_type: WaveForms, wave_params: dict
-    ) -> WaveForm:
+    def create_wave_form(self, wave: Wave) -> WaveForm:
+        wave_form_type = wave.form
+        wave_params = wave.parameters
         if wave_form_type == WaveForms.SIN:
             return SinWaveForm(**wave_params)
         elif wave_form_type == WaveForms.PULSE:
@@ -119,11 +115,6 @@ class BaseTemplate(ABC):
             "gnd",
             wave_form,
         )
-
-    def create_default_simulation_parameters(
-        self, analysis_parameters: dict
-    ) -> SimulationParameters:
-        return SimulationParameters(uic=True, **analysis_parameters)
 
     def create_device_parameters(
         self,

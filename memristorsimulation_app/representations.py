@@ -275,7 +275,6 @@ class SimulationInputs:
     input_parameters: InputParameters
     simulation_parameters: SimulationParameters
     export_parameters: ExportParameters
-    wave: Wave
     network_type: NetworkType
     amount_iterations: int = 1
     network_parameters: NetworkParameters = None

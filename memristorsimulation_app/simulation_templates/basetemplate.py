@@ -94,19 +94,20 @@ class BaseTemplate(ABC):
 
         return [capacitor, rmem, diode_1, diode_2, v_1, v_2, raux]
 
-    def create_wave_form(self, wave: Wave) -> WaveForm:
-        wave_form_type = wave.form
-        wave_params = wave.parameters
-        if wave_form_type == WaveForms.SIN:
-            return SinWaveForm(**wave_params)
-        elif wave_form_type == WaveForms.PULSE:
-            return PulseWaveForm(**wave_params)
-        elif wave_form_type == WaveForms.PWL:
-            return AlternatingPulseWaveForm(**wave_params)
-        else:
-            raise WaveFormNotImplemented(
-                f"WaveForm type {wave_form_type} not implemented."
-            )
+    # TODO: BORRAR
+    # def create_wave_form(self, wave: Wave) -> WaveForm:
+    #     wave_form_type = wave.form
+    #     wave_params = wave.parameters
+    #     if wave_form_type == WaveForms.SIN:
+    #         return SinWaveForm(**wave_params)
+    #     elif wave_form_type == WaveForms.PULSE:
+    #         return PulseWaveForm(**wave_params)
+    #     elif wave_form_type == WaveForms.PWL:
+    #         return AlternatingPulseWaveForm(**wave_params)
+    #     else:
+    #         raise WaveFormNotImplemented(
+    #             f"WaveForm type {wave_form_type} not implemented."
+    #         )
 
     def create_default_input_parameters(self, wave_form: WaveForm) -> InputParameters:
         return InputParameters(

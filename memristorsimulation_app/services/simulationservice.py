@@ -33,30 +33,30 @@ class SimulationService(BaseTemplate):
             self.simulation_inputs.model, self.simulation_inputs.export_parameters
         )
 
-    def parse_request_parameters(self) -> SimulationInputs:
-        model = MemristorModels(self.request_parameters["model"])
-        magnitudes = self.request_parameters["magnitudes"]
-        export_folder_name = self.request_parameters["export_folder_name"]
-        export_file_name = self.request_parameters["export_file_name"]
+    def parse_request_parameters(self, request_parameters: dict) -> SimulationInputs:
+        model = MemristorModels(request_parameters["model"])
+        magnitudes = request_parameters["magnitudes"]
+        folder_name = request_parameters["folder_name"]
+        file_name = request_parameters["file_name"]
         export_params = ExportParameters(
             ModelsSimulationFolders.get_simulation_folder_by_model(model),
-            export_folder_name=export_folder_name,
-            export_file_name=export_file_name,
+            folder_name=folder_name,
+            file_name=file_name,
             magnitudes=magnitudes,
         )
-        model_params = ModelParameters(**self.request_parameters["model_parameters"])
-        input_params = InputParameters(**self.request_parameters["input_parameters"])
+        model_params = ModelParameters(**request_parameters["model_parameters"])
+        input_params = InputParameters(**request_parameters["input_parameters"])
         simulation_params = SimulationParameters(
-            **self.request_parameters["simulation_parameters"]
+            **request_parameters["simulation_parameters"]
         )
         model_parameters = ModelParameters(**model_parameters)
         subcircuit = Subcircuit(model_parameters)
         network_params = (
-            NetworkParameters(**self.request_parameters["input_parameters"])
-            if "network_parameters" in self.request_parameters["input_parameters"]
+            NetworkParameters(**request_parameters["input_parameters"])
+            if "network_parameters" in request_parameters["input_parameters"]
             else None
         )
-        plot_types = self.request_parameters.get("plot_types", [])
+        plot_types = request_parameters.get("plot_types", [])
 
         return SimulationInputs(
             model=model,
@@ -93,9 +93,12 @@ class SimulationService(BaseTemplate):
         self,
         subcircuit_file_services: SubcircuitFileService,
     ) -> CircuitFileService:
-        wave_form = self.create_wave_form(self.simulation_inputs.wave)
+        # TODO: Borrar
+        # wave_form = self.create_wave_form(self.simulation_inputs.wave)
         # Input params and simulation params are created by default due to its complexity and impact in the subcircuit
-        input_params = self.create_default_input_parameters(wave_form)
+        input_params = self.create_default_input_parameters(
+            self.simulation_inputs.input_parameters.wave_form
+        )
         network_type = NetworkType(self.simulation_inputs.network_type)
         if network_type in [
             NetworkType.GRID_2D_GRAPH,

@@ -31,14 +31,7 @@ class SimulationView(APIView):
 
         validated_data = serializer.validated_data
 
-        model = validated_data["model"]["model"]
-        model_parameters = validated_data["model_parameters"]
-        magnitudes = validated_data["magnitudes"]
-        export_folder_name = validated_data["export_folder_name"]
-        export_file_name = validated_data["export_file_name"]
-
-        simulation_service = SimulationService(request_parameters=validated_data)
-        simulation_service.simulate()
+        SimulationService(request_parameters=validated_data).simulate()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

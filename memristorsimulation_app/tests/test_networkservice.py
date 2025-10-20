@@ -266,7 +266,6 @@ class NetworkServiceTestCase(BaseTestCase):
         mock_random.assert_called()
 
     def test_multiple_service_instances_independent(self):
-        """Test que verifica que múltiples instancias son independientes."""
         service1 = self.create_grid_network_service(n=2, m=2)
         service2 = self.create_random_regular_network_service(
             amount_nodes=6, amount_connections=2
@@ -278,3 +277,27 @@ class NetworkServiceTestCase(BaseTestCase):
         self.assertNotEqual(len(params1), len(params2))
         self.assertNotEqual(service1.network_type, service2.network_type)
         self.assertNotEqual(len(service1.connections), len(service2.connections))
+
+    def test_should_ignore_states(self):
+        small_grid_network_service = self.create_grid_network_service(n=3, m=3)
+        large_grid_network_service = self.create_grid_network_service(n=6, m=6)
+        self.assertFalse(small_grid_network_service.should_ignore_states())
+        self.assertTrue(large_grid_network_service.should_ignore_states())
+
+        small_rr_network_service = self.create_random_regular_network_service(
+            amount_nodes=4, amount_connections=3
+        )
+        large_rr_network_service = self.create_random_regular_network_service(
+            amount_nodes=50, amount_connections=3
+        )
+        self.assertFalse(small_rr_network_service.should_ignore_states())
+        self.assertTrue(large_rr_network_service.should_ignore_states())
+
+        small_ws_network_service = self.create_watts_strogatz_network_service(
+            amount_nodes=4, amount_connections=3
+        )
+        large_ws_network_service = self.create_watts_strogatz_network_service(
+            amount_nodes=50, amount_connections=3
+        )
+        self.assertFalse(small_ws_network_service.should_ignore_states())
+        self.assertTrue(large_ws_network_service.should_ignore_states())

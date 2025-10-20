@@ -36,7 +36,7 @@ class PlotterService:
         self.export_parameters = export_parameters
         self.model_simulations_directory_path = (
             f"{self.simulation_results_directory_path}/"
-            f"{self.export_parameters.model_simulation_folder_name.value}"
+            f"{self.export_parameters.model_simulation_folder.value}"
         )
         self.simulations_directory_path = (
             f"{self.model_simulations_directory_path}/"

@@ -132,7 +132,7 @@ class SingleDeviceVariableBeta(BaseTemplate):
         )
         for subcircuit_file_service in subcircuit_file_services:
             export_file_name = (
-                f"beta_{subcircuit_file_service.subcircuit.parameters.beta}"
+                f"beta_{subcircuit_file_service.subcircuit.model_parameters.beta}"
             )
             export_params = ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(
@@ -177,7 +177,7 @@ class SingleDeviceVariableBeta(BaseTemplate):
         for cfs, dms in zip(circuit_file_services, directories_management_services):
             self.plot(
                 export_parameters=dms.export_parameters,
-                model_parameters=cfs.subcircuit_file_service.subcircuit.parameters,
+                model_parameters=cfs.subcircuit_file_service.subcircuit.model_parameters,
                 input_parameters=cfs.input_parameters,
                 plot_types=self.PLOT_TYPES,
             )

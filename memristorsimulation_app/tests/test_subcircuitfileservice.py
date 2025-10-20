@@ -28,7 +28,7 @@ class SubcircuitFileServiceTestCase(BaseTestCase):
             content,
         )
         self.assertIn(
-            f"PARAMS: {subcircuit_file_service.subcircuit.parameters.get_parameters_as_string()}",
+            f"PARAMS: {subcircuit_file_service.subcircuit.model_parameters.get_parameters_as_string()}",
             content,
         )
 

@@ -157,7 +157,7 @@ class GeometricNetworkDiFrancesco(BaseTemplate):
         ngspice_service.run_single_circuit_simulation(self.AMOUNT_ITERATIONS)
         self.plot(
             export_parameters=self.export_params,
-            model_parameters=circuit_file_service.subcircuit_file_service.subcircuit.parameters,
+            model_parameters=circuit_file_service.subcircuit_file_service.subcircuit.model_parameters,
             input_parameters=circuit_file_service.input_parameters,
             plot_types=self.PLOT_TYPES,
             graph=self.graph,

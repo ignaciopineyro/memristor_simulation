@@ -21,7 +21,7 @@ class DirectoriesManagementServiceTestCase(BaseTestCase):
         self, model_simulation_folder: ModelsSimulationFolders
     ) -> ExportParameters:
         return ExportParameters(
-            model_simulation_folder_name=model_simulation_folder,
+            model_simulation_folder=model_simulation_folder,
             folder_name=self.get_random_string(),
             file_name=self.get_random_string(),
             magnitudes=[],
@@ -66,7 +66,7 @@ class DirectoriesManagementServiceTestCase(BaseTestCase):
                 export_parameters=export_params,
             )
             dms.create_simulation_parameter_folder_if_not_exist(
-                export_params.model_simulation_folder_name
+                export_params.model_simulation_folder
             )
 
             self.assertTrue(os.path.exists(expected_dir))

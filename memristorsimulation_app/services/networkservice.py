@@ -159,3 +159,6 @@ class NetworkService:
             )
             for index, connection in enumerate(self.connections)
         ]
+
+    def should_ignore_states(self) -> bool:
+        return self.network.number_of_edges() > 24

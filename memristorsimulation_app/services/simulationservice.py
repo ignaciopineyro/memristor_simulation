@@ -6,7 +6,6 @@ from memristorsimulation_app.constants import (
 from memristorsimulation_app.representations import (
     ExportParameters,
     InputParameters,
-    ModelParameters,
     NetworkParameters,
     SimulationInputs,
     SimulationParameters,
@@ -35,37 +34,26 @@ class SimulationService(BaseTemplate):
 
     def parse_request_parameters(self, request_parameters: dict) -> SimulationInputs:
         model = MemristorModels(request_parameters["model"])
-        magnitudes = request_parameters["magnitudes"]
-        folder_name = request_parameters["folder_name"]
-        file_name = request_parameters["file_name"]
-        export_params = ExportParameters(
-            ModelsSimulationFolders.get_simulation_folder_by_model(model),
-            folder_name=folder_name,
-            file_name=file_name,
-            magnitudes=magnitudes,
+        export_params = ExportParameters.from_dict(
+            request_parameters["export_parameters"], model
         )
-        model_params = ModelParameters(**request_parameters["model_parameters"])
-        input_params = InputParameters(**request_parameters["input_parameters"])
-        simulation_params = SimulationParameters(
-            **request_parameters["simulation_parameters"]
+        input_params = InputParameters.from_dict(request_parameters["input_parameters"])
+        simulation_params = SimulationParameters.from_dict(
+            request_parameters["simulation_parameters"]
         )
-        model_parameters = ModelParameters(**model_parameters)
-        subcircuit = Subcircuit(model_parameters)
-        network_params = (
-            NetworkParameters(**request_parameters["input_parameters"])
-            if "network_parameters" in request_parameters["input_parameters"]
-            else None
-        )
-        plot_types = request_parameters.get("plot_types", [])
+        subcircuit = Subcircuit.from_dict(request_parameters["subcircuit"])
+        network_type = NetworkType(request_parameters["network_type"])
+        network_params = NetworkParameters(**request_parameters["network_parameters"])
+        plot_types = request_parameters["plot_types"]
 
         return SimulationInputs(
             model=model,
-            model_parameters=model_params,
             subcircuit=subcircuit,
             input_parameters=input_params,
             simulation_parameters=simulation_params,
-            network_parameters=network_params,
             export_parameters=export_params,
+            network_type=network_type,
+            network_parameters=network_params,
             plot_types=plot_types,
         )
 
@@ -93,59 +81,43 @@ class SimulationService(BaseTemplate):
         self,
         subcircuit_file_services: SubcircuitFileService,
     ) -> CircuitFileService:
-        # TODO: Borrar
-        # wave_form = self.create_wave_form(self.simulation_inputs.wave)
-        # Input params and simulation params are created by default due to its complexity and impact in the subcircuit
-        input_params = self.create_default_input_parameters(
-            self.simulation_inputs.input_parameters.wave_form
+        network_service = NetworkService(
+            self.simulation_inputs.network_type,
+            self.simulation_inputs.network_parameters,
         )
-        network_type = NetworkType(self.simulation_inputs.network_type)
-        if network_type in [
-            NetworkType.GRID_2D_GRAPH,
-            NetworkType.RANDOM_REGULAR_GRAPH,
-            NetworkType.WATTS_STROGATZ_GRAPH,
-        ]:
-            network_parameters = self.simulation_inputs.network_parameters
-            network_service = NetworkService(
-                network_type,
-                NetworkParameters(**network_parameters),
-            )
-        else:
-            network_service = None
         device_params = self.create_device_parameters(
-            network_type, network_service=network_service
+            self.simulation_inputs.network_type, network_service=network_service
         )
+        ignore_states = network_service.should_ignore_states()
 
         return CircuitFileService(
             subcircuit_file_services,
-            input_params,
+            self.simulation_inputs.input_parameters,
             device_params,
             self.simulation_inputs.simulation_parameters,
             self.directories_management_service,
+            ignore_states=ignore_states,
         )
 
-    def simulate(
-        self,
-        circuit_file_service: CircuitFileService,
-    ) -> None:
-        circuit_file_service = self.build_and_write()
+    def _build_from_request_and_write(self) -> CircuitFileService:
+        subcircuit_file_service = self.create_subcircuit_file_service_from_request()
+        circuit_file_service = self.create_circuit_file_service_from_request(
+            subcircuit_file_service
+        )
+        subcircuit_file_service.write_subcircuit_file()
+        circuit_file_service.write_circuit_file()
+
+        return circuit_file_service
+
+    def simulate(self) -> None:
+        circuit_file_service = self._build_from_request_and_write()
         ngspice_service = NGSpiceService(self.directories_management_service)
         ngspice_service.run_single_circuit_simulation(
             self.simulation_inputs.amount_iterations
         )
         self.plot(
             export_parameters=self.simulation_inputs.export_parameters,
-            model_parameters=circuit_file_service.subcircuit_file_service.subcircuit.parameters,
+            model_parameters=circuit_file_service.subcircuit_file_service.subcircuit.model_parameters,
             input_parameters=circuit_file_service.input_parameters,
             plot_types=self.simulation_inputs.plot_types,
         )
-
-    def build_and_write(self) -> CircuitFileService:
-        subcircuit_file_service = self.create_subcircuit_file_service_from_request()
-        circuit_file_service = self.create_circuit_file_service_from_request(
-            subcircuit_file_service
-        )
-        circuit_file_service.subcircuit_file_service.write_subcircuit_file()
-        circuit_file_service.write_circuit_file()
-
-        return circuit_file_service

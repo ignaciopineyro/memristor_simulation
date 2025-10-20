@@ -8,11 +8,8 @@ from memristorsimulation_app.constants import (
     PlotType,
     SIMULATIONS_DIR,
     SpiceModel,
-    WaveFormNotImplemented,
-    WaveForms,
 )
 from memristorsimulation_app.representations import (
-    AlternatingPulseWaveForm,
     BehaviouralSource,
     Component,
     DeviceParameters,
@@ -21,10 +18,6 @@ from memristorsimulation_app.representations import (
     ModelParameters,
     InputParameters,
     Graph,
-    PulseWaveForm,
-    SinWaveForm,
-    Wave,
-    WaveForm,
 )
 from memristorsimulation_app.services.circuitfileservice import CircuitFileService
 from memristorsimulation_app.services.directoriesmanagementservice import (
@@ -93,29 +86,6 @@ class BaseTemplate(ABC):
         raux = Component(name="Raux", n_plus="pl", n_minus="mn", value=1e12)
 
         return [capacitor, rmem, diode_1, diode_2, v_1, v_2, raux]
-
-    # TODO: BORRAR
-    # def create_wave_form(self, wave: Wave) -> WaveForm:
-    #     wave_form_type = wave.form
-    #     wave_params = wave.parameters
-    #     if wave_form_type == WaveForms.SIN:
-    #         return SinWaveForm(**wave_params)
-    #     elif wave_form_type == WaveForms.PULSE:
-    #         return PulseWaveForm(**wave_params)
-    #     elif wave_form_type == WaveForms.PWL:
-    #         return AlternatingPulseWaveForm(**wave_params)
-    #     else:
-    #         raise WaveFormNotImplemented(
-    #             f"WaveForm type {wave_form_type} not implemented."
-    #         )
-
-    def create_default_input_parameters(self, wave_form: WaveForm) -> InputParameters:
-        return InputParameters(
-            1,
-            "vin",
-            "gnd",
-            wave_form,
-        )
 
     def create_device_parameters(
         self,

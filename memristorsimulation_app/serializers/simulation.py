@@ -22,8 +22,12 @@ class ModelParametersSerializer(CamelCaseSerializer):
     vt = serializers.FloatField()
 
 
-class MagnitudesSerializer(CamelCaseSerializer):
-    magnitudes = serializers.ListField(child=serializers.CharField())
+class SubcircuitSerializer(CamelCaseSerializer):
+    model_parameters = ModelParametersSerializer()
+    name = serializers.CharField(required=False, allow_null=True)
+    nodes = serializers.ListField(
+        child=serializers.CharField(), required=False, default=[]
+    )
 
 
 class SinWaveFormSerializer(CamelCaseSerializer):
@@ -110,14 +114,14 @@ class SimulationParametersSerializer(CamelCaseSerializer):
 
 
 class ExportParametersSerializer(CamelCaseSerializer):
-    model_simulation_folder_name = EnumField(choices=ModelsSimulationFolders)
+    model_simulation_folder = EnumField(choices=ModelsSimulationFolders)
     folder_name = serializers.CharField()
     file_name = serializers.CharField()
     magnitudes = serializers.ListField(child=serializers.CharField())
 
 
 class NetworkTypeSerializer(CamelCaseSerializer):
-    network_type = serializers.EnumFIeld(choices=NetworkType)
+    network_type = serializers.EnumField(choices=NetworkType)
 
 
 class NetworkParametersSerializer(CamelCaseSerializer):
@@ -135,14 +139,13 @@ class PlotTypeSerializer(CamelCaseSerializer):
 
 class SimulationInputsSerializer(CamelCaseSerializer):
     model = ModelSerializer()
-    model_parameters = ModelParametersSerializer()
-    magnitudes = MagnitudesSerializer()
+    subcircuit = SubcircuitSerializer()
     input_parameters = InputParametersSerializer()
     simulation_parameters = SimulationParametersSerializer()
     export_parameters = ExportParametersSerializer()
-    network_type = NetworkTypeSerializer
-    amount_iterations = serializers.IntegerField(default=1)
+    network_type = NetworkTypeSerializer()
     network_parameters = NetworkParametersSerializer(required=False, allow_null=True)
+    amount_iterations = serializers.IntegerField(default=1)
     plot_types = serializers.ListField(
         child=PlotTypeSerializer(), required=False, allow_null=True
     )

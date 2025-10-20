@@ -28,9 +28,9 @@ class DirectoriesManagementService:
             os.makedirs(f"{SIMULATIONS_DIR}/{model_simulation_folder_}")
 
     def create_simulation_parameter_folder_if_not_exist(
-        self, model_simulation_folder_name: ModelsSimulationFolders
+        self, model_simulation_folder: ModelsSimulationFolders
     ) -> None:
-        folder_directory = f"{SIMULATIONS_DIR}/{model_simulation_folder_name.value}/{self.export_parameters.folder_name}"
+        folder_directory = f"{SIMULATIONS_DIR}/{model_simulation_folder.value}/{self.export_parameters.folder_name}"
         if not os.path.exists(folder_directory):
             os.makedirs(folder_directory)
 
@@ -47,10 +47,10 @@ class DirectoriesManagementService:
 
     def get_export_simulation_file_path(self) -> str:
         self.create_simulation_parameter_folder_if_not_exist(
-            self.export_parameters.model_simulation_folder_name
+            self.export_parameters.model_simulation_folder
         )
         export_simulation_file_path = (
-            f"{SIMULATIONS_DIR}/{self.export_parameters.model_simulation_folder_name.value}/"
+            f"{SIMULATIONS_DIR}/{self.export_parameters.model_simulation_folder.value}/"
             f"{self.export_parameters.folder_name}/{self.export_parameters.file_name}_results.csv"
         )
 
@@ -58,7 +58,7 @@ class DirectoriesManagementService:
 
     def get_simulation_log_file_path(self) -> str:
         return (
-            f"{SIMULATIONS_DIR}/{self.export_parameters.model_simulation_folder_name.value}/"
+            f"{SIMULATIONS_DIR}/{self.export_parameters.model_simulation_folder.value}/"
             f"{self.export_parameters.folder_name}/{self.export_parameters.folder_name}.log"
         )
 

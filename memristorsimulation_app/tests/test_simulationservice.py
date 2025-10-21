@@ -26,7 +26,6 @@ class TestSimulationService(BaseTestCase):
                 "name": "memristor",
                 "nodes": [self.get_random_string() for _ in range(3)],
             },
-            "magnitudes": [self.get_random_string() for _ in range(3)],
             "input_parameters": {
                 "source_number": self.get_random_int(),
                 "n_plus": self.get_random_string(),

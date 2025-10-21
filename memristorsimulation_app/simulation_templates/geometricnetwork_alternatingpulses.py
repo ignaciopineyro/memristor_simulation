@@ -58,7 +58,7 @@ class GeometricNetworkPulses(BaseTemplate):
 
     EXPORT_FOLDER_NAME = f"geometric_network_pulses_alternating_{N}x{M}"
     EXPORT_FILE_NAME = f"geometric_network_pulses_alternating_{N}x{M}_simulation"
-    AMOUNT_ITERATIONS = 100
+    AMOUNT_ITERATIONS = 1
 
     PLOT_TYPES = [
         PlotType.IV,

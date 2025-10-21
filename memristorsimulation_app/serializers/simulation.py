@@ -1,4 +1,5 @@
 from memristorsimulation_app.constants import (
+    MemristorModels,
     ModelsSimulationFolders,
     NetworkType,
     PlotType,
@@ -7,10 +8,6 @@ from memristorsimulation_app.constants import (
 from rest_framework import serializers
 from rest_enumfield import EnumField
 from memristorsimulation_app.serializers.baseserializers import CamelCaseSerializer
-
-
-class ModelSerializer(CamelCaseSerializer):
-    model = serializers.CharField()
 
 
 class ModelParametersSerializer(CamelCaseSerializer):
@@ -65,36 +62,36 @@ class WaveFormSerializer(CamelCaseSerializer):
     type = EnumField(choices=WaveForms)
     parameters = serializers.DictField()
 
-    def validate(self, data):
-        waveform_type = data.get("type")
-        parameters = data.get("parameters", {})
+    # def validate(self, data):
+    #     waveform_type = data.get("type")
+    #     parameters = data.get("parameters", {})
 
-        serializer_map = {
-            "sin": SinWaveFormSerializer,
-            "pulse": PulseWaveFormSerializer,
-            "pwl": AlternatingPulseWaveFormSerializer,
-        }
+    #     serializer_map = {
+    #         "sin": SinWaveFormSerializer,
+    #         "pulse": PulseWaveFormSerializer,
+    #         "pwl": AlternatingPulseWaveFormSerializer,
+    #     }
 
-        if waveform_type not in serializer_map:
-            raise serializers.ValidationError(
-                f"Unsupported waveform type: {waveform_type}"
-            )
+    #     if waveform_type not in serializer_map:
+    #         raise serializers.ValidationError(
+    #             f"Unsupported waveform type: {waveform_type}"
+    #         )
 
-        param_serializer = serializer_map[waveform_type](data=parameters)
-        if not param_serializer.is_valid():
-            raise serializers.ValidationError({"parameters": param_serializer.errors})
+    #     param_serializer = serializer_map[waveform_type](data=parameters)
+    #     if not param_serializer.is_valid():
+    #         raise serializers.ValidationError({"parameters": param_serializer.errors})
 
-        data["validated_parameters"] = param_serializer.validated_data
-        return data
+    #     data["validated_parameters"] = param_serializer.validated_data
+    #     return data
 
-    def to_internal_value(self, data):
-        validated_data = super().to_internal_value(data)
-        return {
-            "type": validated_data["type"],
-            "parameters": validated_data.get(
-                "validated_parameters", validated_data["parameters"]
-            ),
-        }
+    # def to_internal_value(self, data):
+    #     validated_data = super().to_internal_value(data)
+    #     return {
+    #         "type": validated_data["type"],
+    #         "parameters": validated_data.get(
+    #             "validated_parameters", validated_data["parameters"]
+    #         ),
+    #     }
 
 
 class InputParametersSerializer(CamelCaseSerializer):
@@ -120,10 +117,6 @@ class ExportParametersSerializer(CamelCaseSerializer):
     magnitudes = serializers.ListField(child=serializers.CharField())
 
 
-class NetworkTypeSerializer(CamelCaseSerializer):
-    network_type = serializers.EnumField(choices=NetworkType)
-
-
 class NetworkParametersSerializer(CamelCaseSerializer):
     n = serializers.IntegerField(required=False, allow_null=True)
     m = serializers.IntegerField(required=False, allow_null=True)
@@ -133,19 +126,15 @@ class NetworkParametersSerializer(CamelCaseSerializer):
     seed = serializers.IntegerField(required=False, allow_null=True)
 
 
-class PlotTypeSerializer(CamelCaseSerializer):
-    plot_type = EnumField(choices=PlotType)
-
-
 class SimulationInputsSerializer(CamelCaseSerializer):
-    model = ModelSerializer()
+    model = EnumField(choices=MemristorModels)
     subcircuit = SubcircuitSerializer()
     input_parameters = InputParametersSerializer()
     simulation_parameters = SimulationParametersSerializer()
     export_parameters = ExportParametersSerializer()
-    network_type = NetworkTypeSerializer()
+    network_type = EnumField(choices=NetworkType)
     network_parameters = NetworkParametersSerializer(required=False, allow_null=True)
     amount_iterations = serializers.IntegerField(default=1)
     plot_types = serializers.ListField(
-        child=PlotTypeSerializer(), required=False, allow_null=True
+        child=EnumField(choices=PlotType), required=False, default=[]
     )

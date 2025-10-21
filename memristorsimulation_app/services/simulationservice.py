@@ -1,6 +1,5 @@
 from memristorsimulation_app.constants import (
     MemristorModels,
-    ModelsSimulationFolders,
     NetworkType,
 )
 from memristorsimulation_app.representations import (
@@ -33,6 +32,7 @@ class SimulationService(BaseTemplate):
         )
 
     def parse_request_parameters(self, request_parameters: dict) -> SimulationInputs:
+        print(f"\n\n{request_parameters['model']=}\n\n")
         model = MemristorModels(request_parameters["model"])
         export_params = ExportParameters.from_dict(
             request_parameters["export_parameters"], model

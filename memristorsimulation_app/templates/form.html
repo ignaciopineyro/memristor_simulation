@@ -79,7 +79,7 @@
             
             <div class="form-group">
                 <label for="n_minus">Nodo negativo:</label>
-                <input type="text" id="n_minus" name="n_minus" value="0" required>
+                <input type="text" id="n_minus" name="n_minus" value="gnd" required>
             </div>
         </div>
 
@@ -108,7 +108,7 @@
                 
                 <div class="form-group">
                     <label for="frequency">Frecuencia:</label>
-                    <input type="number" step="any" id="frequency" name="frequency" value="1000" required>
+                    <input type="number" step="any" id="frequency" name="frequency" value="1" required>
                 </div>
                 
                 <div class="form-group">
@@ -140,22 +140,22 @@
             
             <div class="form-group">
                 <label for="tstep">Paso de tiempo (tstep):</label>
-                <input type="number" step="any" id="tstep" name="tstep" value="1e-9" required>
+                <input type="number" step="any" id="tstep" name="tstep" value="2e-3" required>
             </div>
             
             <div class="form-group">
                 <label for="tstop">Tiempo final (tstop):</label>
-                <input type="number" step="any" id="tstop" name="tstop" value="1e-6" required>
+                <input type="number" step="any" id="tstop" name="tstop" value="10" required>
             </div>
             
             <div class="form-group">
                 <label for="tstart">Tiempo inicial (tstart):</label>
-                <input type="number" step="any" id="tstart" name="tstart" value="0">
+                <input type="number" step="any" id="tstart" name="tstart" value="">
             </div>
             
             <div class="form-group">
                 <label for="tmax">Tiempo máximo (tmax):</label>
-                <input type="number" step="any" id="tmax" name="tmax" value="1e-6">
+                <input type="number" step="any" id="tmax" name="tmax" value="">
             </div>
             
             <div class="form-group">
@@ -181,7 +181,7 @@
             
             <div class="form-group">
                 <label for="magnitudes">Magnitudes (separadas por coma):</label>
-                <input type="text" id="magnitudes" name="magnitudes" value="v(vin),i(v1)" required>
+                <input type="text" id="magnitudes" name="magnitudes" value="v(vin),vin,i(v1)" required>
             </div>
         </div>
 
@@ -209,22 +209,22 @@
             
             <div class="form-group">
                 <label for="amount_connections">Cantidad de conexiones:</label>
-                <input type="number" id="amount_connections" name="amount_connections" value="8" required>
+                <input type="number" id="amount_connections" name="amount_connections" value="">
             </div>
             
             <div class="form-group">
                 <label for="amount_nodes">Cantidad de nodos:</label>
-                <input type="number" id="amount_nodes" name="amount_nodes" value="16" required>
+                <input type="number" id="amount_nodes" name="amount_nodes" value="">
             </div>
             
             <div class="form-group">
                 <label for="shortcut_probability">Probabilidad de atajo:</label>
-                <input type="number" step="any" id="shortcut_probability" name="shortcut_probability" value="0.1" min="0" max="1" required>
+                <input type="number" step="any" id="shortcut_probability" name="shortcut_probability" value="" min="0" max="1">
             </div>
             
             <div class="form-group">
                 <label for="seed">Semilla:</label>
-                <input type="number" id="seed" name="seed" value="42" required>
+                <input type="number" id="seed" name="seed" value="">
             </div>
         </div>
 
@@ -316,7 +316,7 @@ function buildRequestData(formData) {
                 vt: parseFloat(formData.get("vt"))
             },
             name: "memristor",
-            nodes: ["vin", "0", "x"]
+            nodes: ["pl", "mn", "x"]
         },
         input_parameters: {
             source_number: parseInt(formData.get("source_number")),
@@ -378,7 +378,10 @@ document.getElementById("simulationForm").addEventListener("submit", function(ev
         // Construir datos de la request
         const data = buildRequestData(formData);
         
-        // Enviar request
+        // Mostrar mensaje de carga
+        showMessage("Ejecutando simulación...", false);
+        
+        // Enviar request y manejar descarga automática
         fetch("{% url 'form' %}", {
             method: "POST",
             body: JSON.stringify(data),
@@ -389,19 +392,43 @@ document.getElementById("simulationForm").addEventListener("submit", function(ev
         })
         .then(response => {
             if (!response.ok) {
-                return response.json().then(errorData => {
-                    throw new Error(JSON.stringify(errorData));
+                // Si hay error, intentar parsear como JSON para obtener detalles
+                return response.text().then(text => {
+                    try {
+                        const errorData = JSON.parse(text);
+                        throw new Error(JSON.stringify(errorData));
+                    } catch (e) {
+                        throw new Error(text || `HTTP ${response.status}: ${response.statusText}`);
+                    }
                 });
             }
-            return response.json();
+            
+            // Si la respuesta es exitosa, es un archivo ZIP
+            return response.blob();
         })
-        .then(data => {
-            console.log("Respuesta exitosa:", data);
-            showMessage("¡Simulación ejecutada correctamente!");
+        .then(blob => {
+            // Crear descarga automática del ZIP
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            
+            // Crear nombre del archivo basado en el folder_name
+            const folderName = formData.get("folder_name");
+            a.download = `simulation_${folderName}.zip`;
+            
+            document.body.appendChild(a);
+            a.click();
+            
+            // Limpiar
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showMessage("¡Simulación completada! Descarga iniciada automáticamente.");
         })
         .catch(error => {
             console.error("Error:", error);
-            let errorMessage = "Error al enviar la simulación";
+            let errorMessage = "Error al ejecutar la simulación";
             
             try {
                 const errorData = JSON.parse(error.message);

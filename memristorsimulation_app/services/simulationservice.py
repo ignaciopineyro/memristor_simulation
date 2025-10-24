@@ -1,3 +1,7 @@
+import os
+import zipfile
+
+from io import BytesIO
 from memristorsimulation_app.constants import (
     MemristorModels,
     NetworkType,
@@ -32,7 +36,6 @@ class SimulationService(BaseTemplate):
         )
 
     def parse_request_parameters(self, request_parameters: dict) -> SimulationInputs:
-        print(f"\n\n{request_parameters['model']=}\n\n")
         model = MemristorModels(request_parameters["model"])
         export_params = ExportParameters.from_dict(
             request_parameters["export_parameters"], model
@@ -121,3 +124,23 @@ class SimulationService(BaseTemplate):
             input_parameters=circuit_file_service.input_parameters,
             plot_types=self.simulation_inputs.plot_types,
         )
+
+    def create_results_zip(self) -> BytesIO:
+        zip_buffer = BytesIO()
+
+        file_paths = self.directories_management_service.get_all_simulation_files()
+
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            for file_path, archive_name in file_paths:
+                if os.path.exists(file_path):
+                    zip_file.write(file_path, archive_name)
+
+        zip_buffer.seek(0)
+
+        return zip_buffer
+
+    def simulate_and_create_results_zip(self) -> BytesIO:
+        self.simulate()
+        print("\n\SIMULO\n\n")
+
+        return self.create_results_zip()

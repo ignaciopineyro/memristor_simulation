@@ -1,6 +1,6 @@
 import json
 
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -24,9 +24,23 @@ class SimulationView(APIView):
 
         validated_data = serializer.validated_data
 
-        SimulationService(request_parameters=validated_data).simulate()
+        print(f"\n\n{validated_data=}\n\n")
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        simulation_service = SimulationService(request_parameters=validated_data)
+        zip_buffer = simulation_service.simulate_and_create_results_zip()
+
+        print(f"\n\n{zip_buffer=}\n\n")
+
+        folder_name = simulation_service.simulation_inputs.export_parameters.folder_name
+        zip_filename = f"simulation_{folder_name}.zip"
+
+        print(f"\n\n{zip_filename=}\n\n")
+
+        response = HttpResponse(zip_buffer.getvalue(), content_type="application/zip")
+        response["Content-Disposition"] = f'attachment; filename="{zip_filename}"'
+        response["Content-Length"] = len(zip_buffer.getvalue())
+
+        return response
 
     def get(self, request):
         form = ModelParametersForm()

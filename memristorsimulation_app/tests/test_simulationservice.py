@@ -1,4 +1,6 @@
+from io import BytesIO
 from unittest.mock import Mock, patch
+import zipfile
 from memristorsimulation_app.constants import AnalysisType
 from memristorsimulation_app.representations import SinWaveForm
 from memristorsimulation_app.services.networkservice import NetworkService
@@ -329,3 +331,112 @@ class TestSimulationService(BaseTestCase):
                         input_parameters=mock_input_parameters,
                         plot_types=self.simulation_service.simulation_inputs.plot_types,
                     )
+
+    def test_create_results_zip(self):
+        mock_file_paths = [
+            ("/path/to/subcircuit.sub", "subcircuit.sub"),
+            ("/path/to/circuit.cir", "circuit.cir"),
+            ("/path/to/results.csv", "results.csv"),
+            ("/path/to/simulation.log", "simulation.log"),
+            ("/path/to/figures/plot1.png", "figures/plot1.png"),
+            ("/path/to/figures/plot2.png", "figures/plot2.png"),
+        ]
+
+        def mock_exists(path):
+            return any(path == file_path for file_path, _ in mock_file_paths)
+
+        with patch.object(
+            self.simulation_service.directories_management_service,
+            "get_all_simulation_files",
+            return_value=mock_file_paths,
+        ) as mock_get_files:
+            with patch("os.path.exists", side_effect=mock_exists) as mock_exists_patch:
+                with patch("zipfile.ZipFile") as mock_zipfile:
+                    mock_zip_context = Mock()
+                    mock_zipfile.return_value.__enter__.return_value = mock_zip_context
+                    mock_zipfile.return_value.__exit__.return_value = None
+
+                    result = self.simulation_service.create_results_zip()
+
+                    mock_get_files.assert_called_once()
+
+                    self.assertEqual(mock_exists_patch.call_count, len(mock_file_paths))
+                    for file_path, _ in mock_file_paths:
+                        mock_exists_patch.assert_any_call(file_path)
+
+                    mock_zipfile.assert_called_once()
+                    args, kwargs = mock_zipfile.call_args
+                    self.assertEqual(
+                        kwargs.get("mode", args[1] if len(args) > 1 else None), "w"
+                    )
+                    self.assertEqual(
+                        kwargs.get("compression", args[2] if len(args) > 2 else None),
+                        zipfile.ZIP_DEFLATED,
+                    )
+
+                    self.assertEqual(
+                        mock_zip_context.write.call_count, len(mock_file_paths)
+                    )
+                    for file_path, archive_name in mock_file_paths:
+                        mock_zip_context.write.assert_any_call(file_path, archive_name)
+
+                    self.assertIsInstance(result, BytesIO)
+
+                    self.assertEqual(result.tell(), 0)
+
+    def test_create_results_zip_with_non_existent_files(self):
+        mock_file_paths = [
+            ("/path/to/existing.sub", "existing.sub"),
+            ("/path/to/non_existent.cir", "non_existent.cir"),
+            ("/path/to/another_existing.csv", "another_existing.csv"),
+        ]
+
+        def mock_exists(path):
+            existing_files = ["/path/to/existing.sub", "/path/to/another_existing.csv"]
+            return path in existing_files
+
+        with patch.object(
+            self.simulation_service.directories_management_service,
+            "get_all_simulation_files",
+            return_value=mock_file_paths,
+        ):
+            with patch("os.path.exists", side_effect=mock_exists):
+                with patch("zipfile.ZipFile") as mock_zipfile:
+                    mock_zip_context = Mock()
+                    mock_zipfile.return_value.__enter__.return_value = mock_zip_context
+                    mock_zipfile.return_value.__exit__.return_value = None
+
+                    result = self.simulation_service.create_results_zip()
+
+                    self.assertEqual(mock_zip_context.write.call_count, 2)
+                    mock_zip_context.write.assert_any_call(
+                        "/path/to/existing.sub", "existing.sub"
+                    )
+                    mock_zip_context.write.assert_any_call(
+                        "/path/to/another_existing.csv", "another_existing.csv"
+                    )
+
+                    with self.assertRaises(AssertionError):
+                        mock_zip_context.write.assert_any_call(
+                            "/path/to/non_existent.cir", "non_existent.cir"
+                        )
+
+                    self.assertIsInstance(result, BytesIO)
+
+    def test_create_results_zip_empty_file_list(self):
+        with patch.object(
+            self.simulation_service.directories_management_service,
+            "get_all_simulation_files",
+            return_value=[],
+        ):
+            with patch("zipfile.ZipFile") as mock_zipfile:
+                mock_zip_context = Mock()
+                mock_zipfile.return_value.__enter__.return_value = mock_zip_context
+                mock_zipfile.return_value.__exit__.return_value = None
+
+                result = self.simulation_service.create_results_zip()
+
+                mock_zipfile.assert_called_once()
+                mock_zip_context.write.assert_not_called()
+
+                self.assertIsInstance(result, BytesIO)

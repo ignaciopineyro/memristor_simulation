@@ -77,8 +77,9 @@ class DirectoriesManagementServiceTestCase(BaseTestCase):
 
         self.assertFalse(os.path.exists(expected_dir))
 
-        DirectoriesManagementService.create_figures_directory(SIMULATIONS_DIR)
+        figs_dir = DirectoriesManagementService.get_or_create_figures_directory()
 
+        self.assertEqual(figs_dir, expected_dir)
         self.assertTrue(os.path.exists(expected_dir))
         self.assertTrue(os.path.isdir(expected_dir))
 

@@ -73,11 +73,18 @@ class DirectoriesManagementServiceTestCase(BaseTestCase):
             self.assertTrue(os.path.isdir(expected_dir))
 
     def test_create_figures_directory(self):
-        expected_dir = f"{SIMULATIONS_DIR}/figures"
+        model_sim_folder = ModelsSimulationFolders.PERSHIN_SIMULATIONS
+        export_params = self._create_export_parameters(
+            model_simulation_folder=model_sim_folder
+        )
+        dms = DirectoriesManagementService(
+            export_parameters=export_params,
+        )
 
+        expected_dir = f"{SIMULATIONS_DIR}/{export_params.model_simulation_folder.value}/{export_params.folder_name}/figures"
         self.assertFalse(os.path.exists(expected_dir))
 
-        figs_dir = DirectoriesManagementService.get_or_create_figures_directory()
+        figs_dir = dms.get_or_create_figures_directory()
 
         self.assertEqual(figs_dir, expected_dir)
         self.assertTrue(os.path.exists(expected_dir))

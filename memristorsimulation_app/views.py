@@ -24,17 +24,11 @@ class SimulationView(APIView):
 
         validated_data = serializer.validated_data
 
-        print(f"\n\n{validated_data=}\n\n")
-
         simulation_service = SimulationService(request_parameters=validated_data)
         zip_buffer = simulation_service.simulate_and_create_results_zip()
 
-        print(f"\n\n{zip_buffer=}\n\n")
-
         folder_name = simulation_service.simulation_inputs.export_parameters.folder_name
         zip_filename = f"simulation_{folder_name}.zip"
-
-        print(f"\n\n{zip_filename=}\n\n")
 
         response = HttpResponse(zip_buffer.getvalue(), content_type="application/zip")
         response["Content-Disposition"] = f'attachment; filename="{zip_filename}"'

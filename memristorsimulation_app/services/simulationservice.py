@@ -141,6 +141,5 @@ class SimulationService(BaseTemplate):
 
     def simulate_and_create_results_zip(self) -> BytesIO:
         self.simulate()
-        print("\n\SIMULO\n\n")
 
         return self.create_results_zip()

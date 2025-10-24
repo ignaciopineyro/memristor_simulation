@@ -30,8 +30,6 @@ class PlotterService:
         input_parameters: InputParameters = None,
         graph: Graph = None,
     ):
-        self.directories_management_service = DirectoriesManagementService()
-
         self.simulation_results_directory_path = simulation_results_directory_path
         self.export_parameters = export_parameters
         self.model_simulations_directory_path = (
@@ -43,6 +41,9 @@ class PlotterService:
             f"{self.export_parameters.folder_name}"
         )
         self.figures_directory_path = f"{self.simulations_directory_path}/figures"
+        self.directories_management_service = DirectoriesManagementService(
+            export_parameters=self.export_parameters
+        )
         self.directories_management_service.get_or_create_figures_directory()
 
         self.model_parameters = model_parameters

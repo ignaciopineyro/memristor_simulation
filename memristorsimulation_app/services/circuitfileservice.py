@@ -1,5 +1,4 @@
 from typing import TextIO, List
-
 from memristorsimulation_app.representations import (
     InputParameters,
     SimulationParameters,

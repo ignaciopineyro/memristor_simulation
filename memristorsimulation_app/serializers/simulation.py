@@ -62,37 +62,6 @@ class WaveFormSerializer(CamelCaseSerializer):
     type = EnumField(choices=WaveForms)
     parameters = serializers.DictField()
 
-    # def validate(self, data):
-    #     waveform_type = data.get("type")
-    #     parameters = data.get("parameters", {})
-
-    #     serializer_map = {
-    #         "sin": SinWaveFormSerializer,
-    #         "pulse": PulseWaveFormSerializer,
-    #         "pwl": AlternatingPulseWaveFormSerializer,
-    #     }
-
-    #     if waveform_type not in serializer_map:
-    #         raise serializers.ValidationError(
-    #             f"Unsupported waveform type: {waveform_type}"
-    #         )
-
-    #     param_serializer = serializer_map[waveform_type](data=parameters)
-    #     if not param_serializer.is_valid():
-    #         raise serializers.ValidationError({"parameters": param_serializer.errors})
-
-    #     data["validated_parameters"] = param_serializer.validated_data
-    #     return data
-
-    # def to_internal_value(self, data):
-    #     validated_data = super().to_internal_value(data)
-    #     return {
-    #         "type": validated_data["type"],
-    #         "parameters": validated_data.get(
-    #             "validated_parameters", validated_data["parameters"]
-    #         ),
-    #     }
-
 
 class InputParametersSerializer(CamelCaseSerializer):
     source_number = serializers.IntegerField()

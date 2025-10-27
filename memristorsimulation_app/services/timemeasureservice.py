@@ -38,19 +38,7 @@ class TimeMeasureService:
     ) -> TimeMeasure:
         time_measure = TimeMeasure(start_time=self.init_python_execution_time_measure())
 
-        # if self._is_os_linux():
-        #     self.execute_command = f"time ngspice {self.circuit_file_path} 2>&1"
-        #     # TODO: Pincha aca
-        #     print("\n\n START POPEN \n\n")
-        #     simulation_log, linux_time_output = subprocess.Popen(
-        #         ["bash", "-c", self.execute_command, "_"],
-        #         stdout=subprocess.PIPE,
-        #         stderr=subprocess.PIPE,
-        #     ).communicate()
-        #     print("\n\n END POPEN \n\n")
-
-        #     time_measure = self.write_python_time_measure_into_csv(time_measure)
-        #     self.write_linux_time_measure_into_csv(linux_time_output, time_measure)
+        # TODO: Refactor to log properly
         try:
             if self._is_os_linux():
                 self.execute_command = f"time ngspice {self.circuit_file_path} 2>&1"

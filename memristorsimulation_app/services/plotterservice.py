@@ -5,9 +5,7 @@ import os
 from matplotlib import pyplot as plt
 from matplotlib import animation as anime
 from typing import List
-
 from networkx import NetworkXError
-
 from memristorsimulation_app.constants import MeasuredMagnitude
 from memristorsimulation_app.representations import (
     DataLoader,

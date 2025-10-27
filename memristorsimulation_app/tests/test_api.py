@@ -1,8 +1,9 @@
+import zipfile
+
 from rest_framework.test import APITestCase
 from rest_framework import status
 from unittest.mock import patch
 from io import BytesIO
-import zipfile
 from memristorsimulation_app.tests.basetestcase import BaseTestCase
 
 

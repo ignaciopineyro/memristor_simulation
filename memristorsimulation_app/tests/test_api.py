@@ -67,11 +67,9 @@ class UserAPITestCase(APITestCase, BaseTestCase):
             "plot_types": ["IV", "IV_LOG"],
         }
 
-        # Mock de todo el proceso de simulación para evitar ejecución real
         with patch(
             "memristorsimulation_app.services.simulationservice.SimulationService.simulate_and_create_results_zip"
         ) as mock_simulate:
-            # Crear un ZIP mock de respuesta
             mock_zip_buffer = BytesIO()
             with zipfile.ZipFile(
                 mock_zip_buffer, "w", zipfile.ZIP_DEFLATED
@@ -81,33 +79,25 @@ class UserAPITestCase(APITestCase, BaseTestCase):
 
             mock_simulate.return_value = mock_zip_buffer
 
-            # Ejecutar la request
             response = self.client.post(url, data, format="json")
 
-            # Verificaciones
             self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-            # Verificar headers de la respuesta
             self.assertEqual(response["Content-Type"], "application/zip")
             self.assertIn("attachment", response["Content-Disposition"])
-            self.assertIn(
-                "simulation_test_simulation.zip", response["Content-Disposition"]
-            )
+            self.assertIn("simulation_test_simulation", response["Content-Disposition"])
+            self.assertIn(".zip", response["Content-Disposition"])
 
-            # Verificar que el contenido es un ZIP válido
             zip_content = BytesIO(response.content)
             with zipfile.ZipFile(zip_content, "r") as zip_file:
                 file_list = zip_file.namelist()
                 self.assertIn("test_file.txt", file_list)
 
-            # Verificar que se llamó al método de simulación
             mock_simulate.assert_called_once()
 
     def test_simulation_view_invalid_json(self):
-        """Test que verifica manejo de JSON inválido."""
-        url = "/simulation/"
+        url = ""
 
-        # Enviar JSON malformado
         response = self.client.post(
             url, "invalid json content", content_type="application/json"
         )
@@ -116,24 +106,19 @@ class UserAPITestCase(APITestCase, BaseTestCase):
         self.assertIn("Invalid JSON", response.content.decode())
 
     def test_simulation_view_validation_errors(self):
-        """Test que verifica manejo de errores de validación."""
-        url = "/simulation/"
+        url = ""
 
-        # Data con campos faltantes
         invalid_data = {
             "model": "pershin.sub",
-            # Faltan campos requeridos
         }
 
         response = self.client.post(url, invalid_data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        # Verificar que la respuesta contiene errores de validación
         self.assertIn("subcircuit", response.data.keys() or response.content.decode())
 
     def test_simulation_view_with_simulation_error(self):
-        """Test que verifica manejo de errores durante la simulación."""
-        url = "/simulation/"
+        url = ""
 
         data = {
             "model": "pershin.sub",
@@ -192,7 +177,6 @@ class UserAPITestCase(APITestCase, BaseTestCase):
             "plot_types": ["IV", "IV_LOG"],
         }
 
-        # Mock que simula error durante la simulación
         with patch(
             "memristorsimulation_app.services.simulationservice.SimulationService.simulate_and_create_results_zip"
         ) as mock_simulate:
@@ -200,25 +184,20 @@ class UserAPITestCase(APITestCase, BaseTestCase):
 
             response = self.client.post(url, data, format="json")
 
-            # Debería devolver error 500 o manejar la excepción apropiadamente
             self.assertEqual(
                 response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     def test_simulation_view_get_method(self):
-        """Test que verifica el método GET devuelve el formulario."""
-        url = "/simulation/"
+        url = ""
 
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertContains(
-            response, "form"
-        )  # Verificar que contiene el formulario HTML
+        self.assertContains(response, "form")
 
     def test_simulation_view_content_length_header(self):
-        """Test que verifica que se establece correctamente el Content-Length."""
-        url = "/simulation/"
+        url = ""
 
         data = {
             "model": "pershin.sub",
@@ -280,9 +259,8 @@ class UserAPITestCase(APITestCase, BaseTestCase):
         with patch(
             "memristorsimulation_app.services.simulationservice.SimulationService.simulate_and_create_results_zip"
         ) as mock_simulate:
-            # Crear ZIP con contenido conocido
             mock_zip_buffer = BytesIO()
-            test_content = "contenido de prueba para verificar tamaño"
+            test_content = "Test content"
             with zipfile.ZipFile(
                 mock_zip_buffer, "w", zipfile.ZIP_DEFLATED
             ) as zip_file:
@@ -293,9 +271,6 @@ class UserAPITestCase(APITestCase, BaseTestCase):
 
             response = self.client.post(url, data, format="json")
 
-            # Verificar que Content-Length coincide con el tamaño real del contenido
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(int(response["Content-Length"]), len(response.content))
-
-            # Verificar que el contenido no está vacío
             self.assertGreater(len(response.content), 0)

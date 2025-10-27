@@ -26,13 +26,17 @@ from memristorsimulation_app.services.directoriesmanagementservice import (
 from memristorsimulation_app.services.networkservice import NetworkService
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
-from memristorsimulation_app.templates.template import Template
+from memristorsimulation_app.simulation_templates.basetemplate import BaseTemplate
 
 
-class GeometricNetworkPulses(Template):
-    N = 4
-    M = 4
-    REMOVAL_PROBABILITY = 0
+class RandomRegularNetwork(BaseTemplate):
+    AMOUNT_CONNECTIONS = 2
+    AMOUNT_NODES = 10
+    # SEED = None
+    # SEED = 123456789  # 4x20
+    # SEED = 12345  # 2x10
+    # SEED = 123456789  # 2x20
+    SEED = None
 
     ALPHA = 0
     BETA = 500e3
@@ -42,9 +46,6 @@ class GeometricNetworkPulses(Template):
     VT = 0.6
 
     WAVE_FORM = PulseWaveForm
-
-    V_PLUS = (0, 0)
-    V_MINUS = (N - 1, 0)
 
     V1 = 0
     V2 = 10
@@ -56,8 +57,10 @@ class GeometricNetworkPulses(Template):
     T_STEP = 2e-3
     T_STOP = 10
 
-    EXPORT_FOLDER_NAME = f"geometric_network_pulses_{N}x{M}"
-    EXPORT_FILE_NAME = f"geometric_network_pulses_{N}x{M}_simulation"
+    EXPORT_FOLDER_NAME = f"random_regular_network_k{AMOUNT_CONNECTIONS}_n{AMOUNT_NODES}"
+    EXPORT_FILE_NAME = (
+        f"random_regular_network_k{AMOUNT_CONNECTIONS}_n{AMOUNT_NODES}_simulation"
+    )
     AMOUNT_ITERATIONS = 1
 
     PLOT_TYPES = [
@@ -69,19 +72,21 @@ class GeometricNetworkPulses(Template):
 
     def __init__(self, model: MemristorModels):
         self.model = model
-        self.ignore_states = True if (self.N * self.M) > 100 else False
         self.network_service = NetworkService(
-            NetworkType.GRID_2D_GRAPH,
-            NetworkParameters(n=self.N, m=self.M),
-            vin_minus=self.V_MINUS,
-            vin_plus=self.V_PLUS,
-            removal_probability=self.REMOVAL_PROBABILITY,
+            NetworkType.RANDOM_REGULAR_GRAPH,
+            NetworkParameters(
+                amount_connections=self.AMOUNT_CONNECTIONS,
+                amount_nodes=self.AMOUNT_NODES,
+                seed=self.SEED,
+            ),
         )
         self.graph = Graph(
             self.network_service.network,
             self.network_service.vin_minus,
             self.network_service.vin_plus,
+            seed=self.SEED,
         )
+        self.ignore_states = True if len(self.graph.nx_graph.edges) > 100 else False
         self.device_params = self.network_service.generate_device_parameters(
             "xmem", "memristor"
         )
@@ -102,7 +107,7 @@ class GeometricNetworkPulses(Template):
         model_parameters = ModelParameters(
             self.ALPHA, self.BETA, self.RINIT, self.ROFF, self.RON, self.VT
         )
-        subcircuit = Subcircuit("memristor", ["pl", "mn", "x"], model_parameters)
+        subcircuit = Subcircuit(model_parameters)
         source_bx = BehaviouralSource(
             name="Bx",
             n_plus="0",
@@ -167,7 +172,7 @@ class GeometricNetworkPulses(Template):
         ngspice_service.run_single_circuit_simulation(self.AMOUNT_ITERATIONS)
         self.plot(
             export_parameters=self.directories_management_service.export_parameters,
-            model_parameters=circuit_file_service.subcircuit_file_service.subcircuit.parameters,
+            model_parameters=circuit_file_service.subcircuit_file_service.subcircuit.model_parameters,
             input_parameters=circuit_file_service.input_parameters,
             plot_types=self.PLOT_TYPES,
             graph=self.graph,
@@ -175,4 +180,4 @@ class GeometricNetworkPulses(Template):
 
 
 if __name__ == "__main__":
-    GeometricNetworkPulses(MemristorModels.PERSHIN).simulate()
+    RandomRegularNetwork(MemristorModels.PERSHIN).simulate()

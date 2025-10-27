@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación de Memristor</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/form.css' %}">
+</head>
+<body>
+
+<div class="form-container">
+    <div id="errorMessage" class="error-message" style="display: none;"></div>
+    
+    <div id="successMessage" class="success-message" style="display: none;"></div>
+    
+    <form id="simulationForm" method="post">
+        {% csrf_token %}
+        
+        <div class="form-section">
+            <h3>Configuración del modelo</h3>
+            
+            <div class="form-group">
+                <label for="model">Modelo de Memristor:</label>
+                <select id="model" name="model" required>
+                    <option value="">Seleccione un modelo</option>
+                    <option value="pershin.sub" selected>Pershin</option>
+                    <option value="vourkas.sub">Vourkas</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h3>Parámetros del modelo</h3>
+            
+            <div class="form-group">
+                <label for="alpha">Alpha:</label>
+                <input type="number" step="any" id="alpha" name="alpha" value="0" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="beta">Beta:</label>
+                <input type="number" step="any" id="beta" name="beta" value="500000" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="rinit">Rinit:</label>
+                <input type="number" step="any" id="rinit" name="rinit" value="200000" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="roff">Roff:</label>
+                <input type="number" step="any" id="roff" name="roff" value="200000" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="ron">Ron:</label>
+                <input type="number" step="any" id="ron" name="ron" value="2000" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="vt">Vt:</label>
+                <input type="number" step="any" id="vt" name="vt" value="0.6" required>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Parámetros de entrada</h3>
+            
+            <div class="form-group">
+                <label for="source_number">Número de fuente:</label>
+                <input type="number" id="source_number" name="source_number" value="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="n_plus">Nodo positivo:</label>
+                <input type="text" id="n_plus" name="n_plus" value="vin" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="n_minus">Nodo negativo:</label>
+                <input type="text" id="n_minus" name="n_minus" value="gnd" required>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Forma de onda</h3>
+            
+            <div class="form-group">
+                <label for="wave_form_type">Tipo de forma de onda:</label>
+                <select id="wave_form_type" name="wave_form_type" required>
+                    <option value="sin" selected>Senoidal (SIN)</option>
+                    <option value="pulse">Pulso (PULSE)</option>
+                    <option value="pwl">PWL</option>
+                </select>
+            </div>
+            
+            <div id="sin_parameters" class="wave-form-params">
+                <div class="form-group">
+                    <label for="vo">Offset de voltaje (Vo):</label>
+                    <input type="number" step="any" id="vo" name="vo" value="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="amplitude">Amplitud:</label>
+                    <input type="number" step="any" id="amplitude" name="amplitude" value="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="frequency">Frecuencia:</label>
+                    <input type="number" step="any" id="frequency" name="frequency" value="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="td">Delay de tiempo (td):</label>
+                    <input type="number" step="any" id="td" name="td" value="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="theta">Theta:</label>
+                    <input type="number" step="any" id="theta" name="theta" value="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phase">Fase:</label>
+                    <input type="number" step="any" id="phase" name="phase" value="0">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Parámetros de simulación</h3>
+            
+            <div class="form-group">
+                <label for="analysis_type">Tipo de análisis:</label>
+                <select id="analysis_type" name="analysis_type" required>
+                    <option value=".tran" selected>Transitorio (.tran)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="tstep">Paso de tiempo (tstep):</label>
+                <input type="number" step="any" id="tstep" name="tstep" value="2e-3" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="tstop">Tiempo final (tstop):</label>
+                <input type="number" step="any" id="tstop" name="tstop" value="10" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="tstart">Tiempo inicial (tstart):</label>
+                <input type="number" step="any" id="tstart" name="tstart" value="">
+            </div>
+            
+            <div class="form-group">
+                <label for="tmax">Tiempo máximo (tmax):</label>
+                <input type="number" step="any" id="tmax" name="tmax" value="">
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="uic" name="uic" checked>
+                    Usar condiciones iniciales (UIC)
+                </label>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Parámetros de exportación</h3>
+            
+            <div class="form-group">
+                <label for="folder_name">Nombre de carpeta:</label>
+                <input type="text" id="folder_name" name="folder_name" value="simulation_test" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="file_name">Nombre de archivo:</label>
+                <input type="text" id="file_name" name="file_name" value="results" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="magnitudes">Magnitudes (separadas por coma):</label>
+                <input type="text" id="magnitudes" name="magnitudes" value="vin,i(v1)" required>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Configuración de red</h3>
+            
+            <div class="form-group">
+                <label for="network_type">Tipo de red:</label>
+                <select id="network_type" name="network_type" required>
+                    <option value="GRID_2D_GRAPH" selected>Grid 2D</option>
+                    <option value="RANDOM_REGULAR_GRAPH">Random Regular</option>
+                    <option value="WATTS_STROGATZ_GRAPH">Watts Strogatz</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="n">N (filas/nodos por grado):</label>
+                <input type="number" id="n" name="n" value="4" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="m">M (columnas):</label>
+                <input type="number" id="m" name="m" value="4" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="amount_connections">Cantidad de conexiones:</label>
+                <input type="number" id="amount_connections" name="amount_connections" value="">
+            </div>
+            
+            <div class="form-group">
+                <label for="amount_nodes">Cantidad de nodos:</label>
+                <input type="number" id="amount_nodes" name="amount_nodes" value="">
+            </div>
+            
+            <div class="form-group">
+                <label for="shortcut_probability">Probabilidad de atajo:</label>
+                <input type="number" step="any" id="shortcut_probability" name="shortcut_probability" value="" min="0" max="1">
+            </div>
+            
+            <div class="form-group">
+                <label for="seed">Semilla:</label>
+                <input type="number" id="seed" name="seed" value="">
+            </div>
+        </div>
+
+        <!-- Configuración adicional -->
+        <div class="form-section">
+            <h3>Configuración adicional</h3>
+            
+            <div class="form-group">
+                <label for="amount_iterations">Cantidad de iteraciones:</label>
+                <input type="number" id="amount_iterations" name="amount_iterations" value="1" min="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="plot_types">Tipos de gráfico (separados por coma):</label>
+                <input type="text" id="plot_types" name="plot_types" value="IV,IV_LOG" required>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn">Ejecutar Simulación</button>
+    </form>
+</div>
+
+<script>
+function showMessage(message, isError = false) {
+    const errorDiv = document.getElementById("errorMessage");
+    const successDiv = document.getElementById("successMessage");
+    
+    if (isError) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = "block";
+        successDiv.style.display = "none";
+        
+        // Ocultar después de 8 segundos
+        setTimeout(() => {
+            errorDiv.style.display = "none";
+        }, 8000);
+    } else {
+        successDiv.textContent = message;
+        successDiv.style.display = "block";
+        errorDiv.style.display = "none";
+        
+        // Ocultar después de 5 segundos
+        setTimeout(() => {
+            successDiv.style.display = "none";
+        }, 5000);
+    }
+}
+
+function validateForm(formData) {
+    const requiredFields = [
+        'model', 'alpha', 'beta', 'rinit', 'roff', 'ron', 'vt',
+        'source_number', 'n_plus', 'n_minus', 'wave_form_type',
+        'vo', 'amplitude', 'frequency', 'analysis_type', 'tstep', 'tstop',
+        'folder_name', 'file_name', 'magnitudes', 'network_type',
+        'n', 'm', 'amount_connections', 'amount_nodes', 'shortcut_probability',
+        'seed', 'amount_iterations', 'plot_types'
+    ];
+    
+    const missingFields = [];
+    
+    for (const field of requiredFields) {
+        const value = formData.get(field);
+        if (!value || value.trim() === '') {
+            missingFields.push(field);
+        }
+    }
+    
+    return missingFields;
+}
+
+function buildRequestData(formData) {
+    // Parsear magnitudes y plot_types
+    const magnitudes = formData.get("magnitudes").split(",").map(s => s.trim());
+    const plotTypes = formData.get("plot_types").split(",").map(s => s.trim());
+    
+    // Determinar model_simulation_folder basado en el modelo
+    const model = formData.get("model");
+    const modelSimulationFolder = model === "pershin.sub" ? "pershin_simulations" : "vourkas_simulations";
+    
+    return {
+        model: formData.get("model"),
+        subcircuit: {
+            model_parameters: {
+                alpha: parseFloat(formData.get("alpha")),
+                beta: parseFloat(formData.get("beta")),
+                rinit: parseFloat(formData.get("rinit")),
+                roff: parseFloat(formData.get("roff")),
+                ron: parseFloat(formData.get("ron")),
+                vt: parseFloat(formData.get("vt"))
+            },
+            name: "memristor",
+            nodes: ["pl", "mn", "x"]
+        },
+        input_parameters: {
+            source_number: parseInt(formData.get("source_number")),
+            n_plus: formData.get("n_plus"),
+            n_minus: formData.get("n_minus"),
+            wave_form: {
+                type: formData.get("wave_form_type"),
+                parameters: {
+                    vo: parseFloat(formData.get("vo")),
+                    amplitude: parseFloat(formData.get("amplitude")),
+                    frequency: parseFloat(formData.get("frequency")),
+                    td: parseFloat(formData.get("td")) || 0,
+                    theta: parseFloat(formData.get("theta")) || 0,
+                    phase: parseFloat(formData.get("phase")) || 0
+                }
+            }
+        },
+        simulation_parameters: {
+            analysis_type: formData.get("analysis_type"),
+            tstep: parseFloat(formData.get("tstep")),
+            tstop: parseFloat(formData.get("tstop")),
+            tstart: parseFloat(formData.get("tstart")) || 0,
+            tmax: parseFloat(formData.get("tmax")) || null,
+            uic: formData.get("uic") === "on"
+        },
+        export_parameters: {
+            model_simulation_folder: modelSimulationFolder,
+            folder_name: formData.get("folder_name"),
+            file_name: formData.get("file_name"),
+            magnitudes: magnitudes
+        },
+        network_type: formData.get("network_type"),
+        network_parameters: {
+            n: parseInt(formData.get("n")),
+            m: parseInt(formData.get("m")),
+            amount_connections: parseInt(formData.get("amount_connections")),
+            amount_nodes: parseInt(formData.get("amount_nodes")),
+            shortcut_probability: parseFloat(formData.get("shortcut_probability")),
+            seed: parseInt(formData.get("seed"))
+        },
+        amount_iterations: parseInt(formData.get("amount_iterations")),
+        plot_types: plotTypes
+    };
+}
+
+document.getElementById("simulationForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+    
+    try {
+        const formData = new FormData(this);
+        
+        // Validar campos requeridos
+        const missingFields = validateForm(formData);
+        if (missingFields.length > 0) {
+            showMessage(`Campos faltantes: ${missingFields.join(", ")}`, true);
+            return;
+        }
+        
+        // Construir datos de la request
+        const data = buildRequestData(formData);
+        
+        // Mostrar mensaje de carga
+        showMessage("Ejecutando simulación...", false);
+        
+        // Enviar request y manejar descarga automática
+        fetch("{% url 'form' %}", {
+            method: "POST",
+            body: JSON.stringify(data),
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": formData.get("csrfmiddlewaretoken")
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                // Si hay error, intentar parsear como JSON para obtener detalles
+                return response.text().then(text => {
+                    try {
+                        const errorData = JSON.parse(text);
+                        throw new Error(JSON.stringify(errorData));
+                    } catch (e) {
+                        throw new Error(text || `HTTP ${response.status}: ${response.statusText}`);
+                    }
+                });
+            }
+            
+            // Si la respuesta es exitosa, es un archivo ZIP
+            return response.blob();
+        })
+        .then(blob => {
+            // Crear descarga automática del ZIP
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            
+            // Crear nombre del archivo basado en el folder_name
+            const folderName = formData.get("folder_name");
+            a.download = `simulation_${folderName}.zip`;
+            
+            document.body.appendChild(a);
+            a.click();
+            
+            // Limpiar
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showMessage("¡Simulación completada! Descarga iniciada automáticamente.");
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            let errorMessage = "Error al ejecutar la simulación";
+            
+            try {
+                const errorData = JSON.parse(error.message);
+                if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                } else if (typeof errorData === 'object') {
+                    errorMessage = Object.values(errorData).join(", ");
+                }
+            } catch (e) {
+                errorMessage = error.message;
+            }
+            
+            showMessage(errorMessage, true);
+        });
+        
+    } catch (error) {
+        console.error("Error en el cliente:", error);
+        showMessage("Error en el formulario: " + error.message, true);
+    }
+});
+</script>
+
+</body>
+</html>

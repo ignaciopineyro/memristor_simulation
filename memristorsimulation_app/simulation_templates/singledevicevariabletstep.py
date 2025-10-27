@@ -24,10 +24,10 @@ from memristorsimulation_app.services.directoriesmanagementservice import (
 )
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
-from memristorsimulation_app.templates.template import Template
+from memristorsimulation_app.simulation_templates.basetemplate import BaseTemplate
 
 
-class SingleDeviceVariableAmplitude(Template):
+class SingleDeviceVariableAmplitude(BaseTemplate):
     ALPHA = 0
     BETA = 500e3
     RINIT = 200e3
@@ -67,7 +67,7 @@ class SingleDeviceVariableAmplitude(Template):
         model_parameters = ModelParameters(
             self.ALPHA, self.BETA, self.RINIT, self.ROFF, self.RON, self.VT
         )
-        subcircuit = Subcircuit("memristor", ["pl", "mn", "x"], model_parameters)
+        subcircuit = Subcircuit(model_parameters)
         source_bx = BehaviouralSource(
             name="Bx",
             n_plus="0",
@@ -175,7 +175,7 @@ class SingleDeviceVariableAmplitude(Template):
         for cfs, dms in zip(circuit_file_services, directories_management_services):
             self.plot(
                 export_parameters=dms.export_parameters,
-                model_parameters=cfs.subcircuit_file_service.subcircuit.parameters,
+                model_parameters=cfs.subcircuit_file_service.subcircuit.model_parameters,
                 input_parameters=cfs.input_parameters,
                 plot_types=self.PLOT_TYPES,
             )

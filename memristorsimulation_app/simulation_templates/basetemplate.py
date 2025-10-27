@@ -1,19 +1,64 @@
 from abc import ABC
-from typing import List, Union
-from memristorsimulation_app.constants import SpiceDevices, PlotType, SIMULATIONS_DIR
+from typing import List, Union, Tuple, Optional
+from memristorsimulation_app.constants import (
+    InvalidNetworkType,
+    MemristorModels,
+    NetworkType,
+    SpiceDevices,
+    PlotType,
+    SIMULATIONS_DIR,
+    SpiceModel,
+)
 from memristorsimulation_app.representations import (
+    BehaviouralSource,
     Component,
+    DeviceParameters,
     ExportParameters,
+    ModelDependence,
     ModelParameters,
     InputParameters,
     Graph,
 )
 from memristorsimulation_app.services.circuitfileservice import CircuitFileService
+from memristorsimulation_app.services.directoriesmanagementservice import (
+    InvalidMemristorModel,
+)
+from memristorsimulation_app.services.networkservice import NetworkService
 from memristorsimulation_app.services.plotterservice import PlotterService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
 
 
-class Template(ABC):
+class BaseTemplate(ABC):
+    def create_default_behavioural_source(self) -> List[BehaviouralSource]:
+        return [
+            BehaviouralSource(
+                name="Bx",
+                n_plus="0",
+                n_minus="x",
+                behaviour_function="I='(f1(V(pl,mn))>0) && (V(x)<Roff) ? {f1(V(pl,mn))}: "
+                "(f1(V(pl,mn))<0) && (V(x)>Ron) ? {f1(V(pl,mn))}: {0}'",
+            )
+        ]
+
+    def create_default_control_cmd(self) -> str:
+        return ".func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}"
+
+    def create_default_components_and_dependencies_from_model(
+        self, model: MemristorModels
+    ) -> Tuple[List[Component], Optional[ModelDependence]]:
+        if model == MemristorModels.PERSHIN:
+            default_components = self._create_pershin_default_components()
+            model_dependencies = None
+        elif model == MemristorModels.VOURKAS:
+            default_components = self._create_vourkas_default_components()
+            model_dependencies = [
+                ModelDependence(name=SpiceDevices.DIODE, model=SpiceModel.DIODE)
+            ]
+        else:
+            raise InvalidMemristorModel(f"Model {model} not implemented.")
+
+        return default_components, model_dependencies
+
     @staticmethod
     def _create_pershin_default_components() -> List[Component]:
         capacitor = Component(
@@ -41,6 +86,24 @@ class Template(ABC):
         raux = Component(name="Raux", n_plus="pl", n_minus="mn", value=1e12)
 
         return [capacitor, rmem, diode_1, diode_2, v_1, v_2, raux]
+
+    def create_device_parameters(
+        self,
+        network_type: NetworkType,
+        network_service: Optional[NetworkService] = None,
+    ) -> List[DeviceParameters]:
+        if network_type == NetworkType.SINGLE_DEVICE:
+            return [DeviceParameters("xmem", 0, ["vin", "gnd", "l0"], "memristor")]
+        elif network_type in [
+            NetworkType.GRID_2D_GRAPH,
+            NetworkType.RANDOM_REGULAR_GRAPH,
+            NetworkType.WATTS_STROGATZ_GRAPH,
+        ]:
+            if network_service is None:
+                raise ValueError("network_service must be provided for network types.")
+            return network_service.generate_device_parameters("xmem", "memristor")
+        else:
+            raise InvalidNetworkType(f"Network type {network_type} not implemented.")
 
     @staticmethod
     def plot(

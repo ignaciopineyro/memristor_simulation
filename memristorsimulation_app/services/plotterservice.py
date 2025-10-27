@@ -5,9 +5,7 @@ import os
 from matplotlib import pyplot as plt
 from matplotlib import animation as anime
 from typing import List
-
 from networkx import NetworkXError
-
 from memristorsimulation_app.constants import MeasuredMagnitude
 from memristorsimulation_app.representations import (
     DataLoader,
@@ -30,22 +28,21 @@ class PlotterService:
         input_parameters: InputParameters = None,
         graph: Graph = None,
     ):
-        self.directories_management_service = DirectoriesManagementService()
-
         self.simulation_results_directory_path = simulation_results_directory_path
         self.export_parameters = export_parameters
         self.model_simulations_directory_path = (
             f"{self.simulation_results_directory_path}/"
-            f"{self.export_parameters.model_simulation_folder_name.value}"
+            f"{self.export_parameters.model_simulation_folder.value}"
         )
         self.simulations_directory_path = (
             f"{self.model_simulations_directory_path}/"
             f"{self.export_parameters.folder_name}"
         )
         self.figures_directory_path = f"{self.simulations_directory_path}/figures"
-        self.directories_management_service.create_figures_directory(
-            self.simulations_directory_path
+        self.directories_management_service = DirectoriesManagementService(
+            export_parameters=self.export_parameters
         )
+        self.directories_management_service.get_or_create_figures_directory()
 
         self.model_parameters = model_parameters
         self.input_parameters = input_parameters

@@ -24,19 +24,19 @@ from memristorsimulation_app.services.directoriesmanagementservice import (
 )
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
-from memristorsimulation_app.templates.template import Template
+from memristorsimulation_app.simulation_templates.basetemplate import BaseTemplate
 
 
-class SingleDeviceVariableBeta(Template):
-    ALPHA = 0
-    BETA = [50e3, 500e3, 5e6, 50e6]
+class SingleDeviceVariableAlpha(BaseTemplate):
+    ALPHA = [10e3, 100e3, 1e6, 10e6]
+    BETA = 500e3
     RINIT = 200e3
     ROFF = 200e3
     RON = 2e3
     VT = 0.6
 
     VO = 0
-    AMPLITUDE = 2
+    AMPLITUDE = 4
     FREQUENCY = 1
     PHASE = 0
     WAVE_FORM = SinWaveForm
@@ -44,7 +44,7 @@ class SingleDeviceVariableBeta(Template):
     T_STEP = 2e-3
     T_STOP = 2
 
-    EXPORT_FOLDER_NAME = "single_device_variable_beta"
+    EXPORT_FOLDER_NAME = "single_device_variable_alpha"
     AMOUNT_ITERATIONS = 100
 
     PLOT_TYPES = [
@@ -64,12 +64,11 @@ class SingleDeviceVariableBeta(Template):
         self,
     ) -> List[SubcircuitFileService]:
         model_parameters = [
-            ModelParameters(self.ALPHA, beta, self.RINIT, self.ROFF, self.RON, self.VT)
-            for beta in self.BETA
+            ModelParameters(alpha, self.BETA, self.RINIT, self.ROFF, self.RON, self.VT)
+            for alpha in self.ALPHA
         ]
         subcircuit = [
-            Subcircuit("memristor", ["pl", "mn", "x"], model_parameter)
-            for model_parameter in model_parameters
+            Subcircuit(model_parameter) for model_parameter in model_parameters
         ]
         source_bx = BehaviouralSource(
             name="Bx",
@@ -93,7 +92,7 @@ class SingleDeviceVariableBeta(Template):
 
         control_cmd = ".func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}"
 
-        export_file_name = "beta_variable"
+        export_file_name = "alpha_variable"
         export_params = ExportParameters(
             ModelsSimulationFolders.get_simulation_folder_by_model(self.model),
             self.EXPORT_FOLDER_NAME,
@@ -109,10 +108,10 @@ class SingleDeviceVariableBeta(Template):
                 model=self.model,
                 subcircuit=subcircuit,
                 sources=[source_bx],
+                directories_management_service=subcircuit_directories_management_service,
                 model_dependencies=model_dependencies,
                 components=default_components,
                 control_commands=[control_cmd],
-                directories_management_service=subcircuit_directories_management_service,
             )
             for subcircuit in subcircuit
         ]
@@ -133,7 +132,7 @@ class SingleDeviceVariableBeta(Template):
         )
         for subcircuit_file_service in subcircuit_file_services:
             export_file_name = (
-                f"beta_{subcircuit_file_service.subcircuit.parameters.beta}"
+                f"alpha_{subcircuit_file_service.subcircuit.model_parameters.alpha}"
             )
             export_params = ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(
@@ -178,11 +177,11 @@ class SingleDeviceVariableBeta(Template):
         for cfs, dms in zip(circuit_file_services, directories_management_services):
             self.plot(
                 export_parameters=dms.export_parameters,
-                model_parameters=cfs.subcircuit_file_service.subcircuit.parameters,
+                model_parameters=cfs.subcircuit_file_service.subcircuit.model_parameters,
                 input_parameters=cfs.input_parameters,
                 plot_types=self.PLOT_TYPES,
             )
 
 
 if __name__ == "__main__":
-    SingleDeviceVariableBeta(MemristorModels.PERSHIN).simulate()
+    SingleDeviceVariableAlpha(MemristorModels.PERSHIN).simulate()

@@ -24,27 +24,28 @@ from memristorsimulation_app.services.directoriesmanagementservice import (
 )
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
-from memristorsimulation_app.templates.template import Template
+from memristorsimulation_app.simulation_templates.basetemplate import BaseTemplate
 
 
-class SingleDeviceVariableAlpha(Template):
-    ALPHA = [10e3, 100e3, 1e6, 10e6]
+class SingleDeviceVariableAmplitude(BaseTemplate):
+    ALPHA = 0
     BETA = 500e3
     RINIT = 200e3
     ROFF = 200e3
     RON = 2e3
-    VT = 0.6
+    VT = 0.2
+
+    WAVE_FORM = SinWaveForm
 
     VO = 0
-    AMPLITUDE = 4
+    AMPLITUDE = [1.6, 3.6, 7.6]
     FREQUENCY = 1
     PHASE = 0
-    WAVE_FORM = SinWaveForm
 
     T_STEP = 2e-3
     T_STOP = 2
 
-    EXPORT_FOLDER_NAME = "single_device_variable_alpha"
+    EXPORT_FOLDER_NAME = "single_device_variable_vt"
     AMOUNT_ITERATIONS = 100
 
     PLOT_TYPES = [
@@ -62,15 +63,11 @@ class SingleDeviceVariableAlpha(Template):
 
     def create_subcircuit_file_service(
         self,
-    ) -> List[SubcircuitFileService]:
-        model_parameters = [
-            ModelParameters(alpha, self.BETA, self.RINIT, self.ROFF, self.RON, self.VT)
-            for alpha in self.ALPHA
-        ]
-        subcircuit = [
-            Subcircuit("memristor", ["pl", "mn", "x"], model_parameter)
-            for model_parameter in model_parameters
-        ]
+    ) -> SubcircuitFileService:
+        model_parameters = ModelParameters(
+            self.ALPHA, self.BETA, self.RINIT, self.ROFF, self.RON, self.VT
+        )
+        subcircuit = Subcircuit(model_parameters)
         source_bx = BehaviouralSource(
             name="Bx",
             n_plus="0",
@@ -93,7 +90,7 @@ class SingleDeviceVariableAlpha(Template):
 
         control_cmd = ".func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}"
 
-        export_file_name = "alpha_variable"
+        export_file_name = "vt_variable"
         export_params = ExportParameters(
             ModelsSimulationFolders.get_simulation_folder_by_model(self.model),
             self.EXPORT_FOLDER_NAME,
@@ -104,37 +101,37 @@ class SingleDeviceVariableAlpha(Template):
             self.model, export_params
         )
 
-        return [
-            SubcircuitFileService(
-                model=self.model,
-                subcircuit=subcircuit,
-                sources=[source_bx],
-                directories_management_service=subcircuit_directories_management_service,
-                model_dependencies=model_dependencies,
-                components=default_components,
-                control_commands=[control_cmd],
-            )
-            for subcircuit in subcircuit
-        ]
+        return SubcircuitFileService(
+            model=self.model,
+            subcircuit=subcircuit,
+            sources=[source_bx],
+            model_dependencies=model_dependencies,
+            components=default_components,
+            control_commands=[control_cmd],
+            directories_management_service=subcircuit_directories_management_service,
+        )
 
     def create_circuit_file_service(
-        self, subcircuit_file_services: List[SubcircuitFileService]
+        self, subcircuit_file_service: SubcircuitFileService
     ) -> Tuple[List[CircuitFileService], List[DirectoriesManagementService]]:
         circuit_file_services, circuit_directories_management_services = [], []
-        input_params = InputParameters(
-            1,
-            "vin",
-            "gnd",
-            self.WAVE_FORM(self.VO, self.AMPLITUDE, self.FREQUENCY, phase=self.PHASE),
-        )
-        device_params = [DeviceParameters("xmem", 0, ["vin", "gnd", "l0"], "memristor")]
-        simulation_params = SimulationParameters(
-            AnalysisType.TRAN, self.T_STEP, self.T_STOP, 1e-9, uic=True
-        )
-        for subcircuit_file_service in subcircuit_file_services:
-            export_file_name = (
-                f"alpha_{subcircuit_file_service.subcircuit.parameters.alpha}"
+
+        for amplitude in self.AMPLITUDE:
+            waveform = SinWaveForm(self.VO, amplitude, self.FREQUENCY, phase=self.PHASE)
+
+            input_params = InputParameters(
+                1,
+                "vin",
+                "gnd",
+                waveform,
             )
+            device_params = [
+                DeviceParameters("xmem", 0, ["vin", "gnd", "l0"], "memristor")
+            ]
+            simulation_params = SimulationParameters(
+                AnalysisType.TRAN, self.T_STEP, self.T_STOP, 1e-9, uic=True
+            )
+            export_file_name = f"vin_{amplitude}"
             export_params = ExportParameters(
                 ModelsSimulationFolders.get_simulation_folder_by_model(
                     subcircuit_file_service.model
@@ -178,11 +175,11 @@ class SingleDeviceVariableAlpha(Template):
         for cfs, dms in zip(circuit_file_services, directories_management_services):
             self.plot(
                 export_parameters=dms.export_parameters,
-                model_parameters=cfs.subcircuit_file_service.subcircuit.parameters,
+                model_parameters=cfs.subcircuit_file_service.subcircuit.model_parameters,
                 input_parameters=cfs.input_parameters,
                 plot_types=self.PLOT_TYPES,
             )
 
 
 if __name__ == "__main__":
-    SingleDeviceVariableAlpha(MemristorModels.PERSHIN).simulate()
+    SingleDeviceVariableAmplitude(MemristorModels.PERSHIN).simulate()

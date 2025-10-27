@@ -7,6 +7,8 @@ from memristorsimulation_app.representations import NetworkParameters, DevicePar
 
 
 class NetworkService:
+    MAX_AMOUNT_STATES = 24
+
     def __init__(
         self,
         network_type: NetworkType,
@@ -159,3 +161,6 @@ class NetworkService:
             )
             for index, connection in enumerate(self.connections)
         ]
+
+    def should_ignore_states(self) -> bool:
+        return self.network.number_of_edges() > self.MAX_AMOUNT_STATES

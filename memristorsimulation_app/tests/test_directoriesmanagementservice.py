@@ -21,7 +21,7 @@ class DirectoriesManagementServiceTestCase(BaseTestCase):
         self, model_simulation_folder: ModelsSimulationFolders
     ) -> ExportParameters:
         return ExportParameters(
-            model_simulation_folder_name=model_simulation_folder,
+            model_simulation_folder=model_simulation_folder,
             folder_name=self.get_random_string(),
             file_name=self.get_random_string(),
             magnitudes=[],
@@ -66,19 +66,27 @@ class DirectoriesManagementServiceTestCase(BaseTestCase):
                 export_parameters=export_params,
             )
             dms.create_simulation_parameter_folder_if_not_exist(
-                export_params.model_simulation_folder_name
+                export_params.model_simulation_folder
             )
 
             self.assertTrue(os.path.exists(expected_dir))
             self.assertTrue(os.path.isdir(expected_dir))
 
     def test_create_figures_directory(self):
-        expected_dir = f"{SIMULATIONS_DIR}/figures"
+        model_sim_folder = ModelsSimulationFolders.PERSHIN_SIMULATIONS
+        export_params = self._create_export_parameters(
+            model_simulation_folder=model_sim_folder
+        )
+        dms = DirectoriesManagementService(
+            export_parameters=export_params,
+        )
 
+        expected_dir = f"{SIMULATIONS_DIR}/{export_params.model_simulation_folder.value}/{export_params.folder_name}/figures"
         self.assertFalse(os.path.exists(expected_dir))
 
-        DirectoriesManagementService.create_figures_directory(SIMULATIONS_DIR)
+        figs_dir = dms.get_or_create_figures_directory()
 
+        self.assertEqual(figs_dir, expected_dir)
         self.assertTrue(os.path.exists(expected_dir))
         self.assertTrue(os.path.isdir(expected_dir))
 

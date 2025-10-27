@@ -62,6 +62,10 @@ class BaseTestCase(TestCase):
     def get_random_int() -> int:
         return random.randint(0, 2**16)
 
+    @staticmethod
+    def get_random_float() -> float:
+        return random.uniform(0, 1)
+
     def get_simulation_folder_path(
         self, model: MemristorModels, folder_name: str
     ) -> str:
@@ -191,13 +195,13 @@ class BaseTestCase(TestCase):
             self.get_random_int(),
         )
         subcircuit = Subcircuit(
+            model_parameters,
             self.get_random_string(),
             [
                 self.get_random_string(),
                 self.get_random_string(),
                 self.get_random_string(),
             ],
-            model_parameters,
         )
         behavioural_sources = [
             BehaviouralSource(

@@ -3,9 +3,12 @@ import networkx as nx
 import pandas as pd
 
 from abc import ABC, abstractmethod
-from dataclasses import fields, dataclass, asdict
-from typing import List, Tuple
+from dataclasses import fields, dataclass, asdict, field
+from typing import Any, Dict, List, Tuple
 from memristorsimulation_app.constants import (
+    MemristorModels,
+    NetworkType,
+    PlotType,
     WaveForms,
     AnalysisType,
     ModelsSimulationFolders,
@@ -99,6 +102,26 @@ class InputParameters:
 
         return input_params
 
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "InputParameters":
+        wave_form_type = WaveForms(data["wave_form"]["type"])
+        wave_params = data["wave_form"]["parameters"]
+        if wave_form_type == WaveForms.SIN:
+            wave_form = SinWaveForm(**wave_params)
+        elif wave_form_type == WaveForms.PULSE:
+            wave_form = PulseWaveForm(**wave_params)
+        elif wave_form_type == WaveForms.PWL:
+            wave_form = AlternatingPulseWaveForm(**wave_params)
+        else:
+            raise ValueError(f"Unsupported wave form type: {wave_form_type}")
+
+        return cls(
+            source_number=int(data["source_number"]),
+            n_plus=data["n_plus"],
+            n_minus=data["n_minus"],
+            wave_form=wave_form,
+        )
+
 
 @dataclass()
 class DeviceParameters:
@@ -143,10 +166,27 @@ class SimulationParameters:
             f" {self.tmax if self.tmax else ''} {'uic' if self.uic else ''}"
         )
 
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "SimulationParameters":
+        analysis_type = (
+            AnalysisType(data["analysis_type"])
+            if isinstance(data["analysis_type"], str)
+            else data["analysis_type"]
+        )
+
+        return cls(
+            analysis_type=analysis_type,
+            tstep=float(data["tstep"]),
+            tstop=float(data["tstop"]),
+            tstart=float(data["tstart"]) if data.get("tstart") is not None else None,
+            tmax=float(data["tmax"]) if data.get("tmax") is not None else None,
+            uic=bool(data["uic"]) if data.get("uic") is not None else None,
+        )
+
 
 @dataclass()
 class ExportParameters:
-    model_simulation_folder_name: ModelsSimulationFolders
+    model_simulation_folder: ModelsSimulationFolders
     folder_name: str
     file_name: str
     magnitudes: List[str]
@@ -158,15 +198,39 @@ class ExportParameters:
         timestamp = int(time.time())
         self.folder_name = self.folder_name + "_" + str(timestamp)
 
+    @classmethod
+    def from_dict(
+        cls, data: Dict[str, Any], model: MemristorModels
+    ) -> "ExportParameters":
+        model_simulation_folder = (
+            ModelsSimulationFolders.get_simulation_folder_by_model(model)
+        )
+        return cls(
+            model_simulation_folder=model_simulation_folder,
+            folder_name=data["folder_name"],
+            file_name=data["file_name"],
+            magnitudes=data["magnitudes"],
+        )
+
 
 @dataclass()
 class Subcircuit:
-    name: str
-    nodes: List[str]
-    parameters: ModelParameters
+    model_parameters: ModelParameters
+    name: str = "memristor"
+    nodes: List[str] = field(default_factory=lambda: ["pl", "mn", "x"])
 
     def get_nodes_as_string(self) -> str:
         return " ".join(self.nodes)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "Subcircuit":
+        model_params = ModelParameters(**data["model_parameters"])
+
+        return cls(
+            model_parameters=model_params,
+            name=data.get("name", "memristor"),
+            nodes=data.get("nodes", ["pl", "mn", "x"]),
+        )
 
 
 @dataclass()
@@ -208,9 +272,9 @@ class Component:
 
     def get_attributes_as_string(self):
         attr_str = ""
-        for field in fields(self):
-            if getattr(self, field.name) is not None:
-                attr_str += f"{getattr(self, field.name) } "
+        for f in fields(self):
+            if getattr(self, f.name) is not None:
+                attr_str += f"{getattr(self, f.name) } "
 
         return attr_str
 
@@ -255,3 +319,16 @@ class Graph:
     vin_minus: Tuple[int, int]
     vin_plus: Tuple[int, int]
     seed: int = None
+
+
+@dataclass
+class SimulationInputs:
+    model: MemristorModels
+    subcircuit: Subcircuit
+    input_parameters: InputParameters
+    simulation_parameters: SimulationParameters
+    export_parameters: ExportParameters
+    network_type: NetworkType
+    network_parameters: NetworkParameters = None
+    amount_iterations: int = 1
+    plot_types: List[PlotType] = None

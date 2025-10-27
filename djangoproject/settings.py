@@ -122,7 +122,21 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+
+# Directorios donde Django buscará archivos estáticos durante desarrollo
+STATICFILES_DIRS = [
+    BASE_DIR / "memristorsimulation_app" / "static",
+]
+
+# Directorio donde se recopilarán todos los archivos estáticos en producción
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Configuración adicional para archivos estáticos
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

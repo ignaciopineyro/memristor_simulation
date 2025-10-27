@@ -13,11 +13,11 @@ from memristorsimulation_app.representations import (
     BehaviouralSource,
     ModelDependence,
     InputParameters,
-    SinWaveForm,
     SimulationParameters,
     ExportParameters,
     NetworkParameters,
     Graph,
+    AlternatingPulseWaveForm,
 )
 from memristorsimulation_app.services.circuitfileservice import CircuitFileService
 from memristorsimulation_app.services.directoriesmanagementservice import (
@@ -26,32 +26,38 @@ from memristorsimulation_app.services.directoriesmanagementservice import (
 from memristorsimulation_app.services.networkservice import NetworkService
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
-from memristorsimulation_app.templates.template import Template
+from memristorsimulation_app.simulation_templates.basetemplate import BaseTemplate
 
 
-class GeometricNetworkDiFrancesco(Template):
+class GeometricNetworkPulses(BaseTemplate):
     N = 4
     M = 4
     REMOVAL_PROBABILITY = 0
 
     ALPHA = 0
     BETA = 500e3
-    RINIT = 200e3
+    RINIT = 20e3
     ROFF = 200e3
     RON = 2e3
     VT = 0.6
 
-    VO = 0
-    AMPLITUDE = 12
-    FREQUENCY = 1
-    PHASE = 180
-    WAVE_FORM = SinWaveForm
+    WAVE_FORM = AlternatingPulseWaveForm
+
+    V_PLUS = (0, 0)
+    V_MINUS = (3, 0)
+
+    V1 = 0
+    V2 = [-10, 10, 10]
+    TD = 0.5
+    TR = 0.05
+    TF = 0.01
+    PW = 0.05
 
     T_STEP = 2e-3
     T_STOP = 10
 
-    EXPORT_FOLDER_NAME = f"geometric_network_difrancesco_{N}x{M}"
-    EXPORT_FILE_NAME = f"geometric_network_difrancesco_{N}x{M}_simulation"
+    EXPORT_FOLDER_NAME = f"geometric_network_pulses_alternating_{N}x{M}"
+    EXPORT_FILE_NAME = f"geometric_network_pulses_alternating_{N}x{M}_simulation"
     AMOUNT_ITERATIONS = 1
 
     PLOT_TYPES = [
@@ -66,6 +72,8 @@ class GeometricNetworkDiFrancesco(Template):
         self.network_service = NetworkService(
             NetworkType.GRID_2D_GRAPH,
             NetworkParameters(n=self.N, m=self.M),
+            vin_minus=self.V_MINUS,
+            vin_plus=self.V_PLUS,
             removal_probability=self.REMOVAL_PROBABILITY,
         )
         self.graph = Graph(
@@ -93,7 +101,7 @@ class GeometricNetworkDiFrancesco(Template):
         model_parameters = ModelParameters(
             self.ALPHA, self.BETA, self.RINIT, self.ROFF, self.RON, self.VT
         )
-        subcircuit = Subcircuit("memristor", ["pl", "mn", "x"], model_parameters)
+        subcircuit = Subcircuit(model_parameters)
         source_bx = BehaviouralSource(
             name="Bx",
             n_plus="0",
@@ -120,10 +128,10 @@ class GeometricNetworkDiFrancesco(Template):
             model=self.model,
             subcircuit=subcircuit,
             sources=[source_bx],
-            directories_management_service=self.directories_management_service,
             model_dependencies=model_dependencies,
             components=default_components,
             control_commands=[control_cmd],
+            directories_management_service=self.directories_management_service,
         )
 
     def create_circuit_file_service(
@@ -133,7 +141,7 @@ class GeometricNetworkDiFrancesco(Template):
             1,
             "vin",
             "gnd",
-            self.WAVE_FORM(self.VO, self.AMPLITUDE, self.FREQUENCY, phase=self.PHASE),
+            self.WAVE_FORM(self.V1, self.V2, self.TD, self.TR, self.TF, self.PW),
         )
 
         simulation_params = SimulationParameters(
@@ -156,8 +164,8 @@ class GeometricNetworkDiFrancesco(Template):
         ngspice_service = NGSpiceService(self.directories_management_service)
         ngspice_service.run_single_circuit_simulation(self.AMOUNT_ITERATIONS)
         self.plot(
-            export_parameters=self.export_params,
-            model_parameters=circuit_file_service.subcircuit_file_service.subcircuit.parameters,
+            export_parameters=self.directories_management_service.export_parameters,
+            model_parameters=circuit_file_service.subcircuit_file_service.subcircuit.model_parameters,
             input_parameters=circuit_file_service.input_parameters,
             plot_types=self.PLOT_TYPES,
             graph=self.graph,
@@ -165,4 +173,4 @@ class GeometricNetworkDiFrancesco(Template):
 
 
 if __name__ == "__main__":
-    GeometricNetworkDiFrancesco(MemristorModels.PERSHIN).simulate()
+    GeometricNetworkPulses(MemristorModels.PERSHIN).simulate()

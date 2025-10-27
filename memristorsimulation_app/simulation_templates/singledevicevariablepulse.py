@@ -13,10 +13,10 @@ from memristorsimulation_app.representations import (
     BehaviouralSource,
     ModelDependence,
     InputParameters,
-    SinWaveForm,
     DeviceParameters,
     SimulationParameters,
     ExportParameters,
+    PulseWaveForm,
 )
 from memristorsimulation_app.services.circuitfileservice import CircuitFileService
 from memristorsimulation_app.services.directoriesmanagementservice import (
@@ -24,28 +24,29 @@ from memristorsimulation_app.services.directoriesmanagementservice import (
 )
 from memristorsimulation_app.services.ngspiceservice import NGSpiceService
 from memristorsimulation_app.services.subcircuitfileservice import SubcircuitFileService
-from memristorsimulation_app.templates.template import Template
+from memristorsimulation_app.simulation_templates.basetemplate import BaseTemplate
 
 
-class SingleDeviceVariableAmplitude(Template):
+class SingleDeviceVariableAmplitude(BaseTemplate):
     ALPHA = 0
     BETA = 500e3
-    RINIT = 200e3
+    RINIT = 2e3
     ROFF = 200e3
     RON = 2e3
     VT = 0.6
 
-    WAVE_FORM = SinWaveForm
+    WAVE_FORM = PulseWaveForm
 
-    VO = 0
-    AMPLITUDE = [0.5, 2, 4, 8]
-    FREQUENCY = 1
-    PHASE = 0
+    V1 = 0
+    V2 = [2, 4, 8]
+    TD = 0
+    TR = 0.05
+    TF = 0.01
 
     T_STEP = 2e-3
     T_STOP = 2
 
-    EXPORT_FOLDER_NAME = "single_device_variable_amplitude"
+    EXPORT_FOLDER_NAME = "single_device_variable_pulse"
     AMOUNT_ITERATIONS = 100
 
     PLOT_TYPES = [
@@ -67,7 +68,7 @@ class SingleDeviceVariableAmplitude(Template):
         model_parameters = ModelParameters(
             self.ALPHA, self.BETA, self.RINIT, self.ROFF, self.RON, self.VT
         )
-        subcircuit = Subcircuit("memristor", ["pl", "mn", "x"], model_parameters)
+        subcircuit = Subcircuit(model_parameters)
         source_bx = BehaviouralSource(
             name="Bx",
             n_plus="0",
@@ -90,7 +91,7 @@ class SingleDeviceVariableAmplitude(Template):
 
         control_cmd = ".func f1(y)={beta*y+0.5*(alpha-beta)*(abs(y+Vt)-abs(y-Vt))}"
 
-        export_file_name = "alpha_variable"
+        export_file_name = "pulse_variable"
         export_params = ExportParameters(
             ModelsSimulationFolders.get_simulation_folder_by_model(self.model),
             self.EXPORT_FOLDER_NAME,
@@ -105,10 +106,10 @@ class SingleDeviceVariableAmplitude(Template):
             model=self.model,
             subcircuit=subcircuit,
             sources=[source_bx],
-            directories_management_service=subcircuit_directories_management_service,
             model_dependencies=model_dependencies,
             components=default_components,
             control_commands=[control_cmd],
+            directories_management_service=subcircuit_directories_management_service,
         )
 
     def create_circuit_file_service(
@@ -116,8 +117,8 @@ class SingleDeviceVariableAmplitude(Template):
     ) -> Tuple[List[CircuitFileService], List[DirectoriesManagementService]]:
         circuit_file_services, circuit_directories_management_services = [], []
 
-        for amplitude in self.AMPLITUDE:
-            waveform = SinWaveForm(self.VO, amplitude, self.FREQUENCY, phase=self.PHASE)
+        for amplitude in self.V2:
+            waveform = self.WAVE_FORM(self.V1, amplitude, self.TD, self.TR, self.TF)
 
             input_params = InputParameters(
                 1,
@@ -175,7 +176,7 @@ class SingleDeviceVariableAmplitude(Template):
         for cfs, dms in zip(circuit_file_services, directories_management_services):
             self.plot(
                 export_parameters=dms.export_parameters,
-                model_parameters=cfs.subcircuit_file_service.subcircuit.parameters,
+                model_parameters=cfs.subcircuit_file_service.subcircuit.model_parameters,
                 input_parameters=cfs.input_parameters,
                 plot_types=self.PLOT_TYPES,
             )

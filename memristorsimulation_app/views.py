@@ -7,7 +7,6 @@ from rest_framework import status
 from memristorsimulation_app.serializers.simulation import SimulationInputsSerializer
 from django.shortcuts import render
 from memristorsimulation_app.services.simulationservice import SimulationService
-from .forms import ModelParametersForm
 
 
 class SimulationView(APIView):
@@ -47,5 +46,4 @@ class SimulationView(APIView):
             )
 
     def get(self, request):
-        form = ModelParametersForm()
-        return render(request, "form.html", {"form": form})
+        return render(request, "form.html", {})

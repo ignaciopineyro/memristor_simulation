@@ -84,15 +84,21 @@ class SimulationService(BaseTemplate):
         self,
         subcircuit_file_services: SubcircuitFileService,
     ) -> CircuitFileService:
-        network_service = NetworkService(
-            self.simulation_inputs.network_type,
-            self.simulation_inputs.network_parameters,
-        )
+        print(f"\n\n 1 \n\n")
+        network_service, ignore_states = None, None
+        if self.simulation_inputs.network_type != NetworkType.SINGLE_DEVICE:
+            network_service = NetworkService(
+                self.simulation_inputs.network_type,
+                self.simulation_inputs.network_parameters,
+            )
+            ignore_states = network_service.should_ignore_states()
+
+        print(f"\n\n 2 \n\n")
         device_params = self.create_device_parameters(
             self.simulation_inputs.network_type, network_service=network_service
         )
-        ignore_states = network_service.should_ignore_states()
 
+        print(f"\n\n 3 \n\n")
         return CircuitFileService(
             subcircuit_file_services,
             self.simulation_inputs.input_parameters,
@@ -124,6 +130,7 @@ class SimulationService(BaseTemplate):
             input_parameters=circuit_file_service.input_parameters,
             plot_types=self.simulation_inputs.plot_types,
         )
+        print("5")
 
     def create_results_zip(self) -> BytesIO:
         zip_buffer = BytesIO()

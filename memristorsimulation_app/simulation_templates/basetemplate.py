@@ -92,6 +92,7 @@ class BaseTemplate(ABC):
         network_type: NetworkType,
         network_service: Optional[NetworkService] = None,
     ) -> List[DeviceParameters]:
+        network_service = network_service if network_service is not None else None
         if network_type == NetworkType.SINGLE_DEVICE:
             return [DeviceParameters("xmem", 0, ["vin", "gnd", "l0"], "memristor")]
         elif network_type in [

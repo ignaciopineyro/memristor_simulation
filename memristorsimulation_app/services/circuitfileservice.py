@@ -18,12 +18,12 @@ class CircuitFileService:
         device_parameters: List[DeviceParameters],
         simulation_parameters: SimulationParameters,
         directories_management_service: DirectoriesManagementService,
-        ignore_states: bool = False,
+        ignore_states: bool = None,
     ):
         self.input_parameters = input_parameters
         self.device_parameters = device_parameters
         self.simulation_parameters = simulation_parameters
-        self.ignore_states = ignore_states
+        self.ignore_states = ignore_states if ignore_states is not None else None
 
         self.subcircuit_file_service = subcircuit_file_service
         self.directories_management_service = directories_management_service

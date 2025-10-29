@@ -5,6 +5,7 @@
 *.txt
 *.jpg
 *.png
+*.env
 *.Identifier
 memristorsimulation_app/simulation_results/
 backup/

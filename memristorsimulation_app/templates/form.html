@@ -25,11 +25,7 @@
                             <option value="vourkas.sub">Vourkas</option>
                         </select>
                     </div>
-                </div>
-                
-                <div class="form-section">
-                    <h3>Model Parameters</h3>
-                    
+
                     <div class="form-group">
                         <label for="alpha">Alpha:</label>
                         <input type="number" step="any" id="alpha" name="alpha" value="0" required>
@@ -83,7 +79,7 @@
 
             <div class="form-column">
                 <div class="form-section">
-                    <h3>Waveform</h3>
+                    <h3>Waveform Configuration</h3>
                     
                     <div class="form-group">
                         <label for="wave_form_type">Waveform Type:</label>
@@ -256,12 +252,12 @@
                     
                     <div class="form-group">
                         <label for="folder_name">Folder Name:</label>
-                        <input type="text" id="folder_name" name="folder_name" value="simulation_test" required>
+                        <input type="text" id="folder_name" name="folder_name" value="simulation_folder" required>
                     </div>
                     
                     <div class="form-group">
                         <label for="file_name">File Name:</label>
-                        <input type="text" id="file_name" name="file_name" value="results" required>
+                        <input type="text" id="file_name" name="file_name" value="simulation_name" required>
                     </div>
                     
                     <div class="form-group">
@@ -348,13 +344,6 @@
                         
                         <div class="form-group">
                             <label>
-                                <input type="checkbox" name="plot_types" value="IV_OVERLAPPED">
-                                I-V overlapped
-                            </label>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>
                                 <input type="checkbox" name="plot_types" value="IV_LOG" checked>
                                 I-V log
                             </label>
@@ -362,35 +351,14 @@
                         
                         <div class="form-group">
                             <label>
-                                <input type="checkbox" name="plot_types" value="IV_LOG_OVERLAPPED">
-                                I-V log overlapped
-                            </label>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>
-                                <input type="checkbox" name="plot_types" value="CURRENT_AND_VIN_VS_TIME">
+                                <input type="checkbox" name="plot_types" value="CURRENT_AND_VIN_VS_TIME" checked>
                                 Current and vin vs time
-                            </label>
-                        </div>
-                        
-                        <div class="form-group single-device-only">
-                            <label>
-                                <input type="checkbox" name="plot_types" value="STATE_AND_VIN_VS_TIME">
-                                State and vin vs time
-                            </label>
-                        </div>
-                        
-                        <div class="form-group single-device-only">
-                            <label>
-                                <input type="checkbox" name="plot_types" value="MEMRISTIVE_STATES_OVERLAPPED">
-                                Memristive states overlapped
                             </label>
                         </div>
                         
                         <div class="form-group network-graph-only">
                             <label>
-                                <input type="checkbox" name="plot_types" value="GRAPH">
+                                <input type="checkbox" name="plot_types" value="GRAPH" checked>
                                 Graph
                             </label>
                         </div>

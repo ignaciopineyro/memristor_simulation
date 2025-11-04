@@ -1,19 +1,44 @@
-# Memristor device simulator
+# Memristor Device Simulator
 
-This is a memristive circuits simulation platform made by Ignacio Piñeyro. This platform integrates a module for
-creating `.cir` circuit files, a module for executing simulations using NGSpice, and another one that plots the
-results in different manners. The platform was implemented in Python, with the help of different libraries such as
-NumPy Pandas, SciPy, NetworkX and Matplotlib.
-
+Memristive circuits simulation App made by Ignacio Piñeyro. This platform creates `.cir` circuit files and runs the simulation of said circuit using NGSpice. The platform was implemented in Python and includes a web interface that allows the user to configure and simulate memristive networks.
 
 ---
 
-## TODO list:
+## Quick Start with Docker
 
-* Test coverage for each service/template
-* Web App framework (FastAPI? Django?)
-* Dockerize App
-* Create UI - Frontend
+The easiest way to run the application is using Docker. This method works on any PC with Docker installed.
+
+### Prerequisites
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+
+### Running the Application
+
+1. **Clone the repository:**
+```bash
+git clone <repository-url>
+cd memristor_simulation
+```
+
+2. **Start the application:**
+```bash
+make up-build # First time start
+make up # If already built
+```
+
+3. **Access the application:**
+- **Web Interface:** http://localhost:8000
+
+4. **Stop the application:**
+```bash
+make down # Or CTRL+C
+```
+
+### Docker Features
+- **Ubuntu 22.04 LTS** with Python 3.10
+- **NGSpice Engine** pre-installed
+- **All Python dependencies** from requirements.txt
+- **Django web interface** ready to use
 
 ---
 
@@ -43,53 +68,80 @@ NumPy Pandas, SciPy, NetworkX and Matplotlib.
             * /logs: Simulation logs with NGSpice output and time measures.
             * Simulation results (csv files)
 
-- **`main.py`:** Main program file.
 - **`constants.py`:** Enum objects with constants used in the project.
 - **`representations.py`:** Dataclasses representations used in the project.
 - **`requirements.txt`:** Dependencies needed to run code.
 
 ---
 
-## Before starting
+## Manual Installation (Alternative)
 
-- Python3 (versions above 3.10 may have incompatibility issues with project dependencies)
+If you prefer to install manually without Docker:
+
+### Prerequisites
+- Python 3.10 (versions above 3.10 may have incompatibility issues with project dependencies)
 - NGSpice Engine
-- Install project dependencies on `requirements.txt` (Venv recommended)
+- Virtual environment (recommended)
+
+### Installation Steps
+
+1. **Clone the repository:**
+```bash
+git clone <repository-url>
+cd memristor_simulation
+```
+
+2. **Install NGSpice:**
+   - **Windows:** Download from http://ngspice.sourceforge.net/download.html
+   - **Linux:** `sudo apt-get install ngspice`
+   - **macOS:** `brew install ngspice`
+
+3. **Create and activate virtual environment:**
+```bash
+python3.10 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+4. **Install Python dependencies:**
+```bash
+pip install -r requirements.txt
+```
+
+5. **Set up Django:**
+```bash
+python manage.py migrate
+python manage.py collectstatic
+```
+
+6. **Run the development server:**
+```bash
+python manage.py runserver
+```
+
+7. **Access the application at:** http://localhost:8000
 
 ---
 
-## Getting started
+## Web Interface Usage
 
-* Clone the repository
-* Install NGSpice and add its exec file to the PATH variable:
-    - Windows: http://ngspice.sourceforge.net/download.html
-    - Linux: `sudo apt-get install ngspice`
-* Install the required dependencies (using a virtual environment is recommended) - `pip install -r requirements.txt`
-* At the end of the `main.py` file, you can modify the `simulate` function to use one of the template simulations for a
-  given model and generate the desired plots. Supported templates, models and plots are still limited but the plan is to
-  add more.
-    - **_Simulation templates:_
-      ** `DEFAULT_TEST`, `DEFAULT_NETWORK`, `DEFAULT_NETWORK_WITH_EDGE_REMOVAL`, `DI_FRANCESCO_VARIABLE_AMPLITUDE`, `DI_FRANCESCO_VARIABLE_BETA`, `QUINTEROS_EXPERIMENTS`, `RANDOM_REGULAR`, `WATTS_STROGATZ_CIRCULAR_REGULAR`, `WATTS_STROGATZ`
-    - **_Plot Types:_
-      ** `IV`, `IV_OVERLAPPED`, `IV_LOG`, `IV_LOG_OVERLAPPED`, `MEMRISTIVE_STATES`, `MEMRISTIVE_STATES_OVERLAPPED`
-    - **_Models:_** `PERSHIN` and `VOURKAS`
-    - **_Amount Iterations:_** Any integer. Amount of times the template will be simulated. Used to compute average time
-      measure of simulations.
+The Django web interface provides an easy-to-use form for configuring and running memristor simulations:
 
-```
-if __name__ == "__main__":
-    simulate(
-        simulation_template=SimulationTemplate.DEFAULT_TEST,
-        plot_types=[
-            PlotType.IV, PlotType.IV_OVERLAPPED, PlotType.IV_LOG, PlotType.IV_LOG_OVERLAPPED,
-            PlotType.MEMRISTIVE_STATES, PlotType.MEMRISTIVE_STATES_OVERLAPPED
-        ],
-        model=MemristorModels.PERSHIN, amount_iterations=100
-    )
-```
+1. **Model Configuration:** Select memristor model (Pershin or Vourkas). Parameters will depend on the chosen model (Pershin and Vourkas have the same set of params)
+2. **Input Parameters:** Source name and connection nodes
+3. **Waveform Configuration:** Configure voltage waveforms (SIN, PULSE, PWL)
+4. **Simulation Parameters:** Set simulation type, time steps, voltages, and device parameters
+5. **Export Parameters:** Folder and file name and magnitudes to export
+6. **Network Configuration:** Choose between single device or network topology. Parameters will depend on the chosen network type
+7. **Plotter:** Select plot types. Some plots will depend on the chosen network type
+8. **Execute Simulation:** Click "Run Simulation" to execute and download results as ZIP
 
-* Execute `main.py` with `python3 main.py`
+### Simulation Results
+- Simulation execution time scales with complexity of the circuit (amount of devices)
+- Results are automatically packaged as ZIP files
+- Include CSV data files, generated plots, and simulation logs
+- Persistent storage maintains simulation history
 
+---
 ---
 
 #### Coded by Ignacio Piñeyro as part of my Electronic Eng. degree's final project for Universidad Nacional de San Martin (UNSAM). Feel free to send any questions, suggestions or comments to ignaciopineyroo@gmail.com

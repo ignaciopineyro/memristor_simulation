@@ -11,9 +11,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
-from pathlib import Path
 import sys
 
+from pathlib import Path
 from dotenv import load_dotenv
 from pyparsing import Enum
 
@@ -28,9 +28,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-=q_cs)f57mr4vck_2hc)0f!8n=xbg+6+)dtzv)yll9i)crf8vo"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0").split(",")
 
 
 # Application definition
@@ -130,7 +130,7 @@ STATICFILES_DIRS = [
 ]
 
 # Directorio donde se recopilarán todos los archivos estáticos en producción
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Configuración adicional para archivos estáticos
 STATICFILES_FINDERS = [
@@ -143,13 +143,15 @@ STATICFILES_FINDERS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
+# Configuración de archivos de entorno para Docker
 if "pytest" in sys.argv[0] or "py.test" in sys.argv[0] or "test" in sys.argv:
     env_file = BASE_DIR / "envs" / "testing.env"
+elif os.getenv("DOCKER_ENV"):
+    # En Docker, usar variables de entorno directamente
+    pass
 else:
     env_file = BASE_DIR / "envs" / "dev.env"
-
-load_dotenv(dotenv_path=env_file)
+    load_dotenv(dotenv_path=env_file)
 
 
 class Environments(Enum):

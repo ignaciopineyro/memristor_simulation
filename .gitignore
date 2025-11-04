@@ -15,3 +15,5 @@ NGSpice
 !backup/**
 .vscode/
 temp/
+!assets/
+!assets/**

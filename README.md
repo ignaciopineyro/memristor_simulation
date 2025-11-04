@@ -1,124 +1,202 @@
 # Memristor Device Simulator
 
-Memristive circuits simulation App made by Ignacio Piñeyro. This platform creates `.cir` circuit files and runs the simulation of said circuit using NGSpice. The platform was implemented in Python and includes a web interface that allows the user to configure and simulate memristive networks.
+A web-based platform for simulating memristive circuits and networks. This application provides an intuitive interface for researchers, students, and engineers to configure, simulate, and analyze memristor behavior without requiring extensive programming knowledge.
+
+## Table of Contents
+
+- [What is a Memristor?](#what-is-a-memristor)
+- [What This Application Does](#what-this-application-does)
+- [Quick Start with Docker (Recommended)](#quick-start-with-docker-recommended)
+  - [Step 1: Install Docker](#step-1-install-docker)
+  - [Step 2: Get the Application](#step-2-get-the-application)
+  - [Step 3: Start the Application](#step-3-start-the-application)
+  - [Step 4: Access the Application](#step-4-access-the-application)
+  - [Step 5: Stop the Application](#step-5-stop-the-application)
+- [Project structure](#project-structure)
+  - [Django Project Structure](#django-project-structure)
+  - [Application-Specific Directories](#application-specific-directories)
+  - [Root Level Files](#root-level-files)
+- [Alternative: Manual Installation](#alternative-manual-installation)
+- [Web Interface Usage](#web-interface-usage)
+  - [Simulation Results](#simulation-results)
 
 ---
 
-## Quick Start with Docker
+## What is a Memristor?
+A memristor is a passive electronic component that changes its resistance based on the history of current that has flowed through it. This "memory resistance" makes memristors valuable for neuromorphic computing, non-volatile memory, and analog computation applications.
 
-The easiest way to run the application is using Docker. This method works on any PC with Docker installed.
+## What This Application Does
+- **Circuit Simulation**: Generate and simulate memristive circuits using industry-standard NGSpice
+- **Multiple Models**: Support for Pershin and Vourkas memristor models
+- **Network Analysis**: Simulate individual devices or complex networks
+- **Visualization**: Automatic generation of I-V curves, hysteresis loops, and time-domain plots
+- **Export Results**: Download simulation data and plots as organized ZIP files
 
-### Prerequisites
-- [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
+---
 
-### Running the Application
+## Quick Start with Docker (Recommended)
 
-1. **Clone the repository:**
+Docker provides the easiest way to run the application across all operating systems. No need to install Python, NGSpice, or manage dependencies manually.
+
+### Step 1: Install Docker
+
+#### Windows
+1. Download [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows/)
+2. Follow the installation wizard
+3. Restart your computer when prompted
+4. Open Docker Desktop and wait for it to start
+
+#### macOS
+1. Download [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/)
+2. Drag Docker.app to Applications folder
+3. Launch Docker from Applications
+4. Complete the setup process
+
+#### Linux (Ubuntu/Debian)
 ```bash
-git clone <repository-url>
+# Update package index
+sudo apt-get update
+
+# Install Docker
+sudo apt-get install docker.io docker-compose
+
+# Add your user to docker group (optional, avoids using sudo)
+sudo usermod -aG docker $USER
+# Log out and back in for this to take effect
+```
+
+#### Linux (Other Distributions)
+Follow the [official Docker installation guide](https://docs.docker.com/engine/install/) for your specific distribution.
+
+### Step 2: Get the Application
+
+#### Option A: Download ZIP (No Git Required)
+1. Go to the [repository page](https://github.com/ignaciopineyro/memristor_simulation)
+2. Click the green "Code" button
+3. Select "Download ZIP"
+4. Extract the ZIP file to your desired location
+5. Open terminal/command prompt in the extracted folder
+
+#### Option B: Clone with Git
+```bash
+git clone https://github.com/ignaciopineyro/memristor_simulation.git
 cd memristor_simulation
 ```
 
-2. **Start the application:**
+### Step 3: Start the Application
+
+#### Windows (Command Prompt or PowerShell)
 ```bash
-make up-build # First time start
-make up # If already built
+# First time setup
+docker-compose up --build
+
+# Subsequent runs
+docker-compose up
 ```
 
-3. **Access the application:**
-- **Web Interface:** http://localhost:8000
-
-4. **Stop the application:**
+#### macOS/Linux (Terminal)
 ```bash
-make down # Or CTRL+C
+# If you have make installed (recommended)
+make up-build    # First time
+make up          # Subsequent runs
+
+# Without make
+docker-compose up --build    # First time
+docker-compose up           # Subsequent runs
 ```
 
-### Docker Features
-- **Ubuntu 22.04 LTS** with Python 3.10
-- **NGSpice Engine** pre-installed
-- **All Python dependencies** from requirements.txt
-- **Django web interface** ready to use
+### Step 4: Access the Application
+
+Once you see "Starting development server at http://0.0.0.0:8000/" in the terminal:
+
+1. **Open your web browser**
+2. **Navigate to**: http://localhost:8000
+3. **Start simulating!**
+
+### Step 5: Stop the Application
+
+- **Press `Ctrl+C`** in the terminal, or
+- **Run**: `docker-compose down` (or `make down`)
 
 ---
 
 ## Project structure:
 
-- **/models:** subcircuit (.sub) files with memristor models (Pershin, Vourkas, Biolek, etc). These files have
-  the dynamic parameters of the memristor.
+This is a Django web application that follows the standard Django project structure with additional organization for memristor simulation functionality. The project is organized as follows:
 
-- **/services:**
-    * `circuitfileservice.py`: Circuit file (.cir) generation. Circuit file contains subcircuits dependencies,
-      componentes
-      instance, analysis commands and control commands. Simulation CSV file name and path are written here.
-    * `subcircuitfileservice.py`: Subcircuit file (.sub) generation. Subcircuit file contains memristor model
-      parameters, other
-      models dependencies, sources, componentes and control commands. These files are saved in the /models directory.
-    * `plotterservice.py`: Plotting service to generate I-V and State-Time curves for particular simulations,
-      comparative plots
-      between all the simulations in a folder and a sub-plot figure for all simulations in folder.
-    * `directoriesmanagementservice.py`: Paths finding and folders creation.
-    * `ngspiceservice.py`: Wrapper for NGSpice simulation with time measure acquisition commands.
-    * `timemeasureservice.py`: Time measure of simulations logic.
+### Django Project Structure
 
-- **/simulation_results:**
-    * /<model_name>_simulations
-        * /<simulation_template_name>
-            * /figures: Simulation plots.
-            * /logs: Simulation logs with NGSpice output and time measures.
-            * Simulation results (csv files)
+- **`djangoproject/`**: Main Django project directory containing configuration files
+    * `settings.py`: Django configuration including database, static files, and app settings
+    * `urls.py`: URL routing configuration
+    * `wsgi.py` & `asgi.py`: WSGI and ASGI application entry points
 
-- **`constants.py`:** Enum objects with constants used in the project.
-- **`representations.py`:** Dataclasses representations used in the project.
-- **`requirements.txt`:** Dependencies needed to run code.
+- **`memristorsimulation_app/`**: Main Django application containing all simulation functionality
+    * `models.py`: Django ORM models for data persistence
+    * `views.py`: Django views handling HTTP requests and responses
+    * `admin.py`: Django admin interface configuration
+    * `apps.py`: Application configuration
+    * `constants.py`: Enum objects with constants used throughout the project
+    * `representations.py`: Dataclasses representations used in the project
+
+### Application-Specific Directories
+
+![Diagrama del sistema](assets/sequenceDiagram.png)
+
+- **`memristorsimulation_app/services/`**: Business logic services for simulation operations
+    * `circuitfileservice.py`: Circuit file (.cir) generation with subcircuits dependencies, component instances, analysis commands and control commands
+    * `subcircuitfileservice.py`: Subcircuit file (.sub) generation containing memristor model parameters, dependencies, sources, and components
+    * `plotterservice.py`: Plotting service for I-V and State-Time curves, comparative plots between simulations, and sub-plot figures
+    * `directoriesmanagementservice.py`: Path resolution and folder creation utilities
+    * `ngspiceservice.py`: NGSpice simulation wrapper with time measurement capabilities
+    * `timemeasureservice.py`: Simulation time measurement logic
+    * `networkservice.py`: Network topology generation for multi-device simulations
+
+- **`memristorsimulation_app/models/`**: Memristor model definitions
+    * `pershin.sub`: Pershin memristor model subcircuit file
+    * `vourkas.sub`: Vourkas memristor model subcircuit file
+
+- **`memristorsimulation_app/templates/`**: Django HTML templates for web interface
+    * Simulation parameter input forms
+    * Component-based modular templates for different simulation types
+
+- **`memristorsimulation_app/static/`**: Static web assets
+    * CSS stylesheets for form styling and responsive design
+    * JavaScript modules for form validation and interaction
+
+- **`memristorsimulation_app/serializers/`**: Django REST Framework serializers
+    * Data serialization for API endpoints and form validation
+
+- **`memristorsimulation_app/tests/`**: Test suite
+    * Unit tests for services, models, and API endpoints
+    * Integration tests for simulation workflows
+
+- **`memristorsimulation_app/simulation_results/`**: Simulation output storage
+    * `pershin_simulations/`: Results from Pershin model simulations
+    * `vourkas_simulations/`: Results from Vourkas model simulations
+    * Each simulation creates subdirectories containing:
+        * CSV data files with simulation results
+        * Generated plots in various formats
+        * Simulation logs with NGSpice output and time measurements
+
+### Root Level Files
+
+- **`manage.py`**: Django management script for running commands
+- **`requirements.txt`**: Python dependencies needed to run the application
+- **`db.sqlite3`**: SQLite database file (created after first migration)
+- **`Dockerfile`**: Docker container configuration
+- **`docker-compose.yml`**: Docker Compose orchestration file
+- **`entrypoint.sh`**: Docker container startup script
 
 ---
 
-## Manual Installation (Alternative)
+## Alternative: Manual Installation
 
-If you prefer to install manually without Docker:
+For advanced users who prefer not to use Docker, we provide detailed manual installation instructions in a separate guide:
 
-### Prerequisites
-- Python 3.10 (versions above 3.10 may have incompatibility issues with project dependencies)
-- NGSpice Engine
-- Virtual environment (recommended)
+**[Manual Installation Guide](MANUAL_INSTALLATION.md)**
 
-### Installation Steps
-
-1. **Clone the repository:**
-```bash
-git clone <repository-url>
-cd memristor_simulation
-```
-
-2. **Install NGSpice:**
-   - **Windows:** Download from http://ngspice.sourceforge.net/download.html
-   - **Linux:** `sudo apt-get install ngspice`
-   - **macOS:** `brew install ngspice`
-
-3. **Create and activate virtual environment:**
-```bash
-python3.10 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-4. **Install Python dependencies:**
-```bash
-pip install -r requirements.txt
-```
-
-5. **Set up Django:**
-```bash
-python manage.py migrate
-python manage.py collectstatic
-```
-
-6. **Run the development server:**
-```bash
-python manage.py runserver
-```
-
-7. **Access the application at:** http://localhost:8000
+**Note**: Manual installation is more complex and requires troubleshooting skills. We strongly recommend using Docker for most users.
 
 ---
 

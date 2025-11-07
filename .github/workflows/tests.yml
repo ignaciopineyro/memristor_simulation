@@ -1,0 +1,74 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths:
+      - '**.py'
+      - 'requirements.txt'
+      - 'pytest.ini'
+      - '.github/workflows/tests.yml'
+
+jobs:   
+  tests:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ngspice
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-django
+
+      - name: Set up environment variables
+        run: |
+          echo "DJANGO_SETTINGS_MODULE=djangoproject.settings" >> $GITHUB_ENV
+
+      - name: Run Django migrations
+        run: |
+          python manage.py migrate --verbosity=0
+
+      - name: Run tests with pytest
+        run: |
+          pytest memristorsimulation_app/tests/ -v --tb=short --strict-warnings
+        env:
+          DJANGO_SETTINGS_MODULE: djangoproject.settings
+
+      - name: Generate test coverage report
+        if: success() || failure()
+        run: |
+          pip install pytest-cov
+          pytest memristorsimulation_app/tests/ --cov=memristorsimulation_app --cov-report=xml --cov-report=term-missing --cov-fail-under=0
+        env:
+          DJANGO_SETTINGS_MODULE: djangoproject.settings
+
+      - name: Upload coverage reports
+        if: github.event_name == 'pull_request'
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false

@@ -41,7 +41,7 @@ Docker provides the easiest way to run the application across all operating syst
 ### Step 1: Install Docker
 
 #### Windows
-1. Download [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows/)
+1. Download [Docker Desktop for Windows](https://docs.docker.com/desktop/setup/install/windows-install/)
 2. Follow the installation wizard
 3. Restart your computer when prompted
 4. Open Docker Desktop and wait for it to start
@@ -223,3 +223,4 @@ The Django web interface provides an easy-to-use form for configuring and runnin
 ---
 
 #### Coded by Ignacio Piñeyro as part of my Electronic Eng. degree's final project for Universidad Nacional de San Martin (UNSAM). Feel free to send any questions, suggestions or comments to ignaciopineyroo@gmail.com
+

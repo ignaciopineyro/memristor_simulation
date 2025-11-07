@@ -44,7 +44,7 @@ Docker provides the easiest way to run the application across all operating syst
 1. Download [Docker Desktop for Windows](https://docs.docker.com/desktop/setup/install/windows-install/)
 2. Follow the installation wizard
 3. Restart your computer when prompted
-4. Open Docker Desktop and wait for it to start
+4. Open Docker Desktop and wait for it to start. You might have to install/update WSL version (`wsl --update`)
 
 #### macOS
 1. Download [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/)
@@ -75,7 +75,8 @@ Follow the [official Docker installation guide](https://docs.docker.com/engine/i
 2. Click the green "Code" button
 3. Select "Download ZIP"
 4. Extract the ZIP file to your desired location
-5. Open terminal/command prompt in the extracted folder
+5. Open the terminal/command prompt (Windows Key + R > type "cmd" > Accept)
+6. Go to the extracted folder, for example `cd C:\Users\ExampleUser\Downloads\memristor_simulation-master`
 
 #### Option B: Clone with Git
 ```bash
@@ -86,11 +87,13 @@ cd memristor_simulation
 ### Step 3: Start the Application
 
 #### Windows (Command Prompt or PowerShell)
-```bash
-# First time setup
-docker-compose up --build
 
-# Subsequent runs
+- First time setup
+```bash
+docker-compose up --build
+```
+- Subsequent runs
+```bash
 docker-compose up
 ```
 
@@ -223,4 +226,5 @@ The Django web interface provides an easy-to-use form for configuring and runnin
 ---
 
 #### Coded by Ignacio Piñeyro as part of my Electronic Eng. degree's final project for Universidad Nacional de San Martin (UNSAM). Feel free to send any questions, suggestions or comments to ignaciopineyroo@gmail.com
+
 

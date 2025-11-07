@@ -7,5 +7,6 @@ django==5.1.6
 djangorestframework==3.15.2
 pytest==8.3.4
 pytest-django==4.8.0
+pytest-cov==5.0.0
 python-dotenv==1.1.1
 django-rest-enumfield==0.2.0

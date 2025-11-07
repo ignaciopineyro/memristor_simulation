@@ -40,7 +40,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest-django
 
       - name: Set up environment variables
         run: |
@@ -52,14 +51,13 @@ jobs:
 
       - name: Run tests with pytest
         run: |
-          pytest memristorsimulation_app/tests/ -v --tb=short --strict-warnings
+          pytest memristorsimulation_app/tests/ -v --tb=short
         env:
           DJANGO_SETTINGS_MODULE: djangoproject.settings
 
       - name: Generate test coverage report
         if: success() || failure()
         run: |
-          pip install pytest-cov
           pytest memristorsimulation_app/tests/ --cov=memristorsimulation_app --cov-report=xml --cov-report=term-missing --cov-fail-under=0
         env:
           DJANGO_SETTINGS_MODULE: djangoproject.settings

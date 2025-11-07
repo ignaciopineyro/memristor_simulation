@@ -13,7 +13,7 @@ from memristorsimulation_app.services.directoriesmanagementservice import (
 )
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -38,79 +38,49 @@ class TimeMeasureService:
     ) -> TimeMeasure:
         time_measure = TimeMeasure(start_time=self.init_python_execution_time_measure())
 
-        # TODO: Refactor to log properly
         try:
             if self._is_os_linux():
                 self.execute_command = f"time ngspice {self.circuit_file_path} 2>&1"
 
-                logger.info(f"Ejecutando comando: {self.execute_command}")
-                logger.info(f"Archivo de circuito: {self.circuit_file_path}")
-                logger.info(
-                    f"¿Archivo existe?: {os.path.exists(self.circuit_file_path)}"
-                )
+                if (
+                    not self.circuit_file_path
+                    or not self.simulation_result_file_path
+                    or not self.simulation_log_path
+                ):
+                    raise FilePathNotFoundError(
+                        f"File paths not provided for TimeMeasureService. \nCircuit file path: {self.circuit_file_path}\n"
+                        f"Simulation result file path: {self.simulation_result_file_path}\n"
+                        f"Simulation log path: {self.simulation_log_path}"
+                    )
 
-                # Agregar más información de debug
+                logger.info(f"Executing command: {self.execute_command}")
+
                 process = subprocess.Popen(
                     ["bash", "-c", self.execute_command, "_"],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
-                    cwd=os.path.dirname(
-                        self.circuit_file_path
-                    ),  # Establecer directorio de trabajo
-                    env=os.environ.copy(),  # Usar variables de entorno actuales
+                    cwd=os.path.dirname(self.circuit_file_path),
+                    env=os.environ.copy(),
                 )
 
-                logger.info(f"Proceso creado con PID: {process.pid}")
+                simulation_log, linux_time_output = process.communicate()
 
-                # Agregar timeout para evitar cuelgues
-                try:
-                    simulation_log, linux_time_output = process.communicate(
-                        timeout=10
-                    )  # 5 minutos timeout
-                    logger.info(f"Proceso terminado con código: {process.returncode}")
-
-                except subprocess.TimeoutExpired:
-                    logger.error("El proceso excedió el timeout de 5 minutos")
-                    process.kill()
-                    simulation_log, linux_time_output = process.communicate()
-
-                # Verificar si hay errores
                 if process.returncode != 0:
-                    logger.error(f"El proceso falló con código: {process.returncode}")
                     logger.error(
-                        f"STDOUT: {simulation_log.decode() if simulation_log else 'Vacío'}"
+                        f"Simulation process failed with return code: {process.returncode}"
                     )
-                    logger.error(
-                        f"STDERR: {linux_time_output.decode() if linux_time_output else 'Vacío'}"
-                    )
-
-                # Verificar contenido de outputs
-                logger.info(
-                    f"Longitud STDOUT: {len(simulation_log) if simulation_log else 0}"
-                )
-                logger.info(
-                    f"Longitud STDERR: {len(linux_time_output) if linux_time_output else 0}"
-                )
+                else:
+                    logger.info(f"Simulation process ended succesfully")
 
                 time_measure = self.write_python_time_measure_into_csv(time_measure)
                 self.write_linux_time_measure_into_csv(linux_time_output, time_measure)
 
             else:
-                self.execute_command = f"ngspice {self.circuit_file_path} 2>&1"
-
-                simulation_log = subprocess.Popen(
-                    ["bash", "-c", self.execute_command, "_"],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                ).communicate()
-
-                time_measure = self.write_python_time_measure_into_csv(
-                    time_measure=time_measure
-                )
+                raise OperatingSystemError()
 
         except Exception as e:
-            logger.exception(f"Error ejecutando simulación: {e}")
-            raise
+            logger.error(f"Error during time measurement execution: {str(e)}")
+            raise e
 
         self.write_simulation_log(
             simulation_log=simulation_log.decode(), time_measure=time_measure
@@ -276,3 +246,11 @@ class TimeMeasureService:
     @staticmethod
     def _is_os_linux() -> bool:
         return sys.platform == "linux" or sys.platform == "linux2"
+
+
+class FilePathNotFoundError(Exception):
+    pass
+
+
+class OperatingSystemError(Exception):
+    pass

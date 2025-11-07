@@ -367,8 +367,29 @@
             </div>
         </div>
 
-        <button type="submit" class="submit-btn">Execute Simulation</button>
+        <button type="submit" class="submit-btn" id="submitButton">Execute Simulation</button>
     </form>
+</div>
+
+<div id="progressModal" class="modal progress-modal" style="display: none;">
+    <div class="modal-content progress-modal-content">
+        <div class="progress-body">
+            <h2>Running Simulation</h2>
+            
+            <div class="loading-spinner"></div>
+            
+            <div class="progress-info">
+                <p>The simulation is currently running. Please wait...</p>
+                <div class="elapsed-time">
+                    Elapsed time: <span id="elapsedTime">0s</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="progress-footer">
+            <button class="cancel-btn" onclick="cancelSimulation()">Cancel Simulation</button>
+        </div>
+    </div>
 </div>
 
 <div id="messageModal" class="modal" style="display: none;">
@@ -386,7 +407,66 @@
 </div>
 
 <script>
+let simulationInProgress = false;
+let elapsedTimeInterval;
+let simulationStartTime;
+let currentAbortController;
+
+function showProgressModal() {
+    const modal = document.getElementById('progressModal');
+    simulationInProgress = true;
+    simulationStartTime = Date.now();
     
+    document.getElementById('elapsedTime').textContent = '0s';
+    
+    modal.style.display = 'flex';
+    
+    const submitBtn = document.getElementById('submitButton');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Simulation Running...';
+    submitBtn.style.opacity = '0.6';
+    
+    elapsedTimeInterval = setInterval(updateElapsedTime, 1000);
+}
+
+function updateElapsedTime() {
+    if (!simulationStartTime) return;
+    
+    const elapsed = Math.floor((Date.now() - simulationStartTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    
+    if (minutes > 0) {
+        document.getElementById('elapsedTime').textContent = `${minutes}m ${seconds}s`;
+    } else {
+        document.getElementById('elapsedTime').textContent = `${seconds}s`;
+    }
+}
+
+function hideProgressModal() {
+    const modal = document.getElementById('progressModal');
+    modal.style.display = 'none';
+    simulationInProgress = false;
+    
+    if (elapsedTimeInterval) {
+        clearInterval(elapsedTimeInterval);
+        elapsedTimeInterval = null;
+    }
+    
+    const submitBtn = document.getElementById('submitButton');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Execute Simulation';
+    submitBtn.style.opacity = '1';
+}
+
+function cancelSimulation() {
+    if (currentAbortController) {
+        currentAbortController.abort();
+    }
+    hideProgressModal();
+    showMessage("Simulation cancelled by user.", true);
+}
+
 function updateWaveformParameters() {
     const waveformType = document.getElementById('wave_form_type').value;
     const allParams = document.querySelectorAll('.wave-form-params');
@@ -477,8 +557,8 @@ function closeModal() {
 }
 
 window.onclick = function(event) {
-    const modal = document.getElementById('messageModal');
-    if (event.target === modal) {
+    const messageModal = document.getElementById('messageModal');
+    if (event.target === messageModal) {
         closeModal();
     }
 }
@@ -486,6 +566,9 @@ window.onclick = function(event) {
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         closeModal();
+        if (simulationInProgress && confirm('Are you sure you want to cancel the simulation?')) {
+            cancelSimulation();
+        }
     }
 });
 
@@ -647,6 +730,11 @@ function buildRequestData(formData) {
 document.getElementById("simulationForm").addEventListener("submit", function(event) {
     event.preventDefault();
     
+    if (simulationInProgress) {
+        showMessage("A simulation is already running. Please wait for it to complete.", true);
+        return;
+    }
+    
     try {
         const formData = new FormData(this);
         
@@ -658,7 +746,9 @@ document.getElementById("simulationForm").addEventListener("submit", function(ev
         
         const data = buildRequestData(formData);
         
-        showMessage("Executing simulation, please wait...", false);
+        showProgressModal();
+        
+        currentAbortController = new AbortController();
         
         fetch("{% url 'form' %}", {
             method: "POST",
@@ -666,7 +756,8 @@ document.getElementById("simulationForm").addEventListener("submit", function(ev
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRFToken": formData.get("csrfmiddlewaretoken")
-            }
+            },
+            signal: currentAbortController.signal
         })
         .then(response => {
             if (!response.ok) {
@@ -683,6 +774,8 @@ document.getElementById("simulationForm").addEventListener("submit", function(ev
             return response.blob();
         })
         .then(blob => {
+            hideProgressModal();
+            
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.style.display = 'none';
@@ -700,6 +793,12 @@ document.getElementById("simulationForm").addEventListener("submit", function(ev
             showMessage("Simulation completed successfully! The results file has been downloaded.");
         })
         .catch(error => {
+            hideProgressModal();
+            
+            if (error.name === 'AbortError') {
+                return;
+            }
+            
             console.error("Error:", error);
             let errorMessage = "An error occurred while executing the simulation";
             
@@ -718,6 +817,7 @@ document.getElementById("simulationForm").addEventListener("submit", function(ev
         });
         
     } catch (error) {
+        hideProgressModal();
         console.error("Client error:", error);
         showMessage("Form validation error: " + error.message, true);
     }

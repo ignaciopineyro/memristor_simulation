@@ -1,5 +1,9 @@
 # Memristor Device Simulator
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/)
+[![Django](https://img.shields.io/badge/django-5.1-green.svg)](https://www.djangoproject.com/)
+
 A web-based platform for simulating memristive circuits and networks. This application provides an intuitive interface for researchers, students, and engineers to configure, simulate, and analyze memristor behavior without requiring extensive programming knowledge.
 
 ## Table of Contents
@@ -19,6 +23,8 @@ A web-based platform for simulating memristive circuits and networks. This appli
 - [Alternative: Manual Installation](#alternative-manual-installation)
 - [Web Interface Usage](#web-interface-usage)
   - [Simulation Results](#simulation-results)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
@@ -223,8 +229,45 @@ The Django web interface provides an easy-to-use form for configuring and runnin
 - Persistent storage maintains simulation history
 
 ---
+
+## Contributing
+
+This is an open-source educational project, contributions are welcome! Whether you're a student, researcher, or engineer interested in memristor simulation, your input is valuable.
+
+### Ways to Contribute:
+- **Bug Reports**: Found an issue? Please report it in the Issues section
+- **Feature Requests**: Have ideas for new simulation capabilities? Let us know!
+- **Documentation**: Help improve guides, tutorials or code documentation
+- **Code Contributions**: Submit pull requests for bug fixes or new features
+- **Educational Content**: Share simulation examples, tutorials, or use cases
+
+### Getting Started:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/NewFeature`)
+3. Make your changes and add tests if applicable
+4. Commit your changes (`git commit -m 'Added new feature X'`)
+5. Push to the branch (`git push origin feature/NewFeature`)
+6. Open a Pull Request
+
+For questions or discussions, feel free to reach out to ignaciopineyroo@gmail.com
+
+## License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+### What this means:
+- **Free to use** for academic, educational, and research purposes
+- **Free to modify** and adapt for your specific needs
+- **Free to distribute** and share with others
+- **Free for commercial use** if needed in the future
+- **Attribution required**: Please credit this project when using it in academic work
+
+This permissive license encourages collaboration and knowledge sharing in the academic community while allowing maximum flexibility for researchers and educators.
+
 ---
 
-#### Coded by Ignacio Piñeyro as part of my Electronic Eng. degree's final project for Universidad Nacional de San Martin (UNSAM). Feel free to send any questions, suggestions or comments to ignaciopineyroo@gmail.com
+#### Created by Ignacio Piñeyro - ignaciopineyroo@gmail.com 
+#### *Buenos Aires, Argentina*
+
 
 
